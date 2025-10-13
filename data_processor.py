@@ -79,6 +79,7 @@ class DataProcessor:
         date_columns = ['Data do documento', 'Data de lançamento', 'Data de compensação']
         for col in date_columns:
             if col in df_formatted.columns:
+                # Converte para datetime, formata, e preenche os não-convertidos com string vazia
                 df_formatted[col] = pd.to_datetime(df_formatted[col], errors='coerce').dt.strftime('%d/%m/%Y')
                 df_formatted[col] = df_formatted[col].fillna('')
         return df_formatted
@@ -94,13 +95,14 @@ class DataProcessor:
         return None
 
     def process_step2(self, dataframe):
-        """Filtra dados para o ano de 2025 e divide o DataFrame por conta."""
+        """(Etapa 2) Filtra dados para o ano de 2025 e divide o DataFrame por conta."""
         if dataframe is None or dataframe.empty:
             logger.warning("DataFrame de entrada para Etapa 2 está vazio. Pulando.")
             return {}
         logger.info("Iniciando Etapa 2: Filtragem por ano de 2025 e divisão por conta.")
         df_step2 = dataframe.copy()
-        df_step2[COLUNA_DATA_DOCUMENTO] = pd.to_datetime(df_step2[COLUNA_DATA_DOCUMENTO], errors='coerce')
+        # Assegura que a coluna de data esteja no formato datetime para o filtro de ano
+        df_step2[COLUNA_DATA_DOCUMENTO] = pd.to_datetime(df_step2[COLUNA_DATA_DOCUMENTO], errors='coerce', dayfirst=True)
         df_step2.dropna(subset=[COLUNA_DATA_DOCUMENTO], inplace=True)
         
         df_2025 = df_step2[df_step2[COLUNA_DATA_DOCUMENTO].dt.year == 2025].copy()
@@ -116,10 +118,11 @@ class DataProcessor:
         return sheets_data
 
     def process_steps_3_and_4(self, sheets_data_step2):
-        """Executa as etapas 3 e 4 sequencialmente para cada base."""
+        """(Etapas 3 e 4) Executa os tratamentos sequenciais para gerar as abas finais."""
         logger.info("Iniciando Etapas 3 e 4: Tratamento final das abas por estado.")
         final_sheets = {}
 
+        # Mapeia o nome da aba da etapa 2 para o nome da aba da etapa 4
         step2_to_step4_map = {v: CONTAS_MAPEAMENTO_ETAPA4[k] for k, v in CONTAS_MAPEAMENTO_ETAPA2.items()}
         
         for sheet_name_step2, df in sheets_data_step2.items():
@@ -128,50 +131,49 @@ class DataProcessor:
                 continue
             
             df_copy = df.copy()
-            logger.info(f"--- Processando '{sheet_name_step2}' para gerar a aba final ---")
+            final_sheet_name = step2_to_step4_map.get(sheet_name_step2, sheet_name_step2 + "_final")
+            logger.info(f"--- Processando '{sheet_name_step2}' para gerar a aba '{final_sheet_name}' ---")
             
             # --- ETAPA 3: Filtrar e excluir linhas ---
             ref_counts = df_copy[COLUNA_REFERENCIA].value_counts()
             unique_refs = ref_counts[ref_counts == 1].index
-            
             df_copy[COLUNA_MONTANTE] = pd.to_numeric(df_copy[COLUNA_MONTANTE], errors='coerce').fillna(0)
-            
             indices_to_drop = df_copy[
                 (df_copy[COLUNA_REFERENCIA].isin(unique_refs)) & 
                 (df_copy[COLUNA_MONTANTE] > 0)
             ].index
-
             df_after_step3 = df_copy.drop(indices_to_drop)
-            logger.info(f"[{sheet_name_step2}] Etapa 3: {len(indices_to_drop)} linhas removidas (ref. únicas com valor > 0).")
-            # --- Fim da Etapa 3 ---
+            logger.info(f"[{final_sheet_name}] Etapa 3: {len(indices_to_drop)} linhas removidas (ref. únicas com valor > 0).")
 
-            # --- ETAPA 4: Limpeza e formatação final das colunas ---
+            # --- ETAPA 4 - Parte 1: Limpeza e formatação final ---
             df_after_step4 = df_after_step3.copy()
-            
-            # 1. Nas novas abas, apaga os valores de "Valor pagamento" (se existir)
-            if 'Valor pagamento' in df_after_step4.columns:
-                df_after_step4['Valor pagamento'] = ''
-                logger.info(f"[{sheet_name_step2}] Etapa 4: Valores da coluna 'Valor pagamento' limpos.")
-
-            # 2. Remove duplicadas conforme o valor da referência.
             initial_rows = len(df_after_step4)
             df_after_step4.drop_duplicates(subset=[COLUNA_REFERENCIA], keep='first', inplace=True)
-            final_rows = len(df_after_step4)
-            logger.info(f"[{sheet_name_step2}] Etapa 4: {initial_rows - final_rows} linhas duplicadas removidas com base na 'Referência'.")
+            logger.info(f"[{final_sheet_name}] Etapa 4: {initial_rows - len(df_after_step4)} linhas duplicadas removidas com base na 'Referência'.")
             
-            # 3. Adiciona a coluna 'Valor pagamento' (caso não exista) e seleciona as colunas finais
-            df_after_step4['Valor pagamento'] = ''
+            df_after_step4.loc[:, 'Valor pagamento'] = 0.0
             
             try:
-                df_final_cols = df_after_step4[COLUNAS_ETAPA4_FINAIS]
-                logger.info(f"[{sheet_name_step2}] Etapa 4: Colunas finais selecionadas: {', '.join(COLUNAS_ETAPA4_FINAIS)}.")
+                df_final_cols = df_after_step4[COLUNAS_ETAPA4_FINAIS].copy()
+                logger.info(f"[{final_sheet_name}] Etapa 4: Colunas reordenadas para a estrutura final.")
             except KeyError as e:
-                logger.error(f"[{sheet_name_step2}] Erro ao selecionar colunas finais: {e}. Colunas disponíveis: {df_after_step4.columns.to_list()}")
+                logger.error(f"[{final_sheet_name}] Erro ao selecionar colunas finais: {e}.")
                 continue
 
-            # --- Fim da Etapa 4 ---            
-            final_sheet_name = step2_to_step4_map.get(sheet_name_step2, sheet_name_step2 + "_final")
+            # --- ETAPA 4 - Parte 2 (Continuação): Preenchimento de colunas ---
+            logger.info(f"[{final_sheet_name}] Etapa 4: Preenchendo 'Valor pagamento' com base na soma de '{sheet_name_step2}'.")
+            df_intermediario = sheets_data_step2.get(sheet_name_step2)
+
+            if df_intermediario is not None and not df_intermediario.empty:
+                somas_por_referencia = df_intermediario.groupby(COLUNA_REFERENCIA)[COLUNA_MONTANTE].sum()
+                df_final_cols['Valor pagamento'] = df_final_cols[COLUNA_REFERENCIA].map(somas_por_referencia).fillna(0)
+            
+            logger.info(f"[{final_sheet_name}] Etapa 4: Formatando e preenchendo 'Data de compensação'.")
+            df_final_cols['Data de compensação'] = pd.to_datetime(df_final_cols['Data de compensação'], errors='coerce').dt.strftime('%d/%m/%Y')
+            
+            # CORREÇÃO: Atribuição direta em vez de inplace em uma cadeia.
+            df_final_cols['Data de compensação'] = df_final_cols['Data de compensação'].fillna('Não compensado')
+            
             final_sheets[final_sheet_name] = df_final_cols
         
         return final_sheets
-

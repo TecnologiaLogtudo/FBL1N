@@ -184,3 +184,147 @@
 2025-10-13 15:38:24,297 - utils - INFO - Fim do processamento.
 2025-10-13 15:38:24,297 - utils - INFO - ==================================================
 
+2025-10-13 15:54:35,642 - utils - INFO - ==================================================
+2025-10-13 15:54:35,643 - utils - INFO - Iniciando novo processamento do arquivo: base_de_dados.xlsx
+2025-10-13 15:54:35,644 - utils - INFO - Iniciando a leitura do arquivo: base_de_dados.xlsx
+2025-10-13 15:54:44,917 - utils - INFO - Arquivo carregado com sucesso. 37768 linhas encontradas.
+2025-10-13 15:54:44,917 - utils - INFO - Iniciando a filtragem por data (Etapa 1).
+2025-10-13 15:54:44,931 - utils - INFO - 1 linhas removidas por data vazia.
+2025-10-13 15:54:44,997 - utils - INFO - 259 linhas removidas do ano 2023.
+2025-10-13 15:54:44,998 - utils - INFO - Selecionando as colunas para Etapa 1: Conta, Referência, Montante em moeda interna, Data do documento, Data de lançamento, Data de compensação
+2025-10-13 15:54:45,002 - utils - INFO - Iniciando o tratamento da coluna 'Referência'.
+2025-10-13 15:54:45,087 - utils - INFO - 6693 linhas removidas por valores inválidos na 'Referência'.
+2025-10-13 15:54:45,089 - utils - INFO - Processamento da Etapa 1 concluído.
+2025-10-13 15:54:45,089 - utils - INFO - Iniciando Etapa 2: Filtragem por ano de 2025 e divisão por conta.
+2025-10-13 15:54:45,115 - utils - INFO - Encontradas 21775 linhas para o ano de 2025.
+2025-10-13 15:54:45,116 - utils - INFO - Filtrando dados para a conta 302282 -> Aba '302282 - Bahia'
+2025-10-13 15:54:45,119 - utils - INFO - Encontradas 17818 linhas para a conta 302282.
+2025-10-13 15:54:45,120 - utils - INFO - Filtrando dados para a conta 303264 -> Aba '303264 - Ceará'
+2025-10-13 15:54:45,123 - utils - INFO - Encontradas 718 linhas para a conta 303264.
+2025-10-13 15:54:45,124 - utils - INFO - Filtrando dados para a conta 303432 -> Aba '303432 - Pernambuco'
+2025-10-13 15:54:45,128 - utils - INFO - Encontradas 3239 linhas para a conta 303432.
+2025-10-13 15:54:45,129 - utils - INFO - Iniciando Etapas 3 e 4: Tratamento final das abas por estado.
+2025-10-13 15:54:45,131 - utils - INFO - --- Processando '302282 - Bahia' para gerar a aba final ---
+2025-10-13 15:54:45,143 - utils - INFO - [302282 - Bahia] Etapa 3: 40 linhas removidas (ref. únicas com valor > 0).
+2025-10-13 15:54:45,146 - utils - INFO - [302282 - Bahia] Etapa 4: 1141 linhas duplicadas removidas com base na 'Referência'.
+2025-10-13 15:54:45,150 - utils - INFO - [302282 - Bahia] Etapa 4: Colunas finais selecionadas: Referência, Data de compensação, Valor pagamento.
+2025-10-13 15:54:45,152 - utils - INFO - --- Processando '303264 - Ceará' para gerar a aba final ---
+2025-10-13 15:54:45,156 - utils - INFO - [303264 - Ceará] Etapa 3: 0 linhas removidas (ref. únicas com valor > 0).
+2025-10-13 15:54:45,159 - utils - INFO - [303264 - Ceará] Etapa 4: 31 linhas duplicadas removidas com base na 'Referência'.
+2025-10-13 15:54:45,161 - utils - INFO - [303264 - Ceará] Etapa 4: Colunas finais selecionadas: Referência, Data de compensação, Valor pagamento.
+2025-10-13 15:54:45,162 - utils - INFO - --- Processando '303432 - Pernambuco' para gerar a aba final ---
+2025-10-13 15:54:45,169 - utils - INFO - [303432 - Pernambuco] Etapa 3: 0 linhas removidas (ref. únicas com valor > 0).
+2025-10-13 15:54:45,172 - utils - INFO - [303432 - Pernambuco] Etapa 4: 28 linhas duplicadas removidas com base na 'Referência'.
+2025-10-13 15:54:45,174 - utils - INFO - [303432 - Pernambuco] Etapa 4: Colunas finais selecionadas: Referência, Data de compensação, Valor pagamento.
+2025-10-13 15:54:45,175 - utils - INFO - Iniciando a gravação do arquivo de saída: 'dados_estruturados1.xlsx'
+2025-10-13 15:54:47,977 - utils - INFO - Aba 'Dados Consolidados' salva com sucesso.
+2025-10-13 15:54:49,246 - utils - INFO - Aba intermediária (Etapa 2) '302282 - Bahia' salva com sucesso.
+2025-10-13 15:54:49,345 - utils - INFO - Aba intermediária (Etapa 2) '303264 - Ceará' salva com sucesso.
+2025-10-13 15:54:49,594 - utils - INFO - Aba intermediária (Etapa 2) '303432 - Pernambuco' salva com sucesso.
+2025-10-13 15:54:50,183 - utils - INFO - Aba final (Etapa 4) 'Bahia' salva com sucesso.
+2025-10-13 15:54:50,206 - utils - INFO - Aba final (Etapa 4) 'Ceará' salva com sucesso.
+2025-10-13 15:54:50,311 - utils - INFO - Aba final (Etapa 4) 'Pernambuco' salva com sucesso.
+2025-10-13 15:54:56,448 - utils - INFO - Arquivo multipágina salvo com sucesso em: 'dados_estruturados1.xlsx'
+2025-10-13 15:54:56,448 - utils - INFO - Fim do processamento.
+2025-10-13 15:54:56,448 - utils - INFO - ==================================================
+
+2025-10-13 16:27:34,364 - utils - INFO - ==================================================
+2025-10-13 16:27:34,364 - utils - INFO - Iniciando novo processamento do arquivo: base_de_dados.xlsx
+2025-10-13 16:27:34,365 - utils - INFO - Iniciando a leitura do arquivo: base_de_dados.xlsx
+2025-10-13 16:27:41,269 - utils - INFO - Arquivo carregado com sucesso. 37768 linhas encontradas.
+2025-10-13 16:27:41,270 - utils - INFO - Iniciando a filtragem por data (Etapa 1).
+2025-10-13 16:27:41,281 - utils - INFO - 1 linhas removidas por data vazia.
+2025-10-13 16:27:41,334 - utils - INFO - 259 linhas removidas do ano 2023.
+2025-10-13 16:27:41,335 - utils - INFO - Selecionando as colunas para Etapa 1: Conta, Referência, Montante em moeda interna, Data do documento, Data de lançamento, Data de compensação
+2025-10-13 16:27:41,341 - utils - INFO - Iniciando o tratamento da coluna 'Referência'.
+2025-10-13 16:27:41,402 - utils - INFO - 6693 linhas removidas por valores inválidos na 'Referência'.
+2025-10-13 16:27:41,403 - utils - INFO - Processamento da Etapa 1 concluído.
+2025-10-13 16:27:41,403 - utils - INFO - Iniciando Etapa 2: Filtragem por ano de 2025 e divisão por conta.
+2025-10-13 16:27:41,426 - utils - INFO - Encontradas 21775 linhas para o ano de 2025.
+2025-10-13 16:27:41,427 - utils - INFO - Filtrando dados para a conta 302282 -> Aba '302282 - Bahia'
+2025-10-13 16:27:41,433 - utils - INFO - Encontradas 17818 linhas para a conta 302282.
+2025-10-13 16:27:41,434 - utils - INFO - Filtrando dados para a conta 303264 -> Aba '303264 - Ceará'
+2025-10-13 16:27:41,436 - utils - INFO - Encontradas 718 linhas para a conta 303264.
+2025-10-13 16:27:41,437 - utils - INFO - Filtrando dados para a conta 303432 -> Aba '303432 - Pernambuco'
+2025-10-13 16:27:41,439 - utils - INFO - Encontradas 3239 linhas para a conta 303432.
+2025-10-13 16:27:41,440 - utils - INFO - Iniciando Etapas 3 e 4: Tratamento final das abas por estado.
+2025-10-13 16:27:41,441 - utils - INFO - --- Processando '302282 - Bahia' para gerar a aba 'Bahia' ---
+2025-10-13 16:27:41,449 - utils - INFO - [Bahia] Etapa 3: 40 linhas removidas (ref. únicas com valor > 0).
+2025-10-13 16:27:41,452 - utils - INFO - [Bahia] Etapa 4: 1141 linhas duplicadas removidas com base na 'Referência'.
+2025-10-13 16:27:41,455 - utils - INFO - [Bahia] Etapa 4: Colunas reordenadas para a estrutura final.
+2025-10-13 16:27:41,455 - utils - INFO - [Bahia] Etapa 4: Preenchendo 'Valor pagamento' com base na soma de '302282 - Bahia'.
+2025-10-13 16:27:41,463 - utils - INFO - [Bahia] Etapa 4: Formatando e preenchendo 'Data de compensação'.
+2025-10-13 16:27:41,558 - utils - INFO - --- Processando '303264 - Ceará' para gerar a aba 'Ceará' ---
+2025-10-13 16:27:41,562 - utils - INFO - [Ceará] Etapa 3: 0 linhas removidas (ref. únicas com valor > 0).
+2025-10-13 16:27:41,564 - utils - INFO - [Ceará] Etapa 4: 31 linhas duplicadas removidas com base na 'Referência'.
+2025-10-13 16:27:41,565 - utils - INFO - [Ceará] Etapa 4: Colunas reordenadas para a estrutura final.
+2025-10-13 16:27:41,566 - utils - INFO - [Ceará] Etapa 4: Preenchendo 'Valor pagamento' com base na soma de '303264 - Ceará'.
+2025-10-13 16:27:41,567 - utils - INFO - [Ceará] Etapa 4: Formatando e preenchendo 'Data de compensação'.
+2025-10-13 16:27:41,574 - utils - INFO - --- Processando '303432 - Pernambuco' para gerar a aba 'Pernambuco' ---
+2025-10-13 16:27:41,579 - utils - INFO - [Pernambuco] Etapa 3: 0 linhas removidas (ref. únicas com valor > 0).
+2025-10-13 16:27:41,581 - utils - INFO - [Pernambuco] Etapa 4: 28 linhas duplicadas removidas com base na 'Referência'.
+2025-10-13 16:27:41,582 - utils - INFO - [Pernambuco] Etapa 4: Colunas reordenadas para a estrutura final.
+2025-10-13 16:27:41,582 - utils - INFO - [Pernambuco] Etapa 4: Preenchendo 'Valor pagamento' com base na soma de '303432 - Pernambuco'.
+2025-10-13 16:27:41,584 - utils - INFO - [Pernambuco] Etapa 4: Formatando e preenchendo 'Data de compensação'.
+2025-10-13 16:27:41,605 - utils - INFO - Iniciando a gravação do arquivo de saída: 'dados_estruturados.xlsx'
+2025-10-13 16:27:43,679 - utils - INFO - Aba 'Dados Consolidados' salva com sucesso.
+2025-10-13 16:27:44,784 - utils - INFO - Aba intermediária (Etapa 2) '302282 - Bahia' salva com sucesso.
+2025-10-13 16:27:44,833 - utils - INFO - Aba intermediária (Etapa 2) '303264 - Ceará' salva com sucesso.
+2025-10-13 16:27:45,030 - utils - INFO - Aba intermediária (Etapa 2) '303432 - Pernambuco' salva com sucesso.
+2025-10-13 16:27:45,410 - utils - INFO - Aba final (Etapa 4) 'Bahia' salva com sucesso.
+2025-10-13 16:27:45,423 - utils - INFO - Aba final (Etapa 4) 'Ceará' salva com sucesso.
+2025-10-13 16:27:45,487 - utils - INFO - Aba final (Etapa 4) 'Pernambuco' salva com sucesso.
+2025-10-13 16:27:51,110 - utils - INFO - Arquivo multipágina salvo com sucesso em: 'dados_estruturados.xlsx'
+2025-10-13 16:27:51,111 - utils - INFO - Fim do processamento.
+2025-10-13 16:27:51,111 - utils - INFO - ==================================================
+
+2025-10-13 17:15:35,648 - utils - INFO - ==================================================
+2025-10-13 17:15:35,648 - utils - INFO - Iniciando novo processamento do arquivo: base_de_dados.xlsx
+2025-10-13 17:15:35,649 - utils - INFO - Iniciando a leitura do arquivo: base_de_dados.xlsx
+2025-10-13 17:15:43,104 - utils - INFO - Arquivo carregado com sucesso. 37768 linhas encontradas.
+2025-10-13 17:15:43,105 - utils - INFO - Iniciando a filtragem por data (Etapa 1).
+2025-10-13 17:15:43,116 - utils - INFO - 1 linhas removidas por data vazia.
+2025-10-13 17:15:43,175 - utils - INFO - 259 linhas removidas do ano 2023.
+2025-10-13 17:15:43,176 - utils - INFO - Selecionando as colunas para Etapa 1: Conta, Referência, Montante em moeda interna, Data do documento, Data de lançamento, Data de compensação
+2025-10-13 17:15:43,181 - utils - INFO - Iniciando o tratamento da coluna 'Referência'.
+2025-10-13 17:15:43,259 - utils - INFO - 6693 linhas removidas por valores inválidos na 'Referência'.
+2025-10-13 17:15:43,261 - utils - INFO - Processamento da Etapa 1 concluído.
+2025-10-13 17:15:43,261 - utils - INFO - Iniciando Etapa 2: Filtragem por ano de 2025 e divisão por conta.
+2025-10-13 17:15:43,285 - utils - INFO - Encontradas 21775 linhas para o ano de 2025.
+2025-10-13 17:15:43,286 - utils - INFO - Filtrando dados para a conta 302282 -> Aba '302282 - Bahia'
+2025-10-13 17:15:43,290 - utils - INFO - Encontradas 17818 linhas para a conta 302282.
+2025-10-13 17:15:43,291 - utils - INFO - Filtrando dados para a conta 303264 -> Aba '303264 - Ceará'
+2025-10-13 17:15:43,293 - utils - INFO - Encontradas 718 linhas para a conta 303264.
+2025-10-13 17:15:43,294 - utils - INFO - Filtrando dados para a conta 303432 -> Aba '303432 - Pernambuco'
+2025-10-13 17:15:43,299 - utils - INFO - Encontradas 3239 linhas para a conta 303432.
+2025-10-13 17:15:43,300 - utils - INFO - Iniciando Etapas 3 e 4: Tratamento final das abas por estado.
+2025-10-13 17:15:43,301 - utils - INFO - --- Processando '302282 - Bahia' para gerar a aba 'Bahia' ---
+2025-10-13 17:15:43,311 - utils - INFO - [Bahia] Etapa 3: 40 linhas removidas (ref. únicas com valor > 0).
+2025-10-13 17:15:43,314 - utils - INFO - [Bahia] Etapa 4: 1141 linhas duplicadas removidas com base na 'Referência'.
+2025-10-13 17:15:43,317 - utils - INFO - [Bahia] Etapa 4: Colunas reordenadas para a estrutura final.
+2025-10-13 17:15:43,317 - utils - INFO - [Bahia] Etapa 4: Preenchendo 'Valor pagamento' com base na soma de '302282 - Bahia'.
+2025-10-13 17:15:43,323 - utils - INFO - [Bahia] Etapa 4: Formatando e preenchendo 'Data de compensação'.
+2025-10-13 17:15:43,440 - utils - INFO - --- Processando '303264 - Ceará' para gerar a aba 'Ceará' ---
+2025-10-13 17:15:43,443 - utils - INFO - [Ceará] Etapa 3: 0 linhas removidas (ref. únicas com valor > 0).
+2025-10-13 17:15:43,445 - utils - INFO - [Ceará] Etapa 4: 31 linhas duplicadas removidas com base na 'Referência'.
+2025-10-13 17:15:43,446 - utils - INFO - [Ceará] Etapa 4: Colunas reordenadas para a estrutura final.
+2025-10-13 17:15:43,447 - utils - INFO - [Ceará] Etapa 4: Preenchendo 'Valor pagamento' com base na soma de '303264 - Ceará'.
+2025-10-13 17:15:43,449 - utils - INFO - [Ceará] Etapa 4: Formatando e preenchendo 'Data de compensação'.
+2025-10-13 17:15:43,458 - utils - INFO - --- Processando '303432 - Pernambuco' para gerar a aba 'Pernambuco' ---
+2025-10-13 17:15:43,462 - utils - INFO - [Pernambuco] Etapa 3: 0 linhas removidas (ref. únicas com valor > 0).
+2025-10-13 17:15:43,464 - utils - INFO - [Pernambuco] Etapa 4: 28 linhas duplicadas removidas com base na 'Referência'.
+2025-10-13 17:15:43,466 - utils - INFO - [Pernambuco] Etapa 4: Colunas reordenadas para a estrutura final.
+2025-10-13 17:15:43,466 - utils - INFO - [Pernambuco] Etapa 4: Preenchendo 'Valor pagamento' com base na soma de '303432 - Pernambuco'.
+2025-10-13 17:15:43,468 - utils - INFO - [Pernambuco] Etapa 4: Formatando e preenchendo 'Data de compensação'.
+2025-10-13 17:15:43,498 - utils - INFO - Iniciando a gravação do arquivo de saída: 'dados_estruturados.xlsx'
+2025-10-13 17:15:45,521 - utils - INFO - Aba 'Dados Consolidados' salva com sucesso.
+2025-10-13 17:15:46,663 - utils - INFO - Aba intermediária (Etapa 2) '302282 - Bahia' salva com sucesso.
+2025-10-13 17:15:46,718 - utils - INFO - Aba intermediária (Etapa 2) '303264 - Ceará' salva com sucesso.
+2025-10-13 17:15:46,920 - utils - INFO - Aba intermediária (Etapa 2) '303432 - Pernambuco' salva com sucesso.
+2025-10-13 17:15:47,326 - utils - INFO - Aba final (Etapa 4) 'Bahia' salva com sucesso.
+2025-10-13 17:15:47,342 - utils - INFO - Aba final (Etapa 4) 'Ceará' salva com sucesso.
+2025-10-13 17:15:47,406 - utils - INFO - Aba final (Etapa 4) 'Pernambuco' salva com sucesso.
+2025-10-13 17:15:52,946 - utils - INFO - Arquivo multipágina salvo com sucesso em: 'dados_estruturados.xlsx'
+2025-10-13 17:15:52,947 - utils - INFO - Fim do processamento.
+2025-10-13 17:15:52,947 - utils - INFO - ==================================================
+

@@ -49,9 +49,9 @@ def main(input_file, output_file):
                 # 3. Salva os resultados finais da Etapa 4 (abas finais, ex: 'Bahia')
                 if final_sheets_step4:
                     for sheet_name, df_sheet in final_sheets_step4.items():
-                        formatted_sheet = processor.format_date_columns(df_sheet)
-                        if formatted_sheet is not None and not formatted_sheet.empty:
-                            formatted_sheet.to_excel(writer, sheet_name=sheet_name, index=False)
+                        # A formatação de datas agora é feita dentro do método de processamento
+                        if df_sheet is not None and not df_sheet.empty:
+                            df_sheet.to_excel(writer, sheet_name=sheet_name, index=False)
                             logger.info(f"Aba final (Etapa 4) '{sheet_name}' salva com sucesso.")
 
             logger.info(f"Arquivo multipágina salvo com sucesso em: '{output_file}'")
@@ -68,6 +68,6 @@ if __name__ == "__main__":
     # Defina aqui o nome do seu arquivo de entrada e saída
     # IMPORTANTE: Coloque o arquivo a ser processado na mesma pasta que este script.
     input_filepath = 'base_de_dados.xlsx'  # <--- Substitua pelo nome do seu arquivo
-    output_filepath = 'dados_estruturados1.xlsx'
+    output_filepath = 'dados_estruturados.xlsx'
     
     main(input_filepath, output_filepath)
