@@ -45,11 +45,15 @@ class DataProcessor:
         initial_rows = len(self.df)
         self.df.dropna(subset=[COLUNA_DATA_DOCUMENTO], inplace=True)
         rows_after_na = len(self.df)
-        logger.info(f"{initial_rows - rows_after_na} linhas removidas por data vazia.")
+        logger.info(f"  - {initial_rows - rows_after_na} linhas removidas por data vazia.")
+        
         self.df[COLUNA_DATA_DOCUMENTO] = pd.to_datetime(self.df[COLUNA_DATA_DOCUMENTO], errors='coerce')
+        rows_before_coerce_drop = len(self.df)
         self.df.dropna(subset=[COLUNA_DATA_DOCUMENTO], inplace=True)
+        logger.info(f"  - {rows_before_coerce_drop - len(self.df)} linhas removidas por erro de conversão de data.")
+        
         self.df = self.df[self.df[COLUNA_DATA_DOCUMENTO].dt.year != 2023]
-        logger.info(f"{rows_after_na - len(self.df)} linhas removidas do ano 2023.")
+        logger.info(f"  - {rows_before_coerce_drop - len(self.df)} linhas removidas por pertencerem ao ano de 2023.")
 
     def select_columns_step1(self):
         """Seleciona apenas as colunas especificadas para a Etapa 1."""
@@ -65,11 +69,15 @@ class DataProcessor:
         """Aplica os tratamentos na coluna 'Referência'."""
         if self.df is None: return
         logger.info("Iniciando o tratamento da coluna 'Referência'.")
+        # Garante que a coluna 'Referência' seja tratada como string para manipulação
         initial_rows = len(self.df)
         self.df[COLUNA_REFERENCIA] = self.df[COLUNA_REFERENCIA].astype(str).str.split('-').str[0].str.strip()
+        logger.info("  - Removidos sufixos após '-' e espaços em branco na coluna 'Referência'.")
+        
+        # Converte para numérico, descartando o que não for conversível (ex: textos)
         self.df[COLUNA_REFERENCIA] = pd.to_numeric(self.df[COLUNA_REFERENCIA], errors='coerce')
         self.df.dropna(subset=[COLUNA_REFERENCIA], inplace=True)
-        logger.info(f"{initial_rows - len(self.df)} linhas removidas por valores inválidos na 'Referência'.")
+        logger.info(f"  - {initial_rows - len(self.df)} linhas removidas por valores não numéricos na 'Referência'.")
         self.df[COLUNA_REFERENCIA] = self.df[COLUNA_REFERENCIA].astype(int)
 
     def format_date_columns(self, dataframe):
@@ -90,7 +98,7 @@ class DataProcessor:
             self.filter_by_date_step1()
             self.select_columns_step1()
             self.treat_reference_column()
-            logger.info("Processamento da Etapa 1 concluído.")
+            logger.info("Processamento da Etapa 1 concluído.\n")
             return self.df
         return None
 
@@ -115,6 +123,8 @@ class DataProcessor:
             sheets_data[nome_aba] = df_conta
             logger.info(f"Encontradas {len(df_conta)} linhas para a conta {conta}.")
 
+        logger.info("Etapa 2 concluida.\n")
+
         return sheets_data
 
     def process_steps_3_and_4(self, sheets_data_step2):
@@ -135,6 +145,8 @@ class DataProcessor:
             logger.info(f"--- Processando '{sheet_name_step2}' para gerar a aba '{final_sheet_name}' ---")
             
             # --- ETAPA 3: Filtrar e excluir linhas ---
+            # Regra de negócio: Se uma 'Referência' aparece apenas uma vez (é única) e seu
+            # 'Montante em moeda interna' é positivo, a linha deve ser removida.
             ref_counts = df_copy[COLUNA_REFERENCIA].value_counts()
             unique_refs = ref_counts[ref_counts == 1].index
             df_copy[COLUNA_MONTANTE] = pd.to_numeric(df_copy[COLUNA_MONTANTE], errors='coerce').fillna(0)
@@ -143,7 +155,7 @@ class DataProcessor:
                 (df_copy[COLUNA_MONTANTE] > 0)
             ].index
             df_after_step3 = df_copy.drop(indices_to_drop)
-            logger.info(f"[{final_sheet_name}] Etapa 3: {len(indices_to_drop)} linhas removidas (ref. únicas com valor > 0).")
+            logger.info(f"[{final_sheet_name}] Etapa 3: {len(indices_to_drop)} linhas removidas (referências únicas com montante > 0).")
 
             # --- ETAPA 4 - Parte 1: Limpeza e formatação final ---
             df_after_step4 = df_after_step3.copy()
@@ -151,6 +163,7 @@ class DataProcessor:
             df_after_step4.drop_duplicates(subset=[COLUNA_REFERENCIA], keep='first', inplace=True)
             logger.info(f"[{final_sheet_name}] Etapa 4: {initial_rows - len(df_after_step4)} linhas duplicadas removidas com base na 'Referência'.")
             
+            # Inicializa a coluna 'Valor pagamento' antes de preenchê-la
             df_after_step4.loc[:, 'Valor pagamento'] = 0.0
             
             try:
@@ -162,6 +175,8 @@ class DataProcessor:
 
             # --- ETAPA 4 - Parte 2 (Continuação): Preenchimento de colunas ---
             logger.info(f"[{final_sheet_name}] Etapa 4: Preenchendo 'Valor pagamento' com base na soma de '{sheet_name_step2}'.")
+            # Busca o DataFrame original da Etapa 2 para calcular a soma total dos montantes
+            # por 'Referência', garantindo que o valor final seja a soma de todas as ocorrências.
             df_intermediario = sheets_data_step2.get(sheet_name_step2)
 
             if df_intermediario is not None and not df_intermediario.empty:
