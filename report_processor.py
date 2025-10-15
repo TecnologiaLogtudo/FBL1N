@@ -24,15 +24,20 @@ class ReportProcessor:
     def _clean_client_column(self):
         """(Tratamento) Aplica a regra de padronização na coluna 'Cliente'."""
         logger.info("Tratando coluna 'Cliente': Padronizando nomes 'ITAMBE' e 'LACTALIS'.")
+        # Garante que a coluna seja do tipo string para manipulação
         cliente_series = self.df['Cliente'].astype(str)
+        # Pega a primeira palavra, converte para minúsculas para uma comparação robusta
         first_word = cliente_series.str.split().str[0].str.lower()
         
+        # Define as condições de busca
         conditions = [
-            first_word.str.contains('itamb', na=False),
-            first_word.str.contains('lactalis', na=False)
+            first_word.str.contains('itamb', na=False),   # Busca por 'itamb' (cobre Itambé, ITAMBE, etc.)
+            first_word.str.contains('lactalis', na=False) # Busca por 'lactalis'
         ]
+        # Define os valores de substituição
         choices = ['Itambé', 'Lactalis']
         
+        # Usa np.select para aplicar as substituições de forma vetorizada
         self.df['Cliente'] = np.select(conditions, choices, default=self.df['Cliente'])
         logger.info("Coluna 'Cliente' padronizada com sucesso.")
 
@@ -52,7 +57,8 @@ class ReportProcessor:
             dt_frete_series.str.startswith('AVARIAS', na=False), # 6.
             dt_frete_series.str.upper() == 'PEDAGIO', # 7.
             dt_frete_series.str.upper() == 'PERNOITE', # 8.
-            dt_frete_series.str.upper().str.contains('COLETA DE PALETE|COLETA DE PALLETE', na=False, regex=True) # 3. (continuação)
+            dt_frete_series.str.upper().str.contains('COLETA DE PALETE|COLETA DE PALLETE', na=False, regex=True), # 3. (continuação)
+            dt_frete_series.str.upper() == 'DESCARGA', # 9. Nova regra
         ]
         
         choices = [
@@ -64,12 +70,33 @@ class ReportProcessor:
             'Descarga',
             'Pedágio',
             'Diária no cliente', # Regra 8 leva ao mesmo resultado da 2
-            'Descarga'         # Regra 3 (continuação)
+            'Descarga',        # Regra 3 (continuação)
+            'Descarga'         # Regra 9
         ]
         
         # Aplica as regras, preenchendo onde o 'Serviço' ainda está vazio
         self.df['Serviço'] = np.select(conditions, choices, default=self.df['Serviço'])
         logger.info("Coluna 'Serviço' preenchida com base nas regras definidas.")
+
+    def _populate_transportadora_column(self):
+        """(Tratamento) Preenche a coluna 'Transportadora' com base na 'UF Origem'."""
+        logger.info("Preenchendo coluna 'Transportadora' com base na 'UF Origem'.")
+        uf_series = self.df['UF Origem'].astype(str).str.upper()
+
+        conditions = [
+            uf_series == 'BA',
+            uf_series == 'CE',
+            uf_series == 'PE'
+        ]
+        choices = [
+            'Logtudo Bahia',
+            'Logtudo Ceará',
+            'Logtudo Pernambuco'
+        ]
+        
+        # Aplica as regras de mapeamento
+        self.df['Transportadora'] = np.select(conditions, choices, default='')
+        logger.info("Coluna 'Transportadora' preenchida com sucesso.")
 
     def _treat_dt_frete_column(self):
         """(Tratamento) Substitui valores não numéricos em 'DT Frete' por '-'."""
@@ -81,17 +108,21 @@ class ReportProcessor:
         logger.info("Coluna 'DT Frete' limpa.")
 
     def _treat_ctrc_column(self):
-        """(Tratamento) Remove o prefixo '2025' da coluna CTRC, se existir."""
-        logger.info("Tratando coluna 'CTRC' para remover prefixo '2025'.")
+        """(Tratamento) Remove o prefixo '2025' e os zeros subsequentes da coluna CTRC."""
+        logger.info("Tratando coluna 'CTRC' para remover prefixo '2025' e zeros à esquerda.")
         self.df['CTRC'] = self.df['CTRC'].astype(str)
-        self.df['CTRC'] = self.df['CTRC'].apply(lambda x: x[4:] if x.startswith('2025') else x)
-        logger.info("Prefixo '2025' removido da coluna 'CTRC' onde aplicável.")
+        # Usa regex para remover o prefixo '2025' e quaisquer zeros que o sigam.
+        # Ex: '202500123' vira '123'. '2025123' vira '123'. '20250000' vira ''.
+        self.df['CTRC'] = self.df['CTRC'].str.replace(r'^20250*', '', regex=True)
+        logger.info("Prefixo '2025' e zeros subsequentes removidos da coluna 'CTRC'.")
 
     def _filter_valor_cte(self):
         """(Filtro) Remove linhas onde 'Valor CTe' é zero."""
         logger.info("Removendo linhas onde 'Valor CTe' é 0 ou nulo.")
         initial_rows = len(self.df)
+        # Converte para numérico, tratando erros e preenchendo nulos com 0
         self.df['Valor CTe'] = pd.to_numeric(self.df['Valor CTe'], errors='coerce').fillna(0)
+        # Mantém apenas as linhas onde o valor é diferente de 0
         self.df = self.df[self.df['Valor CTe'] != 0].reset_index(drop=True)
         rows_removed = initial_rows - len(self.df)
         logger.info(f"{rows_removed} linhas foram removidas com 'Valor CTe' igual a 0.")
@@ -136,9 +167,11 @@ class ReportProcessor:
             
             dates = pd.to_datetime(self.df['Emissao'], format='%d/%m/%Y', errors='coerce')
             self.df['Mês'] = dates.dt.strftime('%B').str.capitalize()
-            self.df['Transportadora'] = ''
+            self.df['Transportadora'] = '' # Cria a coluna vazia primeiro
             self.df['Serviço'] = ''
             
+            # Preenche as colunas com base nas regras
+            self._populate_transportadora_column() # Nova função
             self._populate_service_column()
             self._treat_dt_frete_column() # Executado após preencher o serviço
             self._filter_valor_cte()
@@ -164,4 +197,3 @@ class ReportProcessor:
         except Exception as e:
             logger.error(f"Ocorreu um erro inesperado ao processar o relatório: {e}")
             return None
-        
