@@ -1,84 +1,89 @@
 # main.py
-# Ponto de entrada do sistema para processar a planilha.
+# Ponto de entrada do sistema para processar as planilhas.
 
 import pandas as pd
 from utils import logger
-from config import REPORT_FILE_PATH
 
 def main(input_file, report_file, output_file):
     """
-    Função principal que executa o processo de ETL da planilha.
-
-    Args:
-        input_file (str): Caminho do arquivo .xlsx de entrada.
-        report_file (str): Caminho do arquivo .xls do relatório.
-        output_file (str): Caminho onde o arquivo .xlsx processado será salvo.
+    Função principal que orquestra todo o processo de ETL e Análise.
     """
-    # Imports locais para resolver potenciais dependências circulares
+    logger.info("==================================================")
+    logger.info(f"Iniciando novo ciclo de processamento.")
+    
+    # Adia as importações para dentro da função para evitar dependências circulares
     from data_processor import DataProcessor
     from report_processor import ReportProcessor
-    
-    logger.info("==================================================")
-    logger.info(f"Iniciando novo processamento do arquivo: {input_file}")
-    
-    processor = DataProcessor(input_file)
-    
-    # Etapa 1: Processamento inicial do arquivo principal
-    processed_df_step1 = processor.process_step1()
+    from analysis_processor import AnalysisProcessor
+
+    # --- FASE 1: Processamento do arquivo base ---
+    data_proc = DataProcessor(input_file)
+    processed_df_step1 = data_proc.process_step1()
 
     if processed_df_step1 is not None:
-        # Etapa 2: Filtrar por 2025 e dividir por conta
-        sheets_data_step2 = processor.process_step2(processed_df_step1)
+        sheets_data_step2 = data_proc.process_step2(processed_df_step1)
+        final_sheets_step4 = data_proc.process_steps_3_and_4(sheets_data_step2)
 
-        # Etapas 3 e 4: Aplicar tratamentos sequenciais
-        final_sheets_step4 = processor.process_steps_3_and_4(sheets_data_step2)
-        
-        # Etapa 5: Processar o relatório externo
-        report_processor = ReportProcessor(report_file)
-        df_report = report_processor.process()
+        # --- FASE 2: Processamento do relatório externo ---
+        report_proc = ReportProcessor(report_file)
+        report_df = report_proc.process()
 
+        # --- FASE 3: Análise e Cruzamento de Dados ---
+        if report_df is not None:
+            analyzer = AnalysisProcessor()
+            logger.info("--- INICIANDO ETAPA DE ANÁLISE (CRUZAMENTO DE DADOS) ---")
+            # O analisador recebe o relatório limpo e as abas de lookup para cruzar os dados
+            analyzed_report_df = analyzer.run_analysis(report_df, final_sheets_step4)
+            logger.info("--- ANÁLISE CONCLUÍDA. ---")
+        else:
+            logger.warning("O relatório externo não pôde ser processado. A etapa de análise será pulada.")
+            analyzed_report_df = None # Garante que nada seja salvo se o relatório falhar
+
+        # --- FASE 4: Salvamento ---
         try:
             logger.info(f"\nIniciando a gravação do arquivo de saída: '{output_file}'")
             with pd.ExcelWriter(output_file, engine='openpyxl') as writer:
-                # 1. Salva o resultado da primeira etapa
-                formatted_df_step1 = processor.format_date_columns(processed_df_step1)
+                # Salva o resultado da primeira etapa
+                formatted_df_step1 = data_proc.format_date_columns(processed_df_step1)
                 if formatted_df_step1 is not None and not formatted_df_step1.empty:
                     formatted_df_step1.to_excel(writer, sheet_name='Dados Consolidados', index=False)
-                    logger.info("Aba 'Dados Consolidados' salva com sucesso.")
+                    logger.info("Aba 'Dados Consolidados' salva.")
 
-                # 2. Salva os resultados da Etapa 2
+                # Salva os resultados da Etapa 2 (abas intermediárias)
                 if sheets_data_step2:
-                    for sheet_name, df_sheet in sheets_data_step2.items():
-                        formatted_sheet = processor.format_date_columns(df_sheet)
+                    for sheet_name, df in sheets_data_step2.items():
+                        formatted_sheet = data_proc.format_date_columns(df)
                         if formatted_sheet is not None and not formatted_sheet.empty:
                             formatted_sheet.to_excel(writer, sheet_name=sheet_name, index=False)
-                            logger.info(f"Aba intermediária (Etapa 2) '{sheet_name}' salva com sucesso.")
+                            logger.info(f"Aba intermediária '{sheet_name}' salva.")
                 
-                # 3. Salva os resultados finais da Etapa 4
+                # Salva os resultados da Etapa 4 (abas finais de lookup)
                 if final_sheets_step4:
-                    for sheet_name, df_sheet in final_sheets_step4.items():
-                        if df_sheet is not None and not df_sheet.empty:
-                            df_sheet.to_excel(writer, sheet_name=sheet_name, index=False)
-                            logger.info(f"Aba final (Etapa 4) '{sheet_name}' salva com sucesso.")
-
-                # 4. Salva o resultado do relatório externo processado
-                if df_report is not None and not df_report.empty:
-                    df_report.to_excel(writer, sheet_name='Dados Relatorio Externo', index=False)
-                    logger.info("Aba 'Dados Relatorio Externo' salva com sucesso.")
+                    for sheet_name, df in final_sheets_step4.items():
+                        if df is not None and not df.empty:
+                            df.to_excel(writer, sheet_name=sheet_name, index=False)
+                            logger.info(f"Aba de lookup '{sheet_name}' salva.")
+                
+                # Salva o relatório analisado
+                if analyzed_report_df is not None and not analyzed_report_df.empty:
+                    analyzed_report_df.to_excel(writer, sheet_name='Dados Relatorio Externo', index=False)
+                    logger.info("Aba 'Dados Relatorio Externo' salva.")
 
             logger.info(f"Arquivo multipágina salvo com sucesso em: '{output_file}'")
         except Exception as e:
-            logger.error(f"Não foi possível salvar o arquivo de saída. Erro: {e}")
+            logger.error(f"Não foi possível salvar o arquivo de saída. Erro: {e}", exc_info=True)
     else:
-        logger.warning("Nenhum dado foi processado na Etapa 1, o arquivo de saída não será gerado.")
+        logger.warning("Nenhum dado foi processado na Etapa 1. O arquivo de saída não será gerado.")
     
     logger.info("Fim do processamento.")
     logger.info("==================================================\n")
 
-
 if __name__ == "__main__":
+    from config import REPORT_FILE_PATH
+    
     input_filepath = 'base_de_dados.xlsx'
-    report_filepath = REPORT_FILE_PATH # Usando o caminho definido no config
+    report_filepath = REPORT_FILE_PATH
     output_filepath = 'dados_estruturados.xlsx'
     
     main(input_filepath, report_filepath, output_filepath)
+
