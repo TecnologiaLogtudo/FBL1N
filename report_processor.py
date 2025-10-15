@@ -169,8 +169,16 @@ class ReportProcessor:
             self.df['Mês'] = dates.dt.strftime('%B').str.capitalize()
             self.df['Transportadora'] = '' # Cria a coluna vazia primeiro
             self.df['Serviço'] = ''
+
+            # Adiciona as novas colunas de pagamento, inicializadas com valores padrão
+            logger.info("Adicionando colunas de pagamento: Status pgto, Valor pago, Valor a receber, diferença.")
+            self.df['Status pgto'] = ''
+            self.df['Valor pago'] = 0.0
+            self.df['Valor a receber'] = 0.0
+            self.df['diferença'] = 0.0
             
             # Preenche as colunas com base nas regras
+            logger.info("Preenchendo colunas com base nas regras.")
             self._populate_transportadora_column() # Nova função
             self._populate_service_column()
             self._treat_dt_frete_column() # Executado após preencher o serviço
@@ -180,7 +188,8 @@ class ReportProcessor:
             final_column_order = [
                 'Emissao', 'Mês', 'Transportadora', 'CTRC', 'Cliente', 'Serviço',
                 'Senha Ravex', 'DT Frete', 'Origem', 'UF Origem', 'Destino', 'UF',
-                'Nota Fiscal', 'Valor CTe'
+                'Nota Fiscal', 'Valor CTe', 'Status pgto', 'Valor pago', 
+                'Valor a receber', 'diferença'
             ]
             self.df = self.df[final_column_order]
             logger.info("Colunas reordenadas para a estrutura final do relatório.")
