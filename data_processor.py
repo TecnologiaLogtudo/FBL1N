@@ -29,7 +29,7 @@ class DataProcessor:
         try:
             logger.info(f"Iniciando a leitura do arquivo: {self.filepath}")
             self.df = pd.read_excel(self.filepath)
-            logger.info(f"Arquivo carregado com sucesso. {len(self.df)} linhas encontradas.")
+            logger.info(f"Arquivo carregado com sucesso. {len(self.df)} linhas encontradas.\n")
             return True
         except FileNotFoundError:
             logger.error(f"Erro: O arquivo '{self.filepath}' não foi encontrado.")
@@ -41,7 +41,7 @@ class DataProcessor:
     def filter_by_date_step1(self):
         """(Etapa 1) Remove linhas com data vazia ou do ano de 2023."""
         if self.df is None: return
-        logger.info("Iniciando a filtragem por data (Etapa 1).")
+        logger.info("Iniciando etapa 1 - filtragem por data.")
         initial_rows = len(self.df)
         self.df.dropna(subset=[COLUNA_DATA_DOCUMENTO], inplace=True)
         rows_after_na = len(self.df)
@@ -52,8 +52,9 @@ class DataProcessor:
         self.df.dropna(subset=[COLUNA_DATA_DOCUMENTO], inplace=True)
         logger.info(f"  - {rows_before_coerce_drop - len(self.df)} linhas removidas por erro de conversão de data.")
         
+        rows_before_year_filter = len(self.df)
         self.df = self.df[self.df[COLUNA_DATA_DOCUMENTO].dt.year != 2023]
-        logger.info(f"  - {rows_before_coerce_drop - len(self.df)} linhas removidas por pertencerem ao ano de 2023.")
+        logger.info(f"  - {rows_before_year_filter - len(self.df)} linhas removidas por pertencerem ao ano de 2023.")
 
     def select_columns_step1(self):
         """Seleciona apenas as colunas especificadas para a Etapa 1."""
@@ -119,9 +120,20 @@ class DataProcessor:
         sheets_data = {}
         for conta, nome_aba in CONTAS_MAPEAMENTO_ETAPA2.items():
             logger.info(f"Filtrando dados para a conta {conta} -> Aba '{nome_aba}'")
-            df_conta = df_2025[df_2025[COLUNA_CONTA] == conta].copy()
+            
+            # --- AJUSTE PARA ETAPA ATUAL ---
+            # Regra especial para a conta do Ceará (303264)
+            if conta == 303264:
+                # Inclui tanto os dados da conta 303264 (Ceará) quanto 302282 (Bahia)
+                contas_para_incluir = [303264, 302282]
+                df_conta = df_2025[df_2025[COLUNA_CONTA].isin(contas_para_incluir)].copy()
+                logger.info(f"Regra especial aplicada: Incluindo dados das contas {contas_para_incluir}.")
+            else:
+                # Lógica padrão para as outras contas
+                df_conta = df_2025[df_2025[COLUNA_CONTA] == conta].copy()
+            
             sheets_data[nome_aba] = df_conta
-            logger.info(f"Encontradas {len(df_conta)} linhas para a conta {conta}.")
+            logger.info(f"Encontradas {len(df_conta)} linhas para a aba '{nome_aba}'.")
 
         logger.info("Etapa 2 concluida.\n")
 
@@ -145,8 +157,6 @@ class DataProcessor:
             logger.info(f"--- Processando '{sheet_name_step2}' para gerar a aba '{final_sheet_name}' ---")
             
             # --- ETAPA 3: Filtrar e excluir linhas ---
-            # Regra de negócio: Se uma 'Referência' aparece apenas uma vez (é única) e seu
-            # 'Montante em moeda interna' é positivo, a linha deve ser removida.
             ref_counts = df_copy[COLUNA_REFERENCIA].value_counts()
             unique_refs = ref_counts[ref_counts == 1].index
             df_copy[COLUNA_MONTANTE] = pd.to_numeric(df_copy[COLUNA_MONTANTE], errors='coerce').fillna(0)
@@ -163,7 +173,6 @@ class DataProcessor:
             df_after_step4.drop_duplicates(subset=[COLUNA_REFERENCIA], keep='first', inplace=True)
             logger.info(f"[{final_sheet_name}] Etapa 4: {initial_rows - len(df_after_step4)} linhas duplicadas removidas com base na 'Referência'.")
             
-            # Inicializa a coluna 'Valor pagamento' antes de preenchê-la
             df_after_step4.loc[:, 'Valor pagamento'] = 0.0
             
             try:
@@ -175,8 +184,6 @@ class DataProcessor:
 
             # --- ETAPA 4 - Parte 2 (Continuação): Preenchimento de colunas ---
             logger.info(f"[{final_sheet_name}] Etapa 4: Preenchendo 'Valor pagamento' com base na soma de '{sheet_name_step2}'.")
-            # Busca o DataFrame original da Etapa 2 para calcular a soma total dos montantes
-            # por 'Referência', garantindo que o valor final seja a soma de todas as ocorrências.
             df_intermediario = sheets_data_step2.get(sheet_name_step2)
 
             if df_intermediario is not None and not df_intermediario.empty:
@@ -186,7 +193,6 @@ class DataProcessor:
             logger.info(f"[{final_sheet_name}] Etapa 4: Formatando e preenchendo 'Data de compensação'.")
             df_final_cols['Data de compensação'] = pd.to_datetime(df_final_cols['Data de compensação'], errors='coerce').dt.strftime('%d/%m/%Y')
             
-            # CORREÇÃO: Atribuição direta em vez de inplace em uma cadeia.
             df_final_cols['Data de compensação'] = df_final_cols['Data de compensação'].fillna('Não compensado')
             
             final_sheets[final_sheet_name] = df_final_cols

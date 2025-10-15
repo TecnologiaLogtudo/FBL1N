@@ -2,16 +2,18 @@
 # Ponto de entrada do sistema para processar a planilha.
 
 import pandas as pd
-import copy
 from data_processor import DataProcessor
+from report_processor import ReportProcessor
 from utils import logger
+from config import REPORT_FILE_PATH
 
-def main(input_file, output_file):
+def main(input_file, report_file, output_file):
     """
     Função principal que executa o processo de ETL da planilha.
 
     Args:
         input_file (str): Caminho do arquivo .xlsx de entrada.
+        report_file (str): Caminho do arquivo .xls do relatório.
         output_file (str): Caminho onde o arquivo .xlsx processado será salvo.
     """
     logger.info("==================================================")
@@ -19,26 +21,30 @@ def main(input_file, output_file):
     
     processor = DataProcessor(input_file)
     
-    # Etapa 1: Processamento inicial
+    # Etapa 1: Processamento inicial do arquivo principal
     processed_df_step1 = processor.process_step1()
 
     if processed_df_step1 is not None:
-        # Etapa 2: Filtrar por 2025 e dividir por conta, criando as abas intermediárias
+        # Etapa 2: Filtrar por 2025 e dividir por conta
         sheets_data_step2 = processor.process_step2(processed_df_step1)
 
-        # Etapas 3 e 4: Aplicar tratamentos sequenciais sobre os resultados da etapa 2
+        # Etapas 3 e 4: Aplicar tratamentos sequenciais
         final_sheets_step4 = processor.process_steps_3_and_4(sheets_data_step2)
+        
+        # Etapa 5: Processar o relatório externo
+        report_processor = ReportProcessor(report_file)
+        df_report = report_processor.process()
 
         try:
-            logger.info(f"Iniciando a gravação do arquivo de saída: '{output_file}'")
+            logger.info(f"\nIniciando a gravação do arquivo de saída: '{output_file}'")
             with pd.ExcelWriter(output_file, engine='openpyxl') as writer:
-                # 1. Salva o resultado da primeira etapa em uma aba principal
+                # 1. Salva o resultado da primeira etapa
                 formatted_df_step1 = processor.format_date_columns(processed_df_step1)
                 if formatted_df_step1 is not None and not formatted_df_step1.empty:
                     formatted_df_step1.to_excel(writer, sheet_name='Dados Consolidados', index=False)
                     logger.info("Aba 'Dados Consolidados' salva com sucesso.")
 
-                # 2. Salva os resultados da Etapa 2 (abas intermediárias, ex: '302282 - Bahia')
+                # 2. Salva os resultados da Etapa 2
                 if sheets_data_step2:
                     for sheet_name, df_sheet in sheets_data_step2.items():
                         formatted_sheet = processor.format_date_columns(df_sheet)
@@ -46,13 +52,17 @@ def main(input_file, output_file):
                             formatted_sheet.to_excel(writer, sheet_name=sheet_name, index=False)
                             logger.info(f"Aba intermediária (Etapa 2) '{sheet_name}' salva com sucesso.")
                 
-                # 3. Salva os resultados finais da Etapa 4 (abas finais, ex: 'Bahia')
+                # 3. Salva os resultados finais da Etapa 4
                 if final_sheets_step4:
                     for sheet_name, df_sheet in final_sheets_step4.items():
-                        # A formatação de datas agora é feita dentro do método de processamento
                         if df_sheet is not None and not df_sheet.empty:
                             df_sheet.to_excel(writer, sheet_name=sheet_name, index=False)
                             logger.info(f"Aba final (Etapa 4) '{sheet_name}' salva com sucesso.")
+
+                # 4. Salva o resultado do relatório externo processado
+                if df_report is not None and not df_report.empty:
+                    df_report.to_excel(writer, sheet_name='Dados Relatorio Externo', index=False)
+                    logger.info("Aba 'Dados Relatorio Externo' salva com sucesso.")
 
             logger.info(f"Arquivo multipágina salvo com sucesso em: '{output_file}'")
         except Exception as e:
@@ -65,9 +75,8 @@ def main(input_file, output_file):
 
 
 if __name__ == "__main__":
-    # Defina aqui o nome do seu arquivo de entrada e saída
-    # IMPORTANTE: Coloque o arquivo a ser processado na mesma pasta que este script.
-    input_filepath = 'base_de_dados.xlsx'  # <--- Substitua pelo nome do seu arquivo
+    input_filepath = 'base_de_dados.xlsx'
+    report_filepath = REPORT_FILE_PATH # Usando o caminho definido no config
     output_filepath = 'dados_estruturados.xlsx'
     
-    main(input_filepath, output_filepath)
+    main(input_filepath, report_filepath, output_filepath)

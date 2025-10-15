@@ -1,40 +1,61 @@
 # config.py
-# Arquivo para armazenar configurações e constantes do projeto.
+# Arquivo de configuração para centralizar parâmetros e constantes do projeto.
 
-# Colunas que serão mantidas na planilha final da Etapa 1
+# --- Configurações Gerais ---
+LOG_FILE = 'processamento.log'
+
+# --- Nomes das Colunas (Etapa 1 - Planilha Principal) ---
+COLUNA_CONTA = 'Conta'
+COLUNA_REFERENCIA = 'Referência'
+COLUNA_MONTANTE = 'Montante em moeda interna'
+COLUNA_DATA_DOCUMENTO = 'Data do documento'
 COLUNAS_ETAPA1_PARA_MANTER = [
-    'Conta',
-    'Referência',
-    'Montante em moeda interna',
-    'Data do documento',
+    COLUNA_CONTA,
+    COLUNA_REFERENCIA,
+    COLUNA_MONTANTE,
+    COLUNA_DATA_DOCUMENTO,
     'Data de lançamento',
     'Data de compensação'
 ]
 
-# Colunas para as abas finais da Etapa 4
-COLUNAS_ETAPA4_FINAIS = [
-    'Referência',
-    'Data de compensação',
-    'Valor pagamento'
-]
-
-# Nomes de colunas usados para referência no código
-COLUNA_DATA_DOCUMENTO = 'Data do documento'
-COLUNA_REFERENCIA = 'Referência'
-COLUNA_CONTA = 'Conta'
-COLUNA_MONTANTE = 'Montante em moeda interna'
-
-# Mapeamento de contas para os nomes das abas da Etapa 2 (intermediárias)
+# --- Mapeamento de Contas (Etapas 2 e 4) ---
 CONTAS_MAPEAMENTO_ETAPA2 = {
     302282: '302282 - Bahia',
     303264: '303264 - Ceará',
     303432: '303432 - Pernambuco'
 }
 
-# Mapeamento de contas para os nomes das abas da Etapa 4 (finais)
 CONTAS_MAPEAMENTO_ETAPA4 = {
     302282: 'Bahia',
     303264: 'Ceará',
     303432: 'Pernambuco'
 }
 
+# --- Estrutura das Colunas (Etapa 4) ---
+COLUNAS_ETAPA4_FINAIS = [
+    'Referência',
+    'Data de compensação',
+    'Valor pagamento'
+]
+
+# --- Configurações do Relatório Externo ---
+REPORT_FILE_PATH = 'relatorio.xls'
+REPORT_SKIP_ROWS = 6 # Linhas a serem puladas no início do arquivo do relatório
+
+# Índices das colunas a serem extraídas do relatório (baseado na estrutura do arquivo)
+# Corresponde a: Emissão, CTe, Remetente, Pedido, Senha, Destino, UF, Nota N.º, Valor
+REPORT_COLUMN_INDICES = [3, 4, 9, 14, 15, 18, 17, 25, 27]
+
+# Nomes finais para as colunas do relatório após o processamento.
+# Esta lista agora reflete os nomes finais solicitados.
+REPORT_FINAL_COLUMNS = [
+    'Emissao',
+    'CTRC',
+    'Cliente',
+    'DT Frete',
+    'Senha Ravex',
+    'Destino',
+    'UF',
+    'Nota Fiscal',
+    'Valor CTe'
+]
