@@ -2,8 +2,6 @@
 # Ponto de entrada do sistema para processar a planilha.
 
 import pandas as pd
-from data_processor import DataProcessor
-from report_processor import ReportProcessor
 from utils import logger
 from config import REPORT_FILE_PATH
 
@@ -16,6 +14,10 @@ def main(input_file, report_file, output_file):
         report_file (str): Caminho do arquivo .xls do relatório.
         output_file (str): Caminho onde o arquivo .xlsx processado será salvo.
     """
+    # Imports locais para resolver potenciais dependências circulares
+    from data_processor import DataProcessor
+    from report_processor import ReportProcessor
+    
     logger.info("==================================================")
     logger.info(f"Iniciando novo processamento do arquivo: {input_file}")
     

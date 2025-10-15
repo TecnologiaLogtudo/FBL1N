@@ -22,73 +22,87 @@ class ReportProcessor:
         self.df = None
 
     def _clean_client_column(self):
-        """Aplica a regra de renomeação na coluna 'Cliente'."""
-        logger.info("Aplicando regras de renomeação na coluna 'Cliente'.")
-        
-        # Garante que a coluna 'Cliente' seja do tipo string
+        """(Tratamento) Aplica a regra de padronização na coluna 'Cliente'."""
+        logger.info("Tratando coluna 'Cliente': Padronizando nomes 'ITAMBE' e 'LACTALIS'.")
         cliente_series = self.df['Cliente'].astype(str)
-        
-        # Pega a primeira palavra, converte para minúsculas e remove acentos para comparação
         first_word = cliente_series.str.split().str[0].str.lower()
         
-        # Define as condições e os valores correspondentes
         conditions = [
             first_word.str.contains('itamb', na=False),
             first_word.str.contains('lactalis', na=False)
         ]
         choices = ['Itambé', 'Lactalis']
         
-        # Aplica a lógica condicional
         self.df['Cliente'] = np.select(conditions, choices, default=self.df['Cliente'])
-        logger.info("Coluna 'Cliente' padronizada.")
+        logger.info("Coluna 'Cliente' padronizada com sucesso.")
 
     def _populate_service_column(self):
-        """Preenche a coluna 'Serviço' com base na coluna 'DT Frete'."""
-        logger.info("Preenchendo a coluna 'Serviço' com base em 'DT Frete'.")
-        
-        # Garante que a coluna 'DT Frete' seja do tipo string para aplicar as regras
+        """(Tratamento) Preenche a coluna 'Serviço' com base em regras da coluna 'DT Frete'."""
+        logger.info("Preenchendo coluna 'Serviço' com base em 'DT Frete'.")
         dt_frete_series = self.df['DT Frete'].astype(str)
         
-        # Define as condições de mapeamento
+        # Define as condições em ordem de prioridade. Usamos `str.match` para correspondências exatas/iniciais
+        # e `str.contains` para buscas mais flexíveis.
         conditions = [
-            dt_frete_series.str.contains(r'\d', na=False), # Contém números
-            dt_frete_series.str.contains('DESCARGA', case=False, na=False),
-            dt_frete_series.str.contains('DIARIA DO CLIENTE', case=False, na=False),
-            dt_frete_series.str.contains('DIARIA PARADO', case=False, na=False),
-            dt_frete_series.str.contains('AVARIAS', case=False, na=False),
-            dt_frete_series.str.contains('PEDAGIO', case=False, na=False),
-            dt_frete_series.str.contains('REENTREGA', case=False, na=False),
-            dt_frete_series.str.contains('COMPLEMENTO DE FRETE', case=False, na=False),
-            dt_frete_series.str.contains('PERNOITE', case=False, na=False)
+            dt_frete_series.str.match(r'^\d+$', na=False),  # 1. Se for APENAS números
+            dt_frete_series.str.upper() == 'DIARIA NO CLIENTE', # 2.
+            dt_frete_series.str.startswith('REENTREGA', na=False), # 3.
+            dt_frete_series.str.upper() == 'DIARIA PARADO', # 4.
+            dt_frete_series.str.startswith('COMPLEMENTO', na=False), # 5.
+            dt_frete_series.str.startswith('AVARIAS', na=False), # 6.
+            dt_frete_series.str.upper() == 'PEDAGIO', # 7.
+            dt_frete_series.str.upper() == 'PERNOITE', # 8.
+            dt_frete_series.str.upper().str.contains('COLETA DE PALETE|COLETA DE PALLETE', na=False, regex=True) # 3. (continuação)
         ]
         
-        # Define os resultados correspondentes a cada condição
         choices = [
             'Frete',
-            'Descarga',
             'Diária no cliente',
+            'Reentrega',
             'Diária parado',
+            'Complemento',
             'Descarga',
             'Pedágio',
-            'Reentrega',
-            'Complemento',
-            'Diária no cliente'
+            'Diária no cliente', # Regra 8 leva ao mesmo resultado da 2
+            'Descarga'         # Regra 3 (continuação)
         ]
         
-        # Aplica a lógica e preenche a coluna 'Serviço'
-        self.df['Serviço'] = np.select(conditions, choices, default='')
-        logger.info("Coluna 'Serviço' preenchida.")
+        # Aplica as regras, preenchendo onde o 'Serviço' ainda está vazio
+        self.df['Serviço'] = np.select(conditions, choices, default=self.df['Serviço'])
+        logger.info("Coluna 'Serviço' preenchida com base nas regras definidas.")
+
+    def _treat_dt_frete_column(self):
+        """(Tratamento) Substitui valores não numéricos em 'DT Frete' por '-'."""
+        logger.info("Limpando a coluna 'DT Frete', substituindo textos por '-'.")
+        # Cria uma máscara booleana: True para linhas onde 'DT Frete' NÃO é puramente numérico
+        is_not_numeric = ~self.df['DT Frete'].astype(str).str.match(r'^\d+$', na=False)
+        # Usa .loc para atribuir '-' a essas linhas de forma segura
+        self.df.loc[is_not_numeric, 'DT Frete'] = '-'
+        logger.info("Coluna 'DT Frete' limpa.")
+
+    def _treat_ctrc_column(self):
+        """(Tratamento) Remove o prefixo '2025' da coluna CTRC, se existir."""
+        logger.info("Tratando coluna 'CTRC' para remover prefixo '2025'.")
+        self.df['CTRC'] = self.df['CTRC'].astype(str)
+        self.df['CTRC'] = self.df['CTRC'].apply(lambda x: x[4:] if x.startswith('2025') else x)
+        logger.info("Prefixo '2025' removido da coluna 'CTRC' onde aplicável.")
+
+    def _filter_valor_cte(self):
+        """(Filtro) Remove linhas onde 'Valor CTe' é zero."""
+        logger.info("Removendo linhas onde 'Valor CTe' é 0 ou nulo.")
+        initial_rows = len(self.df)
+        self.df['Valor CTe'] = pd.to_numeric(self.df['Valor CTe'], errors='coerce').fillna(0)
+        self.df = self.df[self.df['Valor CTe'] != 0].reset_index(drop=True)
+        rows_removed = initial_rows - len(self.df)
+        logger.info(f"{rows_removed} linhas foram removidas com 'Valor CTe' igual a 0.")
 
     def process(self):
         """
         Executa o pipeline completo de processamento para o relatório externo.
-
-        Returns:
-            pd.DataFrame: DataFrame processado e limpo, ou None em caso de erro.
         """
+        logger.info("--- INICIANDO ETAPA 5: Processamento do Relatório Externo ---")
         try:
-            logger.info(f"Iniciando o processamento do relatório externo: {self.filepath}")
-            
+            logger.info(f"Lendo o arquivo de relatório: {self.filepath}")
             df = pd.read_excel(self.filepath, header=None, skiprows=REPORT_SKIP_ROWS, engine='xlrd')
             logger.info(f"Arquivo lido, pulando as primeiras {REPORT_SKIP_ROWS} linhas.")
 
@@ -98,51 +112,56 @@ class ReportProcessor:
             new_header = (header_row1 + " " + header_row2).str.strip()
             df.columns = new_header
             df = df.iloc[2:].reset_index(drop=True)
-            logger.info("Cabeçalho consolidado e linhas de cabeçalho removidas.")
+            logger.info("Cabeçalho consolidado e linhas de cabeçalho iniciais removidas.")
 
-            logger.info(f"Selecionando colunas pelos índices: {REPORT_COLUMN_INDICES}")
+            logger.info(f"Selecionando colunas de interesse pelos índices: {REPORT_COLUMN_INDICES}")
             df_selected = df.iloc[:, REPORT_COLUMN_INDICES]
 
-            logger.info(f"Renomeando colunas para: {REPORT_FINAL_COLUMNS}")
+            logger.info("Renomeando colunas para os nomes padronizados.")
             df_selected.columns = REPORT_FINAL_COLUMNS
             self.df = df_selected.copy()
             
-            logger.info("Formatando a coluna 'Emissao' para o formato de data dd/mm/aaaa.")
+            # --- Sequência de Tratamentos ---
+            self._treat_ctrc_column()
+            self._clean_client_column()
+            
+            logger.info("Formatando a coluna 'Emissao' para o formato de data (dd/mm/aaaa).")
             self.df['Emissao'] = pd.to_datetime(self.df['Emissao'], errors='coerce').dt.strftime('%d/%m/%Y')
             
             logger.info("Adicionando e preparando novas colunas: Mês, Transportadora, Serviço.")
             try:
                 locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
             except locale.Error:
-                logger.warning("Locale 'pt_BR.UTF-8' não encontrado. O nome do mês pode ficar em inglês.")
+                logger.warning("Locale 'pt_BR.UTF-8' não disponível. Nomes dos meses podem aparecer em inglês.")
             
             dates = pd.to_datetime(self.df['Emissao'], format='%d/%m/%Y', errors='coerce')
             self.df['Mês'] = dates.dt.strftime('%B').str.capitalize()
             self.df['Transportadora'] = ''
             self.df['Serviço'] = ''
             
-            # Aplica os tratamentos de dados nas colunas 'Cliente' e 'Serviço'
-            self._clean_client_column()
             self._populate_service_column()
-
-            # Reordena as colunas para a estrutura final
+            self._treat_dt_frete_column() # Executado após preencher o serviço
+            self._filter_valor_cte()
+            
+            # --- Reordenação final das colunas ---
             final_column_order = [
                 'Emissao', 'Mês', 'Transportadora', 'CTRC', 'Cliente', 'Serviço',
-                'Senha Ravex', 'DT Frete', # Ordem invertida conforme solicitado
-                'Destino', 'UF', 'Nota Fiscal', 'Valor CTe'
+                'Senha Ravex', 'DT Frete', 'Origem', 'UF Origem', 'Destino', 'UF',
+                'Nota Fiscal', 'Valor CTe'
             ]
             self.df = self.df[final_column_order]
             logger.info("Colunas reordenadas para a estrutura final do relatório.")
             
-            logger.info(f"Processamento do relatório concluído. {len(self.df)} linhas processadas.\n")
+            logger.info(f"--- Processamento do relatório concluído. {len(self.df)} linhas finais. ---\n")
             return self.df
 
         except FileNotFoundError:
-            logger.error(f"Erro: O arquivo de relatório '{self.filepath}' não foi encontrado.")
+            logger.error(f"Erro Crítico: O arquivo de relatório '{self.filepath}' não foi encontrado.")
             return None
-        except IndexError:
-            logger.error("Erro de índice: o arquivo pode não ter as linhas de cabeçalho esperadas ou está vazio.")
+        except IndexError as e:
+            logger.error(f"Erro Crítico de Índice: o relatório pode estar vazio ou com formato inesperado. Erro: {e}")
             return None
         except Exception as e:
             logger.error(f"Ocorreu um erro inesperado ao processar o relatório: {e}")
             return None
+        

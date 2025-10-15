@@ -1,61 +1,51 @@
 # config.py
-# Arquivo de configuração para centralizar parâmetros e constantes do projeto.
+# Arquivo central de configurações para o projeto de processamento de planilhas.
 
 # --- Configurações Gerais ---
 LOG_FILE = 'processamento.log'
 
-# --- Nomes das Colunas (Etapa 1 - Planilha Principal) ---
-COLUNA_CONTA = 'Conta'
-COLUNA_REFERENCIA = 'Referência'
-COLUNA_MONTANTE = 'Montante em moeda interna'
-COLUNA_DATA_DOCUMENTO = 'Data do documento'
+# --- Configurações para a Etapa 1 (DataProcessor) ---
+# Nomes exatos das colunas a serem mantidas após a leitura inicial
 COLUNAS_ETAPA1_PARA_MANTER = [
-    COLUNA_CONTA,
-    COLUNA_REFERENCIA,
-    COLUNA_MONTANTE,
-    COLUNA_DATA_DOCUMENTO,
-    'Data de lançamento',
-    'Data de compensação'
+    'Conta', 'Referência', 'Montante em moeda interna', 
+    'Data do documento', 'Data de lançamento', 'Data de compensação'
 ]
+# Nomes das colunas chave para manipulação
+COLUNA_DATA_DOCUMENTO = 'Data do documento'
+COLUNA_REFERENCIA = 'Referência'
+COLUNA_CONTA = 'Conta'
+COLUNA_MONTANTE = 'Montante em moeda interna'
 
-# --- Mapeamento de Contas (Etapas 2 e 4) ---
+# --- Configurações para a Etapa 2 (DataProcessor) ---
+# Mapeamento do número da conta para o nome da aba intermediária
 CONTAS_MAPEAMENTO_ETAPA2 = {
     302282: '302282 - Bahia',
     303264: '303264 - Ceará',
     303432: '303432 - Pernambuco'
 }
 
+# --- Configurações para a Etapa 4 (DataProcessor) ---
+# Mapeamento do número da conta para o nome da aba final
 CONTAS_MAPEAMENTO_ETAPA4 = {
     302282: 'Bahia',
     303264: 'Ceará',
     303432: 'Pernambuco'
 }
+# Colunas que devem estar presentes nas abas finais da Etapa 4
+COLUNAS_ETAPA4_FINAIS = ['Referência', 'Data de compensação', 'Valor pagamento']
 
-# --- Estrutura das Colunas (Etapa 4) ---
-COLUNAS_ETAPA4_FINAIS = [
-    'Referência',
-    'Data de compensação',
-    'Valor pagamento'
-]
-
-# --- Configurações do Relatório Externo ---
+# --- Configurações para a Etapa 5 (ReportProcessor) ---
+# Caminho do arquivo de relatório a ser processado
 REPORT_FILE_PATH = 'relatorio.xls'
-REPORT_SKIP_ROWS = 6 # Linhas a serem puladas no início do arquivo do relatório
+# Número de linhas a serem puladas no início do arquivo de relatório
+REPORT_SKIP_ROWS = 6
 
-# Índices das colunas a serem extraídas do relatório (baseado na estrutura do arquivo)
-# Corresponde a: Emissão, CTe, Remetente, Pedido, Senha, Destino, UF, Nota N.º, Valor
-REPORT_COLUMN_INDICES = [3, 4, 9, 14, 15, 18, 17, 25, 27]
+# Índices das colunas a serem selecionadas do relatório original.
+# Correspondem a: Emissão, CTe, Remetente, Pedido, Senha, Origem, UF Origem, Destino, UF Destino, N.º Nota, Valor Nota
+REPORT_COLUMN_INDICES = [3, 4, 9, 14, 15, 16, 17, 18, 20, 25, 27]
 
-# Nomes finais para as colunas do relatório após o processamento.
-# Esta lista agora reflete os nomes finais solicitados.
+# Nomes finais para as colunas após a seleção e renomeação
 REPORT_FINAL_COLUMNS = [
-    'Emissao',
-    'CTRC',
-    'Cliente',
-    'DT Frete',
-    'Senha Ravex',
-    'Destino',
-    'UF',
-    'Nota Fiscal',
-    'Valor CTe'
+    'Emissao', 'CTRC', 'Cliente', 'DT Frete', 'Senha Ravex', 'Origem', 
+    'UF Origem', 'Destino', 'UF', 'Nota Fiscal', 'Valor CTe'
 ]
