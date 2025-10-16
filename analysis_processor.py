@@ -27,6 +27,7 @@ class AnalysisProcessor:
         logger.info("Iniciando o cruzamento de dados para preencher a coluna 'Status pgto'.")
         
         df = report_df.copy()
+        # Converte a coluna de junção para um tipo numérico que suporta valores nulos (Int64)
         df['CTRC'] = pd.to_numeric(df['CTRC'], errors='coerce').astype('Int64')
 
         # Mapeamento de transportadora para nome da aba
@@ -38,9 +39,11 @@ class AnalysisProcessor:
         
         # Lista para armazenar os resultados de cada merge
         all_merged_dfs = []
+        # Conjunto para rastrear quais transportadoras foram processadas
         processed_transportadoras = set()
 
         for transportadora, sheet_name in transportadora_to_sheet_map.items():
+            # Isola o subconjunto de dados do relatório para a transportadora atual
             report_subset = df[df['Transportadora'] == transportadora]
             if report_subset.empty:
                 continue
@@ -55,11 +58,18 @@ class AnalysisProcessor:
                 all_merged_dfs.append(report_subset)
                 continue
 
+            # Prepara o DataFrame de lookup para o merge, selecionando apenas as colunas necessárias
             lookup_prepared = lookup_df[['Referência', 'Data de compensação']].copy()
             lookup_prepared['Referência'] = pd.to_numeric(lookup_prepared['Referência'], errors='coerce').astype('Int64')
             
+            # Executa a junção (merge), que é a forma eficiente de fazer o "PROCV"
             merged = pd.merge(report_subset, lookup_prepared, left_on='CTRC', right_on='Referência', how='left')
+
+            # Preenche a coluna 'Status pgto': onde a junção encontrou uma correspondência, usa 'Data de compensação'.
+            # Onde não encontrou (gerando NaT/NaN), preenche com 'Não lançado'.
             merged['Status pgto'] = merged['Data de compensação'].fillna('Não lançado')
+
+            # Remove as colunas auxiliares do merge
             merged.drop(columns=['Referência', 'Data de compensação'], inplace=True)
             all_merged_dfs.append(merged)
         
