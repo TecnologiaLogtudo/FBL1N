@@ -71,15 +71,12 @@ def main(input_file, report_file, output_file):
                     logger.info("Aba 'Dados Relatorio Externo' salva.")
 
                 # --- FASE 5: Geração do relatório final ---
-                if analyzed_report_df is not None and not analyzed_report_df.empty:
+                if analyzed_report_df is not None and not analyzed_report_df.empty:                    
                     logger.info("--- INICIANDO GERAÇÃO DO RELATÓRIO FINAL ---")
                     report_generator = FinalReportGenerator(analyzed_report_df)
-                    final_sheets = report_generator.generate_report()
-                    
-                    for sheet_name, df in final_sheets.items():
-                        if df is not None and not df.empty:
-                            df.to_excel(writer, sheet_name=sheet_name, index=True)
-                            logger.info(f"Aba final '{sheet_name}' salva.")
+                    # Passa o 'writer' para a função, que adicionará a nova aba
+                    final_sheets = report_generator.generate_report(writer)
+                    logger.info("Aba final 'Resumo Consolidado' salva com formatação executiva.")
 
             logger.info(f"Arquivo multipágina salvo com sucesso em: '{output_file}'")
             print(f"\n✅ SUCESSO: Arquivo salvo em: {output_file}")
@@ -87,8 +84,8 @@ def main(input_file, report_file, output_file):
             logger.error(f"Não foi possível salvar o arquivo de saída. Erro: {e}", exc_info=True)
             print(f"\n❌ ERRO: {e}")
     else:
-        logger.warning("Nenhum dado foi processado na Etapa 1. O arquivo de saída não será gerado.")
-        print("\n⚠️  AVISO: Nenhum dado foi processado na Etapa 1.")
+            logger.warning("Nenhum dado foi processado na Etapa 1. O arquivo de saída não será gerado.")
+            print("\n⚠️  AVISO: Nenhum dado foi processado na Etapa 1.")
     
     logger.info("Fim do processamento.")
     logger.info("==================================================\n")
