@@ -15,6 +15,7 @@ def main(input_file, report_file, output_file):
     from data_processor import DataProcessor
     from report_processor import ReportProcessor
     from analysis_processor import AnalysisProcessor
+    from final_report_generator import FinalReportGenerator
 
     # --- FASE 1: Processamento do arquivo base ---
     data_proc = DataProcessor(input_file)
@@ -69,21 +70,40 @@ def main(input_file, report_file, output_file):
                     analyzed_report_df.to_excel(writer, sheet_name='Dados Relatorio Externo', index=False)
                     logger.info("Aba 'Dados Relatorio Externo' salva.")
 
+                # --- FASE 5: Geração do relatório final ---
+                if analyzed_report_df is not None and not analyzed_report_df.empty:
+                    logger.info("--- INICIANDO GERAÇÃO DO RELATÓRIO FINAL ---")
+                    report_generator = FinalReportGenerator(analyzed_report_df)
+                    final_sheets = report_generator.generate_report()
+                    
+                    for sheet_name, df in final_sheets.items():
+                        if df is not None and not df.empty:
+                            df.to_excel(writer, sheet_name=sheet_name, index=True)
+                            logger.info(f"Aba final '{sheet_name}' salva.")
+
             logger.info(f"Arquivo multipágina salvo com sucesso em: '{output_file}'")
+            print(f"\n✅ SUCESSO: Arquivo salvo em: {output_file}")
         except Exception as e:
             logger.error(f"Não foi possível salvar o arquivo de saída. Erro: {e}", exc_info=True)
+            print(f"\n❌ ERRO: {e}")
     else:
         logger.warning("Nenhum dado foi processado na Etapa 1. O arquivo de saída não será gerado.")
+        print("\n⚠️  AVISO: Nenhum dado foi processado na Etapa 1.")
     
     logger.info("Fim do processamento.")
     logger.info("==================================================\n")
+    print("\n🏁 Processamento concluído.")
 
 if __name__ == "__main__":
     from config import REPORT_FILE_PATH
     
     input_filepath = 'base_de_dados.xlsx'
     report_filepath = REPORT_FILE_PATH
-    output_filepath = 'dados_estruturados.xlsx'
+    output_filepath = 'dados_estruturados1.xlsx'
+    
+    print(f"🚀 Iniciando processamento...")
+    print(f"   - Arquivo de entrada: {input_filepath}")
+    print(f"   - Relatório externo: {report_filepath}")
+    print(f"   - Arquivo de saída: {output_filepath}")
     
     main(input_filepath, report_filepath, output_filepath)
-

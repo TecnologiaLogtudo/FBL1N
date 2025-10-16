@@ -19,3 +19,6 @@ def setup_logging():
     return logging.getLogger(__name__)
 
 logger = setup_logging()
+
+def format_currency(x): return f"R$ {x:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+def format_percentage(x): return f"{x*100:.2f}%"

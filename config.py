@@ -49,3 +49,9 @@ REPORT_FINAL_COLUMNS = [
     'Emissao', 'CTRC', 'Cliente', 'DT Frete', 'Senha Ravex', 'Origem', 
     'UF Origem', 'Destino', 'UF', 'Nota Fiscal', 'Valor CTe'
 ]
+
+# --- Configurações para o relatório final ---
+SERVICOS_ESPERADOS = [
+    'Complemento', 'Descarga', 'Diária no cliente', 'Diária parado', 
+    'Frete', 'Pedágio', 'Reentrega'
+]
