@@ -96,7 +96,7 @@ if __name__ == "__main__":
     
     input_filepath = 'base_de_dados.xlsx'
     report_filepath = REPORT_FILE_PATH
-    output_filepath = 'dados_estruturados1.xlsx'
+    output_filepath = 'dados_estruturados.xlsx'
     
     print(f"🚀 Iniciando processamento...")
     print(f"   - Arquivo de entrada: {input_filepath}")
