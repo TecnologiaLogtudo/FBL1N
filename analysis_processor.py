@@ -74,7 +74,7 @@ class AnalysisProcessor:
 
     def _populate_payment_values(self, report_df, final_sheets_data):
         """
-        (Análise) Preenche as colunas 'Valor pago', 'Valor a receber' e 'diferença'.
+        (Análise) Preenche as colunas 'Valor pago', 'Valor recebido' e 'diferença'.
         
         Args:
             report_df (pd.DataFrame): DataFrame do relatório (já com 'Status pgto' preenchido).
@@ -83,7 +83,7 @@ class AnalysisProcessor:
         Returns:
             pd.DataFrame: DataFrame do relatório com as colunas de pagamento preenchidas.
         """
-        logger.info("Iniciando o preenchimento das colunas 'Valor pago', 'Valor a receber' e 'diferença'.")
+        logger.info("Iniciando o preenchimento das colunas 'Valor pago', 'Valor recebido' e 'diferença'.")
         df = report_df.copy()
 
         # Mapeamento de transportadora para nome da aba
@@ -93,8 +93,8 @@ class AnalysisProcessor:
             'Logtudo Pernambuco': 'Pernambuco'
         }
         
-        # Prepara a coluna 'Valor pago' para ser do tipo objeto para aceitar texto ('Não pago') e números
-        df['Valor pago'] = df['Valor pago'].astype(object)
+        # Garante que as colunas de valor sejam do tipo 'object' para aceitar textos e números
+        df[['Valor pago', 'Valor recebido']] = df[['Valor pago', 'Valor recebido']].astype(object)
 
         # 1. Preenchimento de 'Valor pago' (lógica similar ao PROCV)
         for transportadora, sheet_name in transportadora_to_sheet_map.items():
@@ -108,21 +108,34 @@ class AnalysisProcessor:
             
             # Identifica as linhas correspondentes à transportadora atual
             mask = df['Transportadora'] == transportadora
-            # Aplica o mapeamento e preenche com 'Não pago' onde não houver correspondência
-            df.loc[mask, 'Valor pago'] = df.loc[mask, 'CTRC'].map(lookup_map).fillna('Não pago')
+            # Aplica o mapeamento e preenche com 'Não lançado' onde não houver correspondência
+            df.loc[mask, 'Valor pago'] = df.loc[mask, 'CTRC'].map(lookup_map).fillna('Não lançado')
         
         logger.info("Coluna 'Valor pago' preenchida.")
 
-        # 2. Preenchimento de 'Valor a receber'
-        df['Valor a receber'] = df['Valor CTe']
-        logger.info("Coluna 'Valor a receber' preenchida com os valores de 'Valor CTe'.")
+        # 2. Preenchimento de 'Valor recebido' com base no módulo de 'Valor pago'
+        logger.info("Preenchendo a coluna 'Valor recebido' com base no módulo de 'Valor pago'.")
+        
+        # Converte 'Valor pago' para numérico, transformando textos (ex: 'Não lançado') em NaN
+        valor_pago_numeric = pd.to_numeric(df['Valor pago'], errors='coerce')
+        
+        # Calcula o valor absoluto (módulo) onde 'Valor pago' é numérico
+        df['Valor recebido'] = valor_pago_numeric.abs()
+        
+        # Onde o valor original não era numérico (resultando em NaN), preenche com '-'
+        df['Valor recebido'] = df['Valor recebido'].fillna('-')
+        logger.info("Coluna 'Valor recebido' preenchida.")
 
         # 3. Cálculo da 'diferença'
-        # Converte 'Valor pago' para numérico temporariamente, tratando 'Não pago' como 0
-        valor_pago_numeric = pd.to_numeric(df['Valor pago'], errors='coerce').fillna(0)
+        logger.info("Calculando a coluna 'diferença' ('Valor CTe' - 'Valor recebido').")
+        # Converte 'Valor CTe' para numérico, tratando erros e preenchendo nulos com 0.
         valor_cte_numeric = pd.to_numeric(df['Valor CTe'], errors='coerce').fillna(0)
-        df['diferença'] = valor_cte_numeric - valor_pago_numeric
-        logger.info("Coluna 'diferença' calculada ('Valor CTe' - 'Valor pago').")
+        # Converte 'Valor recebido' para numérico, tratando o texto '-' como 0.
+        valor_recebido_numeric = pd.to_numeric(df['Valor recebido'], errors='coerce').fillna(0)
+        
+        # Realiza a subtração para calcular a diferença.
+        df['diferença'] = valor_cte_numeric - valor_recebido_numeric
+        logger.info("Coluna 'diferença' calculada com sucesso.")
 
         return df
 
@@ -144,8 +157,8 @@ class AnalysisProcessor:
             logger.warning("Dados de lookup (abas finais) estão vazios. A análise será limitada.")
             # Mesmo sem lookup, ainda podemos preencher as outras colunas
             report_df['Status pgto'] = 'Não lançado'
-            report_df['Valor pago'] = 'Não pago'
-            report_df['Valor a receber'] = report_df['Valor CTe']
+            report_df['Valor pago'] = 'Não lançado'
+            report_df['Valor recebido'] = '-' # Se não há lookup, não há valor pago
             report_df['diferença'] = pd.to_numeric(report_df['Valor CTe'], errors='coerce').fillna(0)
             return report_df
 

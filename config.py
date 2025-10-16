@@ -42,7 +42,7 @@ REPORT_SKIP_ROWS = 6
 
 # Índices das colunas a serem selecionadas do relatório original.
 # Correspondem a: Emissão, CTe, Remetente, Pedido, Senha, Origem, UF Origem, Destino, UF Destino, N.º Nota, Valor Nota
-REPORT_COLUMN_INDICES = [3, 4, 9, 14, 15, 16, 17, 18, 20, 25, 27]
+REPORT_COLUMN_INDICES = [3, 4, 9, 14, 15, 16, 17, 18, 20, 25, 35]
 
 # Nomes finais para as colunas após a seleção e renomeação
 REPORT_FINAL_COLUMNS = [
