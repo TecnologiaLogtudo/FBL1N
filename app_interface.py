@@ -372,8 +372,8 @@ class App(ctk.CTk):
 
         elif file_type == "pdf":
             try:
-                from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-                from reportlab.lib.pagesizes import letter
+                from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
+                from reportlab.lib.pagesizes import letter, landscape
                 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
                 from reportlab.lib.units import inch
                 from reportlab.lib import colors
@@ -388,62 +388,97 @@ class App(ctk.CTk):
                 if not dest_path:
                     return
 
-                df_summary = pd.read_excel(OUTPUT_FILE_PATH, sheet_name='Resumo Consolidado', skiprows=2)
+                # --- Carregamento dos Dados ---
+                # Tabela 1 (A3:E27)
+                df_summary = pd.read_excel(OUTPUT_FILE_PATH, sheet_name='Resumo Consolidado', skiprows=2, usecols="A:E")
                 
-                if df_summary.empty:
+                # Tabela 2 (G3:T*)
+                # Usamos read_excel para pegar os nomes das colunas corretamente a partir da linha 3 (skiprows=2)
+                # e depois selecionamos as colunas de G em diante.
+                df_all = pd.read_excel(OUTPUT_FILE_PATH, sheet_name='Resumo Consolidado', skiprows=2)
+                df_details = df_all.iloc[:, 6:] # Colunas de G em diante
+
+                if df_summary.empty and df_details.empty:
                     messagebox.showwarning("Dados Vazios", "Não há dados na aba 'Resumo Consolidado' para gerar o PDF.")
                     return
 
-                doc = SimpleDocTemplate(dest_path, pagesize=letter)
+                # --- Construção do PDF ---
+                # Usar landscape para todo o documento para acomodar a tabela maior.
+                doc = SimpleDocTemplate(dest_path, pagesize=landscape(letter))
                 elements = []
                 styles = getSampleStyleSheet()
-                title_style = ParagraphStyle(
-                    'CustomTitle',
-                    parent=styles['Heading1'],
-                    fontSize=18,
-                    spaceAfter=30,
-                    alignment=1, # 1 = center
-                    textColor=colors.darkblue
-                )
-
+                
+                # --- Título Principal ---
+                title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], fontSize=18, spaceAfter=20, alignment=1, textColor=colors.darkblue)
                 elements.append(Paragraph("RESUMO CONSOLIDADO DE TRANSPORTES", title_style))
-                elements.append(Spacer(1, 12))
 
-                df_display = df_summary.copy()
-                monetary_cols = ['Não compensado', 'Não lançado', 'Total Geral']
-                for col in monetary_cols:
-                    if col in df_display.columns:
-                        df_display[col] = df_display[col].apply(lambda x: f"R$ {x:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+                # --- Página 1: Tabela de Resumo ---
+                if not df_summary.empty:
+                    # FIX: Os dados já vêm formatados como string do Excel. A conversão para float falha.
+                    # Apenas garantimos que tudo seja string para o reportlab.
+                    df_summary = df_summary.fillna('').astype(str)
+                    table_data_summary = [df_summary.columns.tolist()] + df_summary.values.tolist()
+                    
+                    table_summary = Table(table_data_summary, colWidths=[1.8*inch, 1.8*inch, 1.5*inch, 1.5*inch, 1.5*inch])
+                    style_summary = TableStyle([
+                        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#366092')),
+                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                        ('FONTSIZE', (0, 0), (-1, 0), 10),
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#DDEBF7')),
+                        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                    ])
+                    table_summary.setStyle(style_summary)
+                    elements.append(table_summary)
 
-                table_data = [df_display.columns.tolist()] + df_display.values.tolist()
-                
-                table = Table(table_data, colWidths=[1.2*inch, 1.2*inch, 1.2*inch, 1.2*inch, 1.2*inch])
-                style = TableStyle([
-                    ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                    ('FONTSIZE', (0, 0), (-1, 0), 10),
-                    ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                    ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-                    ('GRID', (0, 0), (-1, -1), 1, colors.black),
-                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'), 
-                ])
-                table.setStyle(style)
-                
-                elements.append(table)
-                elements.append(Spacer(1, 20))
+                # --- Página 2 em diante: Tabela de Detalhes ---
+                if not df_details.empty:
+                    elements.append(PageBreak())
 
-                from datetime import datetime
-                footer_text = f"Relatório gerado em: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}"
-                elements.append(Paragraph(footer_text, styles['Normal']))
+                    # FIX: Garantir que todos os dados sejam strings
+                    df_details = df_details.fillna('').astype(str)
+                    table_data_details = [df_details.columns.tolist()] + df_details.values.tolist()
+                    
+                    # Colunas com larguras ajustadas para paisagem
+                    col_widths_details = [0.8*inch, 0.7*inch, 1.2*inch, 0.8*inch, 1.5*inch, 1*inch, 0.8*inch, 0.8*inch, 1*inch, 0.8*inch, 0.8*inch, 0.8*inch, 0.8*inch, 0.8*inch]
+                    
+                    table_details = Table(table_data_details, colWidths=col_widths_details[:len(df_details.columns)])
+                    style_details = TableStyle([
+                        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4F81BD')),
+                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                        ('FONTSIZE', (0, 0), (-1, 0), 8),
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
+                        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#DCE6F1')),
+                        ('GRID', (0, 0), (-1, -1), 1, colors.darkgrey),
+                        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                    ])
+                    table_details.setStyle(style_details)
+                    
+                    elements.append(Paragraph("DETALHES DE PENDÊNCIAS", styles['Heading2']))
+                    elements.append(Spacer(1, 12))
+                    elements.append(table_details)
+
+                # --- Rodapé e Geração do PDF ---
+                def add_footer(canvas, doc):
+                    canvas.saveState()
+                    from datetime import datetime
+                    footer_text = f"Relatório gerado em: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}"
+                    canvas.setFont('Helvetica', 9)
+                    canvas.drawString(inch, 0.5 * inch, footer_text)
+                    canvas.restoreState()
+
+                doc.build(elements, onFirstPage=add_footer, onLaterPages=add_footer)
                 
-                doc.build(elements)
                 logger.success(f"Arquivo .pdf exportado com sucesso para: {dest_path}")
                 messagebox.showinfo("Exportação Bem-sucedida", f"O arquivo PDF foi salvo em:\n{dest_path}")
 
             except Exception as e:
-                logger.error(f"Erro ao exportar arquivo .pdf: {e}")
+                logger.error(f"Erro ao exportar arquivo .pdf: {e}", exc_info=True)
                 messagebox.showerror("Erro de Exportação", f"Não foi possível exportar o arquivo .PDF.\n\nErro: {e}")
 
 # --- Ponto de Entrada da Aplicação ---
