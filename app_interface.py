@@ -7,6 +7,7 @@ import pandas as pd
 import threading
 import os
 import sys
+import logging
 
 # Adiciona o diretório atual ao sys.path para garantir que os imports funcionem
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -20,6 +21,26 @@ except ImportError as e:
     print(f"Erro ao importar módulos: {e}")
     print("Certifique-se de que main.py, utils.py e config.py estão no mesmo diretório.")
     sys.exit()
+
+class TkinterLogHandler(logging.Handler):
+    """Handler de logging customizado que redireciona logs para um widget de texto do Tkinter."""
+    def __init__(self, text_widget):
+        super().__init__()
+        self.text_widget = text_widget
+
+    def emit(self, record):
+        msg = self.format(record)
+        # Determina o tipo de mensagem com base no nível do log
+        msg_type = "info"
+        if record.levelno == logging.SUCCESS:
+            msg_type = "success"
+        elif record.levelno == logging.ERROR or record.levelno == logging.CRITICAL:
+            msg_type = "error"
+        elif record.levelno == logging.WARNING:
+            msg_type = "warning"
+        
+        # A UI deve ser atualizada na thread principal
+        self.text_widget.after(0, self.text_widget.log, msg, msg_type)
 
 class App(ctk.CTk):
     """
@@ -49,11 +70,6 @@ class App(ctk.CTk):
         self.log_text.tag_config(msg_type, foreground=color)
         self.log_text.see(tk.END)
         self.log_text.config(state=tk.DISABLED)
-        # Também loga para o arquivo de log do projeto
-        if msg_type == "error":
-            logger.error(message)
-        else:
-            logger.info(message)
 
     def update_status(self, message, color="white"):
         """Atualiza o rótulo de status."""
@@ -70,7 +86,7 @@ class App(ctk.CTk):
         )
         if filename:
             path_variable.set(filename)
-            self.log(f"Arquivo selecionado: {filename}", "info")
+            logger.info(f"Arquivo selecionado: {filename}")
 
     # ===================================================================
     # MÉTODO PRINCIPAL DE CONSTRUÇÃO DA UI (setup_ui)
@@ -171,7 +187,20 @@ class App(ctk.CTk):
 
         # Agora os métodos já existem, então a chamagem é segura
         self.setup_ui()
-        self.log("Painel de Controle iniciado. Pronto para operação.", "success")
+
+        # Configura o handler de logging para a UI
+        # Adiciona um novo nível de log para "success"
+        logging.SUCCESS = 25  # Entre INFO (20) e WARNING (30)
+        logging.addLevelName(logging.SUCCESS, "SUCCESS")
+
+        # Cria o handler e o adiciona ao logger raiz
+        tkinter_handler = TkinterLogHandler(self)
+        logging.getLogger().addHandler(tkinter_handler)
+        
+        # Define um método de atalho para o novo nível
+        logging.Logger.success = lambda self, msg, *args, **kwargs: self.log(logging.SUCCESS, msg, *args, **kwargs)
+
+        logger.success("Painel de Controle iniciado. Pronto para operação.")
         self.update_status("Pronto", "green")
 
     # ===================================================================
@@ -198,8 +227,8 @@ class App(ctk.CTk):
     def run_process_wrapper(self):
         """Envolve a chamada da função principal para capturar erros."""
         try:
-            self.log("==================================================", "success")
-            self.log("Iniciando novo ciclo de processamento via interface.", "success")
+            logger.success("==================================================")
+            logger.success("Iniciando novo ciclo de processamento via interface.")
             self.update_status("Executando...", "orange")
             
             input_file = self.input_file_path.get()
@@ -208,21 +237,21 @@ class App(ctk.CTk):
 
             run_main_process(input_file, report_file, output_file)
             
-            self.log("Processamento concluído com sucesso!", "success")
+            logger.success("Processamento concluído com sucesso!")
             self.update_status("Concluído com Sucesso", "green")
             self.load_data_for_view()
             self.export_frame.grid(row=3, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
             messagebox.showinfo("Sucesso", "O processamento foi concluído e os resultados estão disponíveis para visualização e exportação.")
 
         except Exception as e:
-            self.log(f"ERRO CRÍTICO DURANTE O PROCESSAMENTO: {str(e)}", "error")
-            self.log("Verifique os logs detalhados para mais informações.", "error")
+            logger.error(f"ERRO CRÍTICO DURANTE O PROCESSAMENTO: {str(e)}")
+            logger.error("Verifique os logs detalhados para mais informações.")
             self.update_status("Erro", "red")
             messagebox.showerror("Erro de Processamento", f"Ocorreu um erro durante a execução:\n\n{str(e)}")
         finally:
             self.progress_bar.grid_forget() 
             self.execute_button.configure(state=tk.NORMAL)
-            self.log("==================================================\n", "success")
+            logger.success("==================================================\n")
 
     def validate_inputs(self):
         """Valida se os arquivos de entrada existem."""
@@ -230,11 +259,11 @@ class App(ctk.CTk):
         report_file = self.report_file_path.get()
 
         if not os.path.exists(input_file):
-            self.log(f"ERRO: Arquivo de entrada não encontrado: {input_file}", "error")
+            logger.error(f"ERRO: Arquivo de entrada não encontrado: {input_file}")
             messagebox.showerror("Erro de Arquivo", f"O arquivo de entrada não foi encontrado:\n{input_file}")
             return False
         if not os.path.exists(report_file):
-            self.log(f"ERRO: Arquivo de relatório não encontrado: {report_file}", "error")
+            logger.error(f"ERRO: Arquivo de relatório não encontrado: {report_file}")
             messagebox.showerror("Erro de Arquivo", f"O arquivo de relatório não foi encontrado:\n{report_file}")
             return False
         return True
@@ -245,16 +274,21 @@ class App(ctk.CTk):
             df_summary = pd.read_excel(OUTPUT_FILE_PATH, sheet_name='Resumo Consolidado', skiprows=2)
             if not df_summary.empty:
                 self.display_dataframe(self.summary_tree, df_summary)
-                self.log("Tabela 'Resumo Consolidado' carregada para visualização.", "info")
+                logger.info("Tabela 'Resumo Consolidado' carregada para visualização.")
 
-            df_details = pd.read_excel(OUTPUT_FILE_PATH, sheet_name='Resumo Consolidado', skiprows=2, header=None, skipcols=6)
+            # Carrega a planilha, pula as 2 primeiras linhas, sem cabeçalho
+            df_details_full = pd.read_excel(OUTPUT_FILE_PATH, sheet_name='Resumo Consolidado', skiprows=2, header=None)
+            
+            # Seleciona as colunas da 7ª em diante (índice 6)
+            df_details = df_details_full.iloc[:, 6:]
+
             if not df_details.empty:
                 detail_headers = ['Emissão', 'Mês', 'Transportadora', 'CTRC', 'Cliente', 'Serviço', 'Senha Ravex', 'DT Frete', 'Destino', 'Nota fiscal', 'Status Pgto', 'Valor CTe', 'Valor pago', 'Valor recebido']
                 df_details.columns = detail_headers[:len(df_details.columns)]
                 self.display_dataframe(self.details_tree, df_details)
-                self.log("Tabela 'Detalhes de Pendências' carregada para visualização.", "info")
+                logger.info("Tabela 'Detalhes de Pendências' carregada para visualização.")
         except Exception as e:
-            self.log(f"Não foi possível carregar os dados para visualização: {e}", "error")
+            logger.error(f"Não foi possível carregar os dados para visualização: {e}")
 
     def display_dataframe(self, tree, df):
         """Exibe um DataFrame em um ttk.Treeview."""
@@ -293,7 +327,7 @@ class App(ctk.CTk):
                 except Exception as e:
                     # Se algo der errado deixo a coluna como está (texto original)
                     # e aviso no log
-                    self.log(f"Aviso: Não foi possível formatar a coluna '{col}'. Erro: {e}", "error")
+                    logger.error(f"Aviso: Não foi possível formatar a coluna '{col}'. Erro: {e}")
                     # Tenta pelo menos limpar valores nulos para não quebrar a exibição
                     df_display[col] = df_display[col].fillna('')
         
@@ -317,10 +351,10 @@ class App(ctk.CTk):
                 if dest_path:
                     import shutil
                     shutil.copy(OUTPUT_FILE_PATH, dest_path)
-                    self.log(f"Arquivo .xlsx exportado com sucesso para: {dest_path}", "success")
+                    logger.success(f"Arquivo .xlsx exportado com sucesso para: {dest_path}")
                     messagebox.showinfo("Exportação Bem-sucedida", f"O arquivo Excel foi salvo em:\n{dest_path}")
             except Exception as e:
-                self.log(f"Erro ao exportar arquivo .xlsx: {e}", "error")
+                logger.error(f"Erro ao exportar arquivo .xlsx: {e}")
                 messagebox.showerror("Erro de Exportação", f"Não foi possível exportar o arquivo .xlsx.\n\nErro: {e}")
 
         elif file_type == "pdf":
@@ -392,11 +426,11 @@ class App(ctk.CTk):
                 elements.append(Paragraph(footer_text, styles['Normal']))
                 
                 doc.build(elements)
-                self.log(f"Arquivo .pdf exportado com sucesso para: {dest_path}", "success")
+                logger.success(f"Arquivo .pdf exportado com sucesso para: {dest_path}")
                 messagebox.showinfo("Exportação Bem-sucedida", f"O arquivo PDF foi salvo em:\n{dest_path}")
 
             except Exception as e:
-                self.log(f"Erro ao exportar arquivo .pdf: {e}", "error")
+                logger.error(f"Erro ao exportar arquivo .pdf: {e}")
                 messagebox.showerror("Erro de Exportação", f"Não foi possível exportar o arquivo .PDF.\n\nErro: {e}")
 
 # --- Ponto de Entrada da Aplicação ---

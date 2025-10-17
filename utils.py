@@ -12,8 +12,7 @@ def setup_logging():
         level=logging.INFO,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         handlers=[
-            logging.FileHandler("processamento.log"),
-            logging.StreamHandler(sys.stdout)
+            logging.FileHandler("processamento.log")
         ]
     )
     return logging.getLogger(__name__)
