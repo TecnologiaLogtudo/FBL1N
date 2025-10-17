@@ -284,22 +284,37 @@ class App(ctk.CTk):
     def load_data_for_view(self):
         """Carrega os dados do arquivo de saída para as abas de visualização."""
         try:
-            df_summary = pd.read_excel(OUTPUT_FILE_PATH, sheet_name='Resumo Consolidado', skiprows=2)
+            # 1. Resumo Consolidado (A3:E27)
+            # O skiprows=2 faz começar da linha 3. usecols="A:E" limita as colunas.
+            # nrows=25 lê 25 linhas de dados, que corresponde ao intervalo de 3 a 27.
+            df_summary = pd.read_excel(OUTPUT_FILE_PATH, sheet_name='Resumo Consolidado', skiprows=2, usecols="A:E", nrows=25)
             if not df_summary.empty:
                 self.display_dataframe(self.summary_tree, df_summary)
-                logger.info("Tabela 'Resumo Consolidado' carregada para visualização.")
+                logger.info("Tabela 'Resumo Consolidado' carregada para visualização (A3:E27).")
 
+            # 2. Detalhes de Pendências (G3:T?)
             # Carrega a planilha, pula as 2 primeiras linhas, sem cabeçalho
             df_details_full = pd.read_excel(OUTPUT_FILE_PATH, sheet_name='Resumo Consolidado', skiprows=2, header=None)
             
-            # Seleciona as colunas da 7ª em diante (índice 6)
-            df_details = df_details_full.iloc[:, 6:]
+            # Seleciona as colunas da 7ª (G) em diante
+            df_details_raw = df_details_full.iloc[:, 6:]
 
-            if not df_details.empty:
-                detail_headers = ['Emissão', 'Mês', 'Transportadora', 'CTRC', 'Cliente', 'Serviço', 'Senha Ravex', 'DT Frete', 'Destino', 'Nota fiscal', 'Status Pgto', 'Valor CTe', 'Valor pago', 'Recebido/A receber']
-                df_details.columns = detail_headers[:len(df_details.columns)]
+            if not df_details_raw.empty:
+                # Define os cabeçalhos e remove a linha de cabeçalho dos dados
+                all_detail_headers = ['Emissão', 'Mês', 'Transportadora', 'CTRC', 'Cliente', 'Serviço', 'Senha Ravex', 'DT Frete', 'Destino', 'Nota fiscal', 'Status Pgto', 'Valor CTe', 'Valor pago', 'Recebido/A receber']
+                df_details_raw.columns = all_detail_headers[:len(df_details_raw.columns)]
+                # A primeira linha de dados é uma duplicata do cabeçalho, então a removemos.
+                df_details_raw = df_details_raw.iloc[1:].reset_index(drop=True)
+
+                # Colunas desejadas para a visualização, conforme solicitado
+                cols_to_display = ['Emissão', 'Mês', 'Transportadora', 'CTRC', 'Serviço', 'Valor CTe', 'Status Pgto', 'Valor pago', 'Recebido/A receber']
+                
+                # Garante que apenas colunas existentes sejam selecionadas para evitar erros
+                existing_cols = [col for col in cols_to_display if col in df_details_raw.columns]
+                df_details = df_details_raw[existing_cols]
+
                 self.display_dataframe(self.details_tree, df_details)
-                logger.info("Tabela 'Detalhes de Pendências' carregada para visualização.")
+                logger.info("Tabela 'Detalhes de Pendências' carregada para visualização com colunas selecionadas.")
         except Exception as e:
             logger.error(f"Não foi possível carregar os dados para visualização: {e}")
 
@@ -325,23 +340,25 @@ class App(ctk.CTk):
         # Cria uma cópia para manipulação, não alterando o original
         df_display = df.copy()
 
-        # Lista das colunas que esperamos valores monetários
-        monetary_cols = ['Não compensado', 'Não lançado', 'Total Geral']
+        # Lista expandida de colunas que podem conter valores monetários
+        monetary_cols = ['Não compensado', 'Não lançado', 'Total Geral', 'Valor CTe', 'Valor pago', 'Recebido/A receber']
         
         for col in monetary_cols:
             if col in df_display.columns:
                 try:
-                    # Tenta converter a coluna para numérico.
-                    # Erros e células vazias (NaN) se tornam 0.0
-                    df_display[col] = pd.to_numeric(df_display[col], errors='coerce').fillna(0.0)
+                    # Garante que a coluna seja tratada como string para limpeza
+                    s = df_display[col].astype(str)
                     
-                    # Agora que é um número, aplica a formatação para string
-                    df_display[col] = df_display[col].apply(lambda x: f"R$ {x:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+                    # Limpa a string de formatação monetária (R$, .,)
+                    s = s.str.replace("R$", "", regex=False).str.replace(".", "", regex=False).str.replace(",", ".", regex=False).str.strip()
+                    
+                    # Converte para numérico, tratando erros e preenchendo com 0
+                    numeric_values = pd.to_numeric(s, errors='coerce').fillna(0.0)
+                    
+                    # Aplica a formatação monetária para exibição
+                    df_display[col] = numeric_values.apply(lambda x: f"R$ {x:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
                 except Exception as e:
-                    # Se algo der errado deixo a coluna como está (texto original)
-                    # e aviso no log
-                    logger.error(f"Aviso: Não foi possível formatar a coluna '{col}'. Erro: {e}")
-                    # Tenta pelo menos limpar valores nulos para não quebrar a exibição
+                    logger.error(f"Aviso: Não foi possível formatar a coluna monetária '{col}'. Erro: {e}")
                     df_display[col] = df_display[col].fillna('')
         
         # Insere os dados no Treeview linha por linha
