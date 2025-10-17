@@ -6116,3 +6116,642 @@ Iniciando a gravação do arquivo de saída: 'dados_estruturados.xlsx'
 2025-10-17 11:11:44,634 - utils - SUCCESS - ==================================================
 
 2025-10-17 11:11:49,324 - utils - SUCCESS - Arquivo .pdf exportado com sucesso para: C:/Users/felip/Downloads/relatorio_final.pdf
+2025-10-17 11:23:25,222 - utils - SUCCESS - Painel de Controle iniciado. Pronto para operação.
+2025-10-17 11:23:31,512 - utils - INFO - Arquivo selecionado: C:/Users/felip/Downloads/FBL LOG TUDO (1).XLSX
+2025-10-17 11:23:34,183 - utils - INFO - Arquivo selecionado: C:/Users/felip/Downloads/relatorio (4).xls
+2025-10-17 11:23:34,899 - utils - SUCCESS - ==================================================
+2025-10-17 11:23:34,920 - utils - SUCCESS - Iniciando novo ciclo de processamento via interface.
+2025-10-17 11:23:34,977 - utils - STAGE - ==================================================
+2025-10-17 11:23:34,978 - utils - STAGE - Iniciando novo ciclo de processamento.
+2025-10-17 11:23:34,997 - utils - STAGE - FASE 1: Processando arquivo base...
+2025-10-17 11:23:34,998 - utils - INFO - --- INICIANDO ETAPA 1: Processamento da Planilha Principal ---
+2025-10-17 11:23:35,000 - utils - INFO - Iniciando a leitura do arquivo principal: C:/Users/felip/Downloads/FBL LOG TUDO (1).XLSX
+2025-10-17 11:23:44,140 - utils - INFO - Arquivo principal carregado com sucesso. 37768 linhas encontradas.
+
+2025-10-17 11:23:44,141 - utils - INFO - Etapa 1: Filtrando por data (removendo vazios e ano 2023).
+2025-10-17 11:23:44,159 - utils - INFO -   - 1 linhas removidas por data vazia.
+2025-10-17 11:23:44,191 - utils - INFO -   - 0 linhas removidas por erro de conversão de data.
+2025-10-17 11:23:44,206 - utils - INFO -   - 259 linhas removidas por pertencerem ao ano de 2023.
+2025-10-17 11:23:44,206 - utils - INFO - Etapa 1: Selecionando colunas: Conta, Referência, Montante em moeda interna, Data do documento, Data de lançamento, Data de compensação
+2025-10-17 11:23:44,215 - utils - INFO - Etapa 1: Tratando a coluna 'Referência'.
+2025-10-17 11:23:44,253 - utils - INFO -   - Removidos sufixos após '-' na coluna 'Referência'.
+2025-10-17 11:23:44,287 - utils - INFO -   - 6693 linhas removidas por valores não numéricos em 'Referência'.
+2025-10-17 11:23:44,292 - utils - INFO - --- Processamento da Etapa 1 concluído --- 
+
+2025-10-17 11:23:44,315 - utils - INFO - --- INICIANDO ETAPA 2: Divisão por Conta para o Ano de 2025 ---
+2025-10-17 11:23:44,333 - utils - INFO - Total de 21775 linhas encontradas para o ano de 2025.
+2025-10-17 11:23:44,334 - utils - INFO - Filtrando dados para a conta 302282 para gerar a aba '302282 - Bahia'...
+2025-10-17 11:23:44,341 - utils - INFO -   - 17818 linhas separadas para a conta 302282.
+2025-10-17 11:23:44,344 - utils - INFO - Filtrando dados para a conta 303264 para gerar a aba '303264 - Ceará'...
+2025-10-17 11:23:44,354 - utils - INFO -   - Regra especial aplicada: Incluindo dados da conta 302282 (Bahia) na aba de Ceará.
+2025-10-17 11:23:44,356 - utils - INFO -   - 18536 linhas separadas para a conta 303264.
+2025-10-17 11:23:44,358 - utils - INFO - Filtrando dados para a conta 303432 para gerar a aba '303432 - Pernambuco'...
+2025-10-17 11:23:44,363 - utils - INFO -   - 3239 linhas separadas para a conta 303432.
+2025-10-17 11:23:44,370 - utils - INFO - --- Etapa 2 concluída --- 
+
+2025-10-17 11:23:44,391 - utils - INFO - --- INICIANDO ETAPAS 3 e 4: Tratamento e Estruturação Final ---
+2025-10-17 11:23:44,391 - utils - INFO - --- Processando '302282 - Bahia' para gerar a aba 'Bahia' ---
+2025-10-17 11:23:44,396 - utils - INFO - [Bahia] Etapa 3: Identificando referências únicas com valor positivo para exclusão.
+2025-10-17 11:23:44,405 - utils - INFO - [Bahia] Etapa 3: 40 linhas removidas.
+2025-10-17 11:23:44,409 - utils - INFO - [Bahia] Etapa 4: 1141 linhas duplicadas removidas com base na 'Referência'.
+2025-10-17 11:23:44,416 - utils - INFO - [Bahia] Etapa 4: Estrutura final de colunas aplicada.
+2025-10-17 11:23:44,417 - utils - INFO - [Bahia] Etapa 4: Preenchendo 'Valor pagamento' com base na soma de '302282 - Bahia'.
+2025-10-17 11:23:44,423 - utils - INFO - [Bahia] Etapa 4: Formatando e preenchendo 'Data de compensação'.
+2025-10-17 11:23:44,517 - utils - INFO - --- Processando '303264 - Ceará' para gerar a aba 'Ceará' ---
+2025-10-17 11:23:44,522 - utils - INFO - [Ceará] Etapa 3: Identificando referências únicas com valor positivo para exclusão.
+2025-10-17 11:23:44,531 - utils - INFO - [Ceará] Etapa 3: 40 linhas removidas.
+2025-10-17 11:23:44,538 - utils - INFO - [Ceará] Etapa 4: 1197 linhas duplicadas removidas com base na 'Referência'.
+2025-10-17 11:23:44,543 - utils - INFO - [Ceará] Etapa 4: Estrutura final de colunas aplicada.
+2025-10-17 11:23:44,544 - utils - INFO - [Ceará] Etapa 4: Preenchendo 'Valor pagamento' com base na soma de '303264 - Ceará'.
+2025-10-17 11:23:44,556 - utils - INFO - [Ceará] Etapa 4: Formatando e preenchendo 'Data de compensação'.
+2025-10-17 11:23:44,664 - utils - INFO - --- Processando '303432 - Pernambuco' para gerar a aba 'Pernambuco' ---
+2025-10-17 11:23:44,664 - utils - INFO - [Pernambuco] Etapa 3: Identificando referências únicas com valor positivo para exclusão.
+2025-10-17 11:23:44,673 - utils - INFO - [Pernambuco] Etapa 3: 0 linhas removidas.
+2025-10-17 11:23:44,675 - utils - INFO - [Pernambuco] Etapa 4: 28 linhas duplicadas removidas com base na 'Referência'.
+2025-10-17 11:23:44,680 - utils - INFO - [Pernambuco] Etapa 4: Estrutura final de colunas aplicada.
+2025-10-17 11:23:44,686 - utils - INFO - [Pernambuco] Etapa 4: Preenchendo 'Valor pagamento' com base na soma de '303432 - Pernambuco'.
+2025-10-17 11:23:44,694 - utils - INFO - [Pernambuco] Etapa 4: Formatando e preenchendo 'Data de compensação'.
+2025-10-17 11:23:44,718 - utils - INFO - --- Etapas 3 e 4 concluídas ---
+2025-10-17 11:23:44,736 - utils - STAGE - FASE 2: Processando relatório externo...
+2025-10-17 11:23:44,736 - utils - INFO - --- INICIANDO PROCESSAMENTO DO RELATÓRIO EXTERNO ---
+2025-10-17 11:23:44,738 - utils - INFO - Lendo o arquivo de relatório: C:/Users/felip/Downloads/relatorio (4).xls
+2025-10-17 11:23:44,910 - utils - INFO - Arquivo lido, pulando as primeiras 6 linhas.
+2025-10-17 11:23:44,910 - utils - INFO - Consolidando cabeçalho de múltiplas linhas.
+2025-10-17 11:23:44,916 - utils - INFO - Cabeçalho consolidado e linhas de cabeçalho iniciais removidas.
+2025-10-17 11:23:44,917 - utils - INFO - Selecionando colunas de interesse pelos índices: [3, 4, 9, 14, 15, 16, 17, 18, 20, 25, 35]
+2025-10-17 11:23:44,919 - utils - INFO - Renomeando colunas para os nomes padronizados.
+2025-10-17 11:23:44,926 - utils - INFO - Tratando coluna 'CTRC' para remover prefixo '2025' e zeros à esquerda.
+2025-10-17 11:23:44,933 - utils - INFO - Prefixo '2025' e zeros subsequentes removidos da coluna 'CTRC'.
+2025-10-17 11:23:44,935 - utils - INFO - Tratando coluna 'Cliente': Padronizando nomes 'ITAMBE' e 'LACTALIS'.
+2025-10-17 11:23:44,950 - utils - INFO - Coluna 'Cliente' padronizada com sucesso.
+2025-10-17 11:23:44,954 - utils - INFO - Formatando a coluna 'Emissao' para o formato de data (dd/mm/aaaa).
+2025-10-17 11:23:44,982 - utils - INFO - Adicionando e preparando novas colunas: Mês, Transportadora, Serviço.
+2025-10-17 11:23:45,025 - utils - INFO - Adicionando colunas de pagamento (serão preenchidas na etapa de análise).
+2025-10-17 11:23:45,030 - utils - INFO - Preenchendo colunas com base nas regras.
+2025-10-17 11:23:45,032 - utils - INFO - Preenchendo coluna 'Transportadora' com base na 'UF Origem'.
+2025-10-17 11:23:45,037 - utils - INFO - Coluna 'Transportadora' preenchida com sucesso.
+2025-10-17 11:23:45,042 - utils - INFO - Preenchendo coluna 'Serviço' com base em 'DT Frete'.
+2025-10-17 11:23:45,057 - utils - INFO - Coluna 'Serviço' preenchida com base nas regras definidas.
+2025-10-17 11:23:45,059 - utils - INFO - Limpando a coluna 'DT Frete', substituindo textos por '-'.
+2025-10-17 11:23:45,066 - utils - INFO - Coluna 'DT Frete' limpa.
+2025-10-17 11:23:45,072 - utils - INFO - Removendo linhas onde 'Valor CTe' é 0 ou nulo.
+2025-10-17 11:23:45,081 - utils - INFO - 312 linhas foram removidas com 'Valor CTe' igual a 0.
+2025-10-17 11:23:45,087 - utils - INFO - Colunas reordenadas para a estrutura final do relatório.
+2025-10-17 11:23:45,092 - utils - INFO - --- Processamento do relatório concluído. 2775 linhas finais. ---
+
+2025-10-17 11:23:45,115 - utils - INFO - Processador de Análise inicializado.
+2025-10-17 11:23:45,115 - utils - STAGE - FASE 3: Cruzando dados...
+2025-10-17 11:23:45,116 - utils - INFO - Iniciando o cruzamento de dados para preencher a coluna 'Status pgto'.
+2025-10-17 11:23:45,136 - utils - INFO - Coluna 'Status pgto' preenchida com sucesso.
+2025-10-17 11:23:45,137 - utils - INFO - Iniciando o preenchimento das colunas 'Valor pago', 'Valor recebido' e 'diferença'.
+2025-10-17 11:23:45,179 - utils - INFO - Coluna 'Valor pago' preenchida.
+2025-10-17 11:23:45,179 - utils - INFO - Preenchendo a coluna 'Valor recebido' com base no módulo de 'Valor pago'.
+2025-10-17 11:23:45,186 - utils - INFO - Coluna 'Valor recebido' preenchida.
+2025-10-17 11:23:45,187 - utils - INFO - Calculando a coluna 'diferença' ('Valor CTe' - 'Valor recebido').
+2025-10-17 11:23:45,194 - utils - INFO - Coluna 'diferença' calculada com sucesso.
+2025-10-17 11:23:45,216 - utils - STAGE - FASE 4: Gerando arquivo de saída: 'dados_estruturados.xlsx'
+2025-10-17 11:23:49,902 - utils - STAGE - FASE 5: Gerando relatório final consolidado...
+2025-10-17 11:23:49,904 - utils - INFO - Gerador de Relatório Final inicializado.
+2025-10-17 11:23:49,904 - utils - INFO - --- INICIANDO GERAÇÃO DO RELATÓRIO FINAL CONSOLIDADO ---
+2025-10-17 11:23:49,906 - utils - INFO - Gerando tabela consolidada de resumo...
+2025-10-17 11:23:49,908 - utils - INFO - Processando transportadora: Logtudo Bahia
+2025-10-17 11:23:49,938 - utils - INFO - Processando transportadora: Logtudo Ceará
+2025-10-17 11:23:49,963 - utils - INFO - Processando transportadora: Logtudo Pernambuco
+2025-10-17 11:23:49,986 - utils - INFO - Tabela consolidada gerada com sucesso.
+2025-10-17 11:23:50,007 - utils - INFO - Iniciando a criação da tabela de detalhes de pagamentos pendentes.
+2025-10-17 11:23:50,010 - utils - INFO - Foram encontradas 608 linhas para a tabela de detalhes.
+2025-10-17 11:23:50,015 - utils - INFO - Colunas para a tabela de detalhes foram selecionadas e renomeadas.
+2025-10-17 11:23:50,067 - utils - INFO - Tabela de detalhes escrita na aba 'Resumo Consolidado' a partir da coluna G.
+2025-10-17 11:23:50,247 - utils - INFO - Formatação executiva aplicada à tabela de detalhes.
+2025-10-17 11:23:50,248 - utils - INFO - --- GERAÇÃO DO RELATÓRIO FINAL CONCLUÍDA. ---
+2025-10-17 11:23:57,666 - utils - SUCCESS - Arquivo multipágina salvo com sucesso em: 'dados_estruturados.xlsx'
+2025-10-17 11:23:57,686 - utils - STAGE - Fim do processamento.
+2025-10-17 11:23:57,686 - utils - STAGE - ==================================================
+
+2025-10-17 11:23:57,690 - utils - SUCCESS - Processamento concluído com sucesso!
+2025-10-17 11:23:57,995 - utils - INFO - Tabela 'Resumo Consolidado' carregada para visualização.
+2025-10-17 11:23:58,318 - utils - INFO - Tabela 'Detalhes de Pendências' carregada para visualização.
+2025-10-17 11:24:00,845 - utils - SUCCESS - ==================================================
+
+2025-10-17 11:24:12,320 - utils - SUCCESS - Arquivo .pdf exportado com sucesso para: C:/Users/felip/Downloads/relatorio_final.pdf
+2025-10-17 11:29:35,650 - utils - SUCCESS - Painel de Controle iniciado. Pronto para operação.
+2025-10-17 11:29:40,605 - utils - INFO - Arquivo selecionado: C:/Users/felip/Downloads/FBL LOG TUDO (1).XLSX
+2025-10-17 11:29:43,355 - utils - INFO - Arquivo selecionado: C:/Users/felip/Downloads/relatorio (4).xls
+2025-10-17 11:29:43,996 - utils - SUCCESS - ==================================================
+2025-10-17 11:29:44,001 - utils - SUCCESS - Iniciando novo ciclo de processamento via interface.
+2025-10-17 11:29:44,035 - utils - STAGE - ==================================================
+2025-10-17 11:29:44,036 - utils - STAGE - Iniciando novo ciclo de processamento.
+2025-10-17 11:29:44,053 - utils - STAGE - FASE 1: Processando arquivo base...
+2025-10-17 11:29:44,054 - utils - INFO - --- INICIANDO ETAPA 1: Processamento da Planilha Principal ---
+2025-10-17 11:29:44,054 - utils - INFO - Iniciando a leitura do arquivo principal: C:/Users/felip/Downloads/FBL LOG TUDO (1).XLSX
+2025-10-17 11:29:53,254 - utils - INFO - Arquivo principal carregado com sucesso. 37768 linhas encontradas.
+
+2025-10-17 11:29:53,255 - utils - INFO - Etapa 1: Filtrando por data (removendo vazios e ano 2023).
+2025-10-17 11:29:53,268 - utils - INFO -   - 1 linhas removidas por data vazia.
+2025-10-17 11:29:53,299 - utils - INFO -   - 0 linhas removidas por erro de conversão de data.
+2025-10-17 11:29:53,312 - utils - INFO -   - 259 linhas removidas por pertencerem ao ano de 2023.
+2025-10-17 11:29:53,314 - utils - INFO - Etapa 1: Selecionando colunas: Conta, Referência, Montante em moeda interna, Data do documento, Data de lançamento, Data de compensação
+2025-10-17 11:29:53,321 - utils - INFO - Etapa 1: Tratando a coluna 'Referência'.
+2025-10-17 11:29:53,358 - utils - INFO -   - Removidos sufixos após '-' na coluna 'Referência'.
+2025-10-17 11:29:53,383 - utils - INFO -   - 6693 linhas removidas por valores não numéricos em 'Referência'.
+2025-10-17 11:29:53,386 - utils - INFO - --- Processamento da Etapa 1 concluído --- 
+
+2025-10-17 11:29:53,401 - utils - INFO - --- INICIANDO ETAPA 2: Divisão por Conta para o Ano de 2025 ---
+2025-10-17 11:29:53,417 - utils - INFO - Total de 21775 linhas encontradas para o ano de 2025.
+2025-10-17 11:29:53,418 - utils - INFO - Filtrando dados para a conta 302282 para gerar a aba '302282 - Bahia'...
+2025-10-17 11:29:53,421 - utils - INFO -   - 17818 linhas separadas para a conta 302282.
+2025-10-17 11:29:53,425 - utils - INFO - Filtrando dados para a conta 303264 para gerar a aba '303264 - Ceará'...
+2025-10-17 11:29:53,433 - utils - INFO -   - Regra especial aplicada: Incluindo dados da conta 302282 (Bahia) na aba de Ceará.
+2025-10-17 11:29:53,434 - utils - INFO -   - 18536 linhas separadas para a conta 303264.
+2025-10-17 11:29:53,439 - utils - INFO - Filtrando dados para a conta 303432 para gerar a aba '303432 - Pernambuco'...
+2025-10-17 11:29:53,445 - utils - INFO -   - 3239 linhas separadas para a conta 303432.
+2025-10-17 11:29:53,450 - utils - INFO - --- Etapa 2 concluída --- 
+
+2025-10-17 11:29:53,468 - utils - INFO - --- INICIANDO ETAPAS 3 e 4: Tratamento e Estruturação Final ---
+2025-10-17 11:29:53,469 - utils - INFO - --- Processando '302282 - Bahia' para gerar a aba 'Bahia' ---
+2025-10-17 11:29:53,470 - utils - INFO - [Bahia] Etapa 3: Identificando referências únicas com valor positivo para exclusão.
+2025-10-17 11:29:53,477 - utils - INFO - [Bahia] Etapa 3: 40 linhas removidas.
+2025-10-17 11:29:53,480 - utils - INFO - [Bahia] Etapa 4: 1141 linhas duplicadas removidas com base na 'Referência'.
+2025-10-17 11:29:53,485 - utils - INFO - [Bahia] Etapa 4: Estrutura final de colunas aplicada.
+2025-10-17 11:29:53,489 - utils - INFO - [Bahia] Etapa 4: Preenchendo 'Valor pagamento' com base na soma de '302282 - Bahia'.
+2025-10-17 11:29:53,498 - utils - INFO - [Bahia] Etapa 4: Formatando e preenchendo 'Data de compensação'.
+2025-10-17 11:29:53,577 - utils - INFO - --- Processando '303264 - Ceará' para gerar a aba 'Ceará' ---
+2025-10-17 11:29:53,581 - utils - INFO - [Ceará] Etapa 3: Identificando referências únicas com valor positivo para exclusão.
+2025-10-17 11:29:53,587 - utils - INFO - [Ceará] Etapa 3: 40 linhas removidas.
+2025-10-17 11:29:53,591 - utils - INFO - [Ceará] Etapa 4: 1197 linhas duplicadas removidas com base na 'Referência'.
+2025-10-17 11:29:53,596 - utils - INFO - [Ceará] Etapa 4: Estrutura final de colunas aplicada.
+2025-10-17 11:29:53,602 - utils - INFO - [Ceará] Etapa 4: Preenchendo 'Valor pagamento' com base na soma de '303264 - Ceará'.
+2025-10-17 11:29:53,611 - utils - INFO - [Ceará] Etapa 4: Formatando e preenchendo 'Data de compensação'.
+2025-10-17 11:29:53,693 - utils - INFO - --- Processando '303432 - Pernambuco' para gerar a aba 'Pernambuco' ---
+2025-10-17 11:29:53,693 - utils - INFO - [Pernambuco] Etapa 3: Identificando referências únicas com valor positivo para exclusão.
+2025-10-17 11:29:53,701 - utils - INFO - [Pernambuco] Etapa 3: 0 linhas removidas.
+2025-10-17 11:29:53,706 - utils - INFO - [Pernambuco] Etapa 4: 28 linhas duplicadas removidas com base na 'Referência'.
+2025-10-17 11:29:53,712 - utils - INFO - [Pernambuco] Etapa 4: Estrutura final de colunas aplicada.
+2025-10-17 11:29:53,716 - utils - INFO - [Pernambuco] Etapa 4: Preenchendo 'Valor pagamento' com base na soma de '303432 - Pernambuco'.
+2025-10-17 11:29:53,723 - utils - INFO - [Pernambuco] Etapa 4: Formatando e preenchendo 'Data de compensação'.
+2025-10-17 11:29:53,748 - utils - INFO - --- Etapas 3 e 4 concluídas ---
+2025-10-17 11:29:53,770 - utils - STAGE - FASE 2: Processando relatório externo...
+2025-10-17 11:29:53,770 - utils - INFO - --- INICIANDO PROCESSAMENTO DO RELATÓRIO EXTERNO ---
+2025-10-17 11:29:53,772 - utils - INFO - Lendo o arquivo de relatório: C:/Users/felip/Downloads/relatorio (4).xls
+2025-10-17 11:29:53,959 - utils - INFO - Arquivo lido, pulando as primeiras 6 linhas.
+2025-10-17 11:29:53,959 - utils - INFO - Consolidando cabeçalho de múltiplas linhas.
+2025-10-17 11:29:53,968 - utils - INFO - Cabeçalho consolidado e linhas de cabeçalho iniciais removidas.
+2025-10-17 11:29:53,970 - utils - INFO - Selecionando colunas de interesse pelos índices: [3, 4, 9, 14, 15, 16, 17, 18, 20, 25, 35]
+2025-10-17 11:29:53,975 - utils - INFO - Renomeando colunas para os nomes padronizados.
+2025-10-17 11:29:53,981 - utils - INFO - Tratando coluna 'CTRC' para remover prefixo '2025' e zeros à esquerda.
+2025-10-17 11:29:53,989 - utils - INFO - Prefixo '2025' e zeros subsequentes removidos da coluna 'CTRC'.
+2025-10-17 11:29:53,996 - utils - INFO - Tratando coluna 'Cliente': Padronizando nomes 'ITAMBE' e 'LACTALIS'.
+2025-10-17 11:29:54,011 - utils - INFO - Coluna 'Cliente' padronizada com sucesso.
+2025-10-17 11:29:54,018 - utils - INFO - Formatando a coluna 'Emissao' para o formato de data (dd/mm/aaaa).
+2025-10-17 11:29:54,057 - utils - INFO - Adicionando e preparando novas colunas: Mês, Transportadora, Serviço.
+2025-10-17 11:29:54,107 - utils - INFO - Adicionando colunas de pagamento (serão preenchidas na etapa de análise).
+2025-10-17 11:29:54,109 - utils - INFO - Preenchendo colunas com base nas regras.
+2025-10-17 11:29:54,119 - utils - INFO - Preenchendo coluna 'Transportadora' com base na 'UF Origem'.
+2025-10-17 11:29:54,129 - utils - INFO - Coluna 'Transportadora' preenchida com sucesso.
+2025-10-17 11:29:54,138 - utils - INFO - Preenchendo coluna 'Serviço' com base em 'DT Frete'.
+2025-10-17 11:29:54,153 - utils - INFO - Coluna 'Serviço' preenchida com base nas regras definidas.
+2025-10-17 11:29:54,161 - utils - INFO - Limpando a coluna 'DT Frete', substituindo textos por '-'.
+2025-10-17 11:29:54,170 - utils - INFO - Coluna 'DT Frete' limpa.
+2025-10-17 11:29:54,176 - utils - INFO - Removendo linhas onde 'Valor CTe' é 0 ou nulo.
+2025-10-17 11:29:54,188 - utils - INFO - 312 linhas foram removidas com 'Valor CTe' igual a 0.
+2025-10-17 11:29:54,195 - utils - INFO - Colunas reordenadas para a estrutura final do relatório.
+2025-10-17 11:29:54,203 - utils - INFO - --- Processamento do relatório concluído. 2775 linhas finais. ---
+
+2025-10-17 11:29:54,226 - utils - INFO - Processador de Análise inicializado.
+2025-10-17 11:29:54,226 - utils - STAGE - FASE 3: Cruzando dados...
+2025-10-17 11:29:54,228 - utils - INFO - Iniciando o cruzamento de dados para preencher a coluna 'Status pgto'.
+2025-10-17 11:29:54,248 - utils - INFO - Coluna 'Status pgto' preenchida com sucesso.
+2025-10-17 11:29:54,248 - utils - INFO - Iniciando o preenchimento das colunas 'Valor pago', 'Valor recebido' e 'diferença'.
+2025-10-17 11:29:54,316 - utils - INFO - Coluna 'Valor pago' preenchida.
+2025-10-17 11:29:54,316 - utils - INFO - Preenchendo a coluna 'Valor recebido' com base no módulo de 'Valor pago'.
+2025-10-17 11:29:54,323 - utils - INFO - Coluna 'Valor recebido' preenchida.
+2025-10-17 11:29:54,329 - utils - INFO - Calculando a coluna 'diferença' ('Valor CTe' - 'Valor recebido').
+2025-10-17 11:29:54,340 - utils - INFO - Coluna 'diferença' calculada com sucesso.
+2025-10-17 11:29:54,367 - utils - STAGE - FASE 4: Gerando arquivo de saída: 'dados_estruturados.xlsx'
+2025-10-17 11:29:58,839 - utils - STAGE - FASE 5: Gerando relatório final consolidado...
+2025-10-17 11:29:58,841 - utils - INFO - Gerador de Relatório Final inicializado.
+2025-10-17 11:29:58,845 - utils - INFO - --- INICIANDO GERAÇÃO DO RELATÓRIO FINAL CONSOLIDADO ---
+2025-10-17 11:29:58,849 - utils - INFO - Gerando tabela consolidada de resumo...
+2025-10-17 11:29:58,856 - utils - INFO - Processando transportadora: Logtudo Bahia
+2025-10-17 11:29:58,889 - utils - INFO - Processando transportadora: Logtudo Ceará
+2025-10-17 11:29:58,916 - utils - INFO - Processando transportadora: Logtudo Pernambuco
+2025-10-17 11:29:58,941 - utils - INFO - Tabela consolidada gerada com sucesso.
+2025-10-17 11:29:58,961 - utils - INFO - Iniciando a criação da tabela de detalhes de pagamentos pendentes.
+2025-10-17 11:29:58,967 - utils - INFO - Foram encontradas 608 linhas para a tabela de detalhes.
+2025-10-17 11:29:58,974 - utils - INFO - Colunas para a tabela de detalhes foram selecionadas e renomeadas.
+2025-10-17 11:29:59,026 - utils - INFO - Tabela de detalhes escrita na aba 'Resumo Consolidado' a partir da coluna G.
+2025-10-17 11:29:59,211 - utils - INFO - Formatação executiva aplicada à tabela de detalhes.
+2025-10-17 11:29:59,212 - utils - INFO - --- GERAÇÃO DO RELATÓRIO FINAL CONCLUÍDA. ---
+2025-10-17 11:30:06,902 - utils - SUCCESS - Arquivo multipágina salvo com sucesso em: 'dados_estruturados.xlsx'
+2025-10-17 11:30:06,921 - utils - STAGE - Fim do processamento.
+2025-10-17 11:30:06,922 - utils - STAGE - ==================================================
+
+2025-10-17 11:30:06,927 - utils - SUCCESS - Processamento concluído com sucesso!
+2025-10-17 11:30:07,272 - utils - INFO - Tabela 'Resumo Consolidado' carregada para visualização.
+2025-10-17 11:30:07,600 - utils - INFO - Tabela 'Detalhes de Pendências' carregada para visualização.
+2025-10-17 11:30:11,734 - utils - SUCCESS - ==================================================
+
+2025-10-17 11:30:22,102 - utils - ERROR - Erro ao exportar arquivo .pdf: [Errno 13] Permission denied: 'C:/Users/felip/Downloads/relatorio_final.pdf'
+Traceback (most recent call last):
+  File "c:\Users\felip\OneDrive\Logtudo\Automações\Notas_Compensadas\app_interface.py", line 484, in export_file
+    doc.build(elements)
+    ~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\felip\OneDrive\Logtudo\Automações\Notas_Compensadas\.venv\Lib\site-packages\reportlab\platypus\doctemplate.py", line 1109, in build
+    self._endBuild()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\felip\OneDrive\Logtudo\Automações\Notas_Compensadas\.venv\Lib\site-packages\reportlab\platypus\doctemplate.py", line 1044, in _endBuild
+    if getattr(self,'_doSave',1): self.canv.save()
+                                  ~~~~~~~~~~~~~~^^
+  File "C:\Users\felip\OneDrive\Logtudo\Automações\Notas_Compensadas\.venv\Lib\site-packages\reportlab\pdfgen\canvas.py", line 1301, in save
+    self._doc.SaveToFile(self._filename, self)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\felip\OneDrive\Logtudo\Automações\Notas_Compensadas\.venv\Lib\site-packages\reportlab\pdfbase\pdfdoc.py", line 208, in SaveToFile
+    f = open(filename, "wb")
+PermissionError: [Errno 13] Permission denied: 'C:/Users/felip/Downloads/relatorio_final.pdf'
+2025-10-17 11:31:03,756 - utils - SUCCESS - Painel de Controle iniciado. Pronto para operação.
+2025-10-17 11:31:07,403 - utils - INFO - Arquivo selecionado: C:/Users/felip/Downloads/FBL LOG TUDO (1).XLSX
+2025-10-17 11:31:09,653 - utils - INFO - Arquivo selecionado: C:/Users/felip/Downloads/relatorio (4).xls
+2025-10-17 11:31:10,009 - utils - SUCCESS - ==================================================
+2025-10-17 11:31:10,011 - utils - SUCCESS - Iniciando novo ciclo de processamento via interface.
+2025-10-17 11:31:10,040 - utils - STAGE - ==================================================
+2025-10-17 11:31:10,040 - utils - STAGE - Iniciando novo ciclo de processamento.
+2025-10-17 11:31:10,066 - utils - STAGE - FASE 1: Processando arquivo base...
+2025-10-17 11:31:10,067 - utils - INFO - --- INICIANDO ETAPA 1: Processamento da Planilha Principal ---
+2025-10-17 11:31:10,070 - utils - INFO - Iniciando a leitura do arquivo principal: C:/Users/felip/Downloads/FBL LOG TUDO (1).XLSX
+2025-10-17 11:31:19,684 - utils - INFO - Arquivo principal carregado com sucesso. 37768 linhas encontradas.
+
+2025-10-17 11:31:19,686 - utils - INFO - Etapa 1: Filtrando por data (removendo vazios e ano 2023).
+2025-10-17 11:31:19,700 - utils - INFO -   - 1 linhas removidas por data vazia.
+2025-10-17 11:31:19,731 - utils - INFO -   - 0 linhas removidas por erro de conversão de data.
+2025-10-17 11:31:19,743 - utils - INFO -   - 259 linhas removidas por pertencerem ao ano de 2023.
+2025-10-17 11:31:19,744 - utils - INFO - Etapa 1: Selecionando colunas: Conta, Referência, Montante em moeda interna, Data do documento, Data de lançamento, Data de compensação
+2025-10-17 11:31:19,751 - utils - INFO - Etapa 1: Tratando a coluna 'Referência'.
+2025-10-17 11:31:19,791 - utils - INFO -   - Removidos sufixos após '-' na coluna 'Referência'.
+2025-10-17 11:31:19,822 - utils - INFO -   - 6693 linhas removidas por valores não numéricos em 'Referência'.
+2025-10-17 11:31:19,827 - utils - INFO - --- Processamento da Etapa 1 concluído --- 
+
+2025-10-17 11:31:19,852 - utils - INFO - --- INICIANDO ETAPA 2: Divisão por Conta para o Ano de 2025 ---
+2025-10-17 11:31:19,874 - utils - INFO - Total de 21775 linhas encontradas para o ano de 2025.
+2025-10-17 11:31:19,874 - utils - INFO - Filtrando dados para a conta 302282 para gerar a aba '302282 - Bahia'...
+2025-10-17 11:31:19,885 - utils - INFO -   - 17818 linhas separadas para a conta 302282.
+2025-10-17 11:31:19,890 - utils - INFO - Filtrando dados para a conta 303264 para gerar a aba '303264 - Ceará'...
+2025-10-17 11:31:19,902 - utils - INFO -   - Regra especial aplicada: Incluindo dados da conta 302282 (Bahia) na aba de Ceará.
+2025-10-17 11:31:19,903 - utils - INFO -   - 18536 linhas separadas para a conta 303264.
+2025-10-17 11:31:19,912 - utils - INFO - Filtrando dados para a conta 303432 para gerar a aba '303432 - Pernambuco'...
+2025-10-17 11:31:19,921 - utils - INFO -   - 3239 linhas separadas para a conta 303432.
+2025-10-17 11:31:19,922 - utils - INFO - --- Etapa 2 concluída --- 
+
+2025-10-17 11:31:19,972 - utils - INFO - --- INICIANDO ETAPAS 3 e 4: Tratamento e Estruturação Final ---
+2025-10-17 11:31:19,973 - utils - INFO - --- Processando '302282 - Bahia' para gerar a aba 'Bahia' ---
+2025-10-17 11:31:19,979 - utils - INFO - [Bahia] Etapa 3: Identificando referências únicas com valor positivo para exclusão.
+2025-10-17 11:31:19,995 - utils - INFO - [Bahia] Etapa 3: 40 linhas removidas.
+2025-10-17 11:31:20,001 - utils - INFO - [Bahia] Etapa 4: 1141 linhas duplicadas removidas com base na 'Referência'.
+2025-10-17 11:31:20,008 - utils - INFO - [Bahia] Etapa 4: Estrutura final de colunas aplicada.
+2025-10-17 11:31:20,018 - utils - INFO - [Bahia] Etapa 4: Preenchendo 'Valor pagamento' com base na soma de '302282 - Bahia'.
+2025-10-17 11:31:20,028 - utils - INFO - [Bahia] Etapa 4: Formatando e preenchendo 'Data de compensação'.
+2025-10-17 11:31:20,139 - utils - INFO - --- Processando '303264 - Ceará' para gerar a aba 'Ceará' ---
+2025-10-17 11:31:20,146 - utils - INFO - [Ceará] Etapa 3: Identificando referências únicas com valor positivo para exclusão.
+2025-10-17 11:31:20,159 - utils - INFO - [Ceará] Etapa 3: 40 linhas removidas.
+2025-10-17 11:31:20,166 - utils - INFO - [Ceará] Etapa 4: 1197 linhas duplicadas removidas com base na 'Referência'.
+2025-10-17 11:31:20,173 - utils - INFO - [Ceará] Etapa 4: Estrutura final de colunas aplicada.
+2025-10-17 11:31:20,181 - utils - INFO - [Ceará] Etapa 4: Preenchendo 'Valor pagamento' com base na soma de '303264 - Ceará'.
+2025-10-17 11:31:20,194 - utils - INFO - [Ceará] Etapa 4: Formatando e preenchendo 'Data de compensação'.
+2025-10-17 11:31:20,308 - utils - INFO - --- Processando '303432 - Pernambuco' para gerar a aba 'Pernambuco' ---
+2025-10-17 11:31:20,317 - utils - INFO - [Pernambuco] Etapa 3: Identificando referências únicas com valor positivo para exclusão.
+2025-10-17 11:31:20,329 - utils - INFO - [Pernambuco] Etapa 3: 0 linhas removidas.
+2025-10-17 11:31:20,338 - utils - INFO - [Pernambuco] Etapa 4: 28 linhas duplicadas removidas com base na 'Referência'.
+2025-10-17 11:31:20,351 - utils - INFO - [Pernambuco] Etapa 4: Estrutura final de colunas aplicada.
+2025-10-17 11:31:20,361 - utils - INFO - [Pernambuco] Etapa 4: Preenchendo 'Valor pagamento' com base na soma de '303432 - Pernambuco'.
+2025-10-17 11:31:20,372 - utils - INFO - [Pernambuco] Etapa 4: Formatando e preenchendo 'Data de compensação'.
+2025-10-17 11:31:20,408 - utils - INFO - --- Etapas 3 e 4 concluídas ---
+2025-10-17 11:31:20,528 - utils - STAGE - FASE 2: Processando relatório externo...
+2025-10-17 11:31:20,529 - utils - INFO - --- INICIANDO PROCESSAMENTO DO RELATÓRIO EXTERNO ---
+2025-10-17 11:31:20,532 - utils - INFO - Lendo o arquivo de relatório: C:/Users/felip/Downloads/relatorio (4).xls
+2025-10-17 11:31:20,736 - utils - INFO - Arquivo lido, pulando as primeiras 6 linhas.
+2025-10-17 11:31:20,741 - utils - INFO - Consolidando cabeçalho de múltiplas linhas.
+2025-10-17 11:31:20,753 - utils - INFO - Cabeçalho consolidado e linhas de cabeçalho iniciais removidas.
+2025-10-17 11:31:20,766 - utils - INFO - Selecionando colunas de interesse pelos índices: [3, 4, 9, 14, 15, 16, 17, 18, 20, 25, 35]
+2025-10-17 11:31:20,776 - utils - INFO - Renomeando colunas para os nomes padronizados.
+2025-10-17 11:31:20,785 - utils - INFO - Tratando coluna 'CTRC' para remover prefixo '2025' e zeros à esquerda.
+2025-10-17 11:31:20,797 - utils - INFO - Prefixo '2025' e zeros subsequentes removidos da coluna 'CTRC'.
+2025-10-17 11:31:20,806 - utils - INFO - Tratando coluna 'Cliente': Padronizando nomes 'ITAMBE' e 'LACTALIS'.
+2025-10-17 11:31:20,826 - utils - INFO - Coluna 'Cliente' padronizada com sucesso.
+2025-10-17 11:31:20,836 - utils - INFO - Formatando a coluna 'Emissao' para o formato de data (dd/mm/aaaa).
+2025-10-17 11:31:20,871 - utils - INFO - Adicionando e preparando novas colunas: Mês, Transportadora, Serviço.
+2025-10-17 11:31:20,923 - utils - INFO - Adicionando colunas de pagamento (serão preenchidas na etapa de análise).
+2025-10-17 11:31:20,932 - utils - INFO - Preenchendo colunas com base nas regras.
+2025-10-17 11:31:20,942 - utils - INFO - Preenchendo coluna 'Transportadora' com base na 'UF Origem'.
+2025-10-17 11:31:20,952 - utils - INFO - Coluna 'Transportadora' preenchida com sucesso.
+2025-10-17 11:31:20,959 - utils - INFO - Preenchendo coluna 'Serviço' com base em 'DT Frete'.
+2025-10-17 11:31:20,979 - utils - INFO - Coluna 'Serviço' preenchida com base nas regras definidas.
+2025-10-17 11:31:20,986 - utils - INFO - Limpando a coluna 'DT Frete', substituindo textos por '-'.
+2025-10-17 11:31:20,995 - utils - INFO - Coluna 'DT Frete' limpa.
+2025-10-17 11:31:21,003 - utils - INFO - Removendo linhas onde 'Valor CTe' é 0 ou nulo.
+2025-10-17 11:31:21,017 - utils - INFO - 312 linhas foram removidas com 'Valor CTe' igual a 0.
+2025-10-17 11:31:21,024 - utils - INFO - Colunas reordenadas para a estrutura final do relatório.
+2025-10-17 11:31:21,033 - utils - INFO - --- Processamento do relatório concluído. 2775 linhas finais. ---
+
+2025-10-17 11:31:21,072 - utils - INFO - Processador de Análise inicializado.
+2025-10-17 11:31:21,072 - utils - STAGE - FASE 3: Cruzando dados...
+2025-10-17 11:31:21,079 - utils - INFO - Iniciando o cruzamento de dados para preencher a coluna 'Status pgto'.
+2025-10-17 11:31:21,116 - utils - INFO - Coluna 'Status pgto' preenchida com sucesso.
+2025-10-17 11:31:21,140 - utils - INFO - Iniciando o preenchimento das colunas 'Valor pago', 'Valor recebido' e 'diferença'.
+2025-10-17 11:31:21,217 - utils - INFO - Coluna 'Valor pago' preenchida.
+2025-10-17 11:31:21,224 - utils - INFO - Preenchendo a coluna 'Valor recebido' com base no módulo de 'Valor pago'.
+2025-10-17 11:31:21,229 - utils - INFO - Coluna 'Valor recebido' preenchida.
+2025-10-17 11:31:21,234 - utils - INFO - Calculando a coluna 'diferença' ('Valor CTe' - 'Valor recebido').
+2025-10-17 11:31:21,242 - utils - INFO - Coluna 'diferença' calculada com sucesso.
+2025-10-17 11:31:21,296 - utils - STAGE - FASE 4: Gerando arquivo de saída: 'dados_estruturados.xlsx'
+2025-10-17 11:31:26,520 - utils - STAGE - FASE 5: Gerando relatório final consolidado...
+2025-10-17 11:31:26,522 - utils - INFO - Gerador de Relatório Final inicializado.
+2025-10-17 11:31:26,523 - utils - INFO - --- INICIANDO GERAÇÃO DO RELATÓRIO FINAL CONSOLIDADO ---
+2025-10-17 11:31:26,524 - utils - INFO - Gerando tabela consolidada de resumo...
+2025-10-17 11:31:26,526 - utils - INFO - Processando transportadora: Logtudo Bahia
+2025-10-17 11:31:26,567 - utils - INFO - Processando transportadora: Logtudo Ceará
+2025-10-17 11:31:26,597 - utils - INFO - Processando transportadora: Logtudo Pernambuco
+2025-10-17 11:31:26,628 - utils - INFO - Tabela consolidada gerada com sucesso.
+2025-10-17 11:31:26,651 - utils - INFO - Iniciando a criação da tabela de detalhes de pagamentos pendentes.
+2025-10-17 11:31:26,656 - utils - INFO - Foram encontradas 608 linhas para a tabela de detalhes.
+2025-10-17 11:31:26,659 - utils - INFO - Colunas para a tabela de detalhes foram selecionadas e renomeadas.
+2025-10-17 11:31:26,714 - utils - INFO - Tabela de detalhes escrita na aba 'Resumo Consolidado' a partir da coluna G.
+2025-10-17 11:31:26,957 - utils - INFO - Formatação executiva aplicada à tabela de detalhes.
+2025-10-17 11:31:26,962 - utils - INFO - --- GERAÇÃO DO RELATÓRIO FINAL CONCLUÍDA. ---
+2025-10-17 11:31:35,769 - utils - SUCCESS - Arquivo multipágina salvo com sucesso em: 'dados_estruturados.xlsx'
+2025-10-17 11:31:35,783 - utils - STAGE - Fim do processamento.
+2025-10-17 11:31:35,783 - utils - STAGE - ==================================================
+
+2025-10-17 11:31:35,792 - utils - SUCCESS - Processamento concluído com sucesso!
+2025-10-17 11:31:36,289 - utils - INFO - Tabela 'Resumo Consolidado' carregada para visualização.
+2025-10-17 11:31:36,624 - utils - INFO - Tabela 'Detalhes de Pendências' carregada para visualização.
+2025-10-17 11:31:39,519 - utils - SUCCESS - ==================================================
+
+2025-10-17 11:31:44,408 - utils - ERROR - Erro ao exportar arquivo .pdf: [Errno 13] Permission denied: 'C:/Users/felip/Downloads/relatorio_final.pdf'
+Traceback (most recent call last):
+  File "c:\Users\felip\OneDrive\Logtudo\Automações\Notas_Compensadas\app_interface.py", line 484, in export_file
+    doc.build(elements)
+    ~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\felip\OneDrive\Logtudo\Automações\Notas_Compensadas\.venv\Lib\site-packages\reportlab\platypus\doctemplate.py", line 1109, in build
+    self._endBuild()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\felip\OneDrive\Logtudo\Automações\Notas_Compensadas\.venv\Lib\site-packages\reportlab\platypus\doctemplate.py", line 1044, in _endBuild
+    if getattr(self,'_doSave',1): self.canv.save()
+                                  ~~~~~~~~~~~~~~^^
+  File "C:\Users\felip\OneDrive\Logtudo\Automações\Notas_Compensadas\.venv\Lib\site-packages\reportlab\pdfgen\canvas.py", line 1301, in save
+    self._doc.SaveToFile(self._filename, self)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\felip\OneDrive\Logtudo\Automações\Notas_Compensadas\.venv\Lib\site-packages\reportlab\pdfbase\pdfdoc.py", line 208, in SaveToFile
+    f = open(filename, "wb")
+PermissionError: [Errno 13] Permission denied: 'C:/Users/felip/Downloads/relatorio_final.pdf'
+2025-10-17 11:33:15,981 - utils - SUCCESS - Painel de Controle iniciado. Pronto para operação.
+2025-10-17 11:33:20,778 - utils - INFO - Arquivo selecionado: C:/Users/felip/Downloads/FBL LOG TUDO (1).XLSX
+2025-10-17 11:33:23,215 - utils - INFO - Arquivo selecionado: C:/Users/felip/Downloads/relatorio (4).xls
+2025-10-17 11:33:26,144 - utils - SUCCESS - ==================================================
+2025-10-17 11:33:26,158 - utils - SUCCESS - Iniciando novo ciclo de processamento via interface.
+2025-10-17 11:33:26,191 - utils - STAGE - ==================================================
+2025-10-17 11:33:26,191 - utils - STAGE - Iniciando novo ciclo de processamento.
+2025-10-17 11:33:26,205 - utils - STAGE - FASE 1: Processando arquivo base...
+2025-10-17 11:33:26,205 - utils - INFO - --- INICIANDO ETAPA 1: Processamento da Planilha Principal ---
+2025-10-17 11:33:26,206 - utils - INFO - Iniciando a leitura do arquivo principal: C:/Users/felip/Downloads/FBL LOG TUDO (1).XLSX
+2025-10-17 11:33:34,415 - utils - INFO - Arquivo principal carregado com sucesso. 37768 linhas encontradas.
+
+2025-10-17 11:33:34,416 - utils - INFO - Etapa 1: Filtrando por data (removendo vazios e ano 2023).
+2025-10-17 11:33:34,428 - utils - INFO -   - 1 linhas removidas por data vazia.
+2025-10-17 11:33:34,461 - utils - INFO -   - 0 linhas removidas por erro de conversão de data.
+2025-10-17 11:33:34,475 - utils - INFO -   - 259 linhas removidas por pertencerem ao ano de 2023.
+2025-10-17 11:33:34,475 - utils - INFO - Etapa 1: Selecionando colunas: Conta, Referência, Montante em moeda interna, Data do documento, Data de lançamento, Data de compensação
+2025-10-17 11:33:34,482 - utils - INFO - Etapa 1: Tratando a coluna 'Referência'.
+2025-10-17 11:33:34,518 - utils - INFO -   - Removidos sufixos após '-' na coluna 'Referência'.
+2025-10-17 11:33:34,549 - utils - INFO -   - 6693 linhas removidas por valores não numéricos em 'Referência'.
+2025-10-17 11:33:34,553 - utils - INFO - --- Processamento da Etapa 1 concluído --- 
+
+2025-10-17 11:33:34,568 - utils - INFO - --- INICIANDO ETAPA 2: Divisão por Conta para o Ano de 2025 ---
+2025-10-17 11:33:34,587 - utils - INFO - Total de 21775 linhas encontradas para o ano de 2025.
+2025-10-17 11:33:34,588 - utils - INFO - Filtrando dados para a conta 302282 para gerar a aba '302282 - Bahia'...
+2025-10-17 11:33:34,592 - utils - INFO -   - 17818 linhas separadas para a conta 302282.
+2025-10-17 11:33:34,597 - utils - INFO - Filtrando dados para a conta 303264 para gerar a aba '303264 - Ceará'...
+2025-10-17 11:33:34,602 - utils - INFO -   - Regra especial aplicada: Incluindo dados da conta 302282 (Bahia) na aba de Ceará.
+2025-10-17 11:33:34,608 - utils - INFO -   - 18536 linhas separadas para a conta 303264.
+2025-10-17 11:33:34,610 - utils - INFO - Filtrando dados para a conta 303432 para gerar a aba '303432 - Pernambuco'...
+2025-10-17 11:33:34,617 - utils - INFO -   - 3239 linhas separadas para a conta 303432.
+2025-10-17 11:33:34,622 - utils - INFO - --- Etapa 2 concluída --- 
+
+2025-10-17 11:33:34,644 - utils - INFO - --- INICIANDO ETAPAS 3 e 4: Tratamento e Estruturação Final ---
+2025-10-17 11:33:34,645 - utils - INFO - --- Processando '302282 - Bahia' para gerar a aba 'Bahia' ---
+2025-10-17 11:33:34,645 - utils - INFO - [Bahia] Etapa 3: Identificando referências únicas com valor positivo para exclusão.
+2025-10-17 11:33:34,653 - utils - INFO - [Bahia] Etapa 3: 40 linhas removidas.
+2025-10-17 11:33:34,657 - utils - INFO - [Bahia] Etapa 4: 1141 linhas duplicadas removidas com base na 'Referência'.
+2025-10-17 11:33:34,661 - utils - INFO - [Bahia] Etapa 4: Estrutura final de colunas aplicada.
+2025-10-17 11:33:34,666 - utils - INFO - [Bahia] Etapa 4: Preenchendo 'Valor pagamento' com base na soma de '302282 - Bahia'.
+2025-10-17 11:33:34,675 - utils - INFO - [Bahia] Etapa 4: Formatando e preenchendo 'Data de compensação'.
+2025-10-17 11:33:34,759 - utils - INFO - --- Processando '303264 - Ceará' para gerar a aba 'Ceará' ---
+2025-10-17 11:33:34,762 - utils - INFO - [Ceará] Etapa 3: Identificando referências únicas com valor positivo para exclusão.
+2025-10-17 11:33:34,773 - utils - INFO - [Ceará] Etapa 3: 40 linhas removidas.
+2025-10-17 11:33:34,778 - utils - INFO - [Ceará] Etapa 4: 1197 linhas duplicadas removidas com base na 'Referência'.
+2025-10-17 11:33:34,779 - utils - INFO - [Ceará] Etapa 4: Estrutura final de colunas aplicada.
+2025-10-17 11:33:34,784 - utils - INFO - [Ceará] Etapa 4: Preenchendo 'Valor pagamento' com base na soma de '303264 - Ceará'.
+2025-10-17 11:33:34,796 - utils - INFO - [Ceará] Etapa 4: Formatando e preenchendo 'Data de compensação'.
+2025-10-17 11:33:34,881 - utils - INFO - --- Processando '303432 - Pernambuco' para gerar a aba 'Pernambuco' ---
+2025-10-17 11:33:34,885 - utils - INFO - [Pernambuco] Etapa 3: Identificando referências únicas com valor positivo para exclusão.
+2025-10-17 11:33:34,893 - utils - INFO - [Pernambuco] Etapa 3: 0 linhas removidas.
+2025-10-17 11:33:34,898 - utils - INFO - [Pernambuco] Etapa 4: 28 linhas duplicadas removidas com base na 'Referência'.
+2025-10-17 11:33:34,903 - utils - INFO - [Pernambuco] Etapa 4: Estrutura final de colunas aplicada.
+2025-10-17 11:33:34,908 - utils - INFO - [Pernambuco] Etapa 4: Preenchendo 'Valor pagamento' com base na soma de '303432 - Pernambuco'.
+2025-10-17 11:33:34,926 - utils - INFO - [Pernambuco] Etapa 4: Formatando e preenchendo 'Data de compensação'.
+2025-10-17 11:33:34,945 - utils - INFO - --- Etapas 3 e 4 concluídas ---
+2025-10-17 11:33:34,969 - utils - STAGE - FASE 2: Processando relatório externo...
+2025-10-17 11:33:34,970 - utils - INFO - --- INICIANDO PROCESSAMENTO DO RELATÓRIO EXTERNO ---
+2025-10-17 11:33:34,971 - utils - INFO - Lendo o arquivo de relatório: C:/Users/felip/Downloads/relatorio (4).xls
+2025-10-17 11:33:35,137 - utils - INFO - Arquivo lido, pulando as primeiras 6 linhas.
+2025-10-17 11:33:35,137 - utils - INFO - Consolidando cabeçalho de múltiplas linhas.
+2025-10-17 11:33:35,145 - utils - INFO - Cabeçalho consolidado e linhas de cabeçalho iniciais removidas.
+2025-10-17 11:33:35,149 - utils - INFO - Selecionando colunas de interesse pelos índices: [3, 4, 9, 14, 15, 16, 17, 18, 20, 25, 35]
+2025-10-17 11:33:35,156 - utils - INFO - Renomeando colunas para os nomes padronizados.
+2025-10-17 11:33:35,162 - utils - INFO - Tratando coluna 'CTRC' para remover prefixo '2025' e zeros à esquerda.
+2025-10-17 11:33:35,170 - utils - INFO - Prefixo '2025' e zeros subsequentes removidos da coluna 'CTRC'.
+2025-10-17 11:33:35,176 - utils - INFO - Tratando coluna 'Cliente': Padronizando nomes 'ITAMBE' e 'LACTALIS'.
+2025-10-17 11:33:35,190 - utils - INFO - Coluna 'Cliente' padronizada com sucesso.
+2025-10-17 11:33:35,195 - utils - INFO - Formatando a coluna 'Emissao' para o formato de data (dd/mm/aaaa).
+2025-10-17 11:33:35,220 - utils - INFO - Adicionando e preparando novas colunas: Mês, Transportadora, Serviço.
+2025-10-17 11:33:35,261 - utils - INFO - Adicionando colunas de pagamento (serão preenchidas na etapa de análise).
+2025-10-17 11:33:35,264 - utils - INFO - Preenchendo colunas com base nas regras.
+2025-10-17 11:33:35,269 - utils - INFO - Preenchendo coluna 'Transportadora' com base na 'UF Origem'.
+2025-10-17 11:33:35,273 - utils - INFO - Coluna 'Transportadora' preenchida com sucesso.
+2025-10-17 11:33:35,278 - utils - INFO - Preenchendo coluna 'Serviço' com base em 'DT Frete'.
+2025-10-17 11:33:35,292 - utils - INFO - Coluna 'Serviço' preenchida com base nas regras definidas.
+2025-10-17 11:33:35,294 - utils - INFO - Limpando a coluna 'DT Frete', substituindo textos por '-'.
+2025-10-17 11:33:35,302 - utils - INFO - Coluna 'DT Frete' limpa.
+2025-10-17 11:33:35,307 - utils - INFO - Removendo linhas onde 'Valor CTe' é 0 ou nulo.
+2025-10-17 11:33:35,316 - utils - INFO - 312 linhas foram removidas com 'Valor CTe' igual a 0.
+2025-10-17 11:33:35,322 - utils - INFO - Colunas reordenadas para a estrutura final do relatório.
+2025-10-17 11:33:35,328 - utils - INFO - --- Processamento do relatório concluído. 2775 linhas finais. ---
+
+2025-10-17 11:33:35,349 - utils - INFO - Processador de Análise inicializado.
+2025-10-17 11:33:35,349 - utils - STAGE - FASE 3: Cruzando dados...
+2025-10-17 11:33:35,350 - utils - INFO - Iniciando o cruzamento de dados para preencher a coluna 'Status pgto'.
+2025-10-17 11:33:35,375 - utils - INFO - Coluna 'Status pgto' preenchida com sucesso.
+2025-10-17 11:33:35,376 - utils - INFO - Iniciando o preenchimento das colunas 'Valor pago', 'Valor recebido' e 'diferença'.
+2025-10-17 11:33:35,415 - utils - INFO - Coluna 'Valor pago' preenchida.
+2025-10-17 11:33:35,415 - utils - INFO - Preenchendo a coluna 'Valor recebido' com base no módulo de 'Valor pago'.
+2025-10-17 11:33:35,421 - utils - INFO - Coluna 'Valor recebido' preenchida.
+2025-10-17 11:33:35,423 - utils - INFO - Calculando a coluna 'diferença' ('Valor CTe' - 'Valor recebido').
+2025-10-17 11:33:35,428 - utils - INFO - Coluna 'diferença' calculada com sucesso.
+2025-10-17 11:33:35,446 - utils - STAGE - FASE 4: Gerando arquivo de saída: 'dados_estruturados.xlsx'
+2025-10-17 11:33:39,739 - utils - STAGE - FASE 5: Gerando relatório final consolidado...
+2025-10-17 11:33:39,741 - utils - INFO - Gerador de Relatório Final inicializado.
+2025-10-17 11:33:39,741 - utils - INFO - --- INICIANDO GERAÇÃO DO RELATÓRIO FINAL CONSOLIDADO ---
+2025-10-17 11:33:39,743 - utils - INFO - Gerando tabela consolidada de resumo...
+2025-10-17 11:33:39,746 - utils - INFO - Processando transportadora: Logtudo Bahia
+2025-10-17 11:33:39,777 - utils - INFO - Processando transportadora: Logtudo Ceará
+2025-10-17 11:33:39,805 - utils - INFO - Processando transportadora: Logtudo Pernambuco
+2025-10-17 11:33:39,831 - utils - INFO - Tabela consolidada gerada com sucesso.
+2025-10-17 11:33:39,852 - utils - INFO - Iniciando a criação da tabela de detalhes de pagamentos pendentes.
+2025-10-17 11:33:39,855 - utils - INFO - Foram encontradas 608 linhas para a tabela de detalhes.
+2025-10-17 11:33:39,862 - utils - INFO - Colunas para a tabela de detalhes foram selecionadas e renomeadas.
+2025-10-17 11:33:39,913 - utils - INFO - Tabela de detalhes escrita na aba 'Resumo Consolidado' a partir da coluna G.
+2025-10-17 11:33:40,122 - utils - INFO - Formatação executiva aplicada à tabela de detalhes.
+2025-10-17 11:33:40,127 - utils - INFO - --- GERAÇÃO DO RELATÓRIO FINAL CONCLUÍDA. ---
+2025-10-17 11:33:48,078 - utils - SUCCESS - Arquivo multipágina salvo com sucesso em: 'dados_estruturados.xlsx'
+2025-10-17 11:33:48,106 - utils - STAGE - Fim do processamento.
+2025-10-17 11:33:48,106 - utils - STAGE - ==================================================
+
+2025-10-17 11:33:48,117 - utils - SUCCESS - Processamento concluído com sucesso!
+2025-10-17 11:33:48,495 - utils - INFO - Tabela 'Resumo Consolidado' carregada para visualização.
+2025-10-17 11:33:48,802 - utils - INFO - Tabela 'Detalhes de Pendências' carregada para visualização.
+2025-10-17 11:33:56,927 - utils - SUCCESS - ==================================================
+
+2025-10-17 11:34:01,957 - utils - ERROR - Erro ao exportar arquivo .pdf: [Errno 13] Permission denied: 'C:/Users/felip/Downloads/relatorio_final.pdf'
+Traceback (most recent call last):
+  File "c:\Users\felip\OneDrive\Logtudo\Automações\Notas_Compensadas\app_interface.py", line 484, in export_file
+    doc.build(elements)
+    ~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\felip\OneDrive\Logtudo\Automações\Notas_Compensadas\.venv\Lib\site-packages\reportlab\platypus\doctemplate.py", line 1109, in build
+    self._endBuild()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\felip\OneDrive\Logtudo\Automações\Notas_Compensadas\.venv\Lib\site-packages\reportlab\platypus\doctemplate.py", line 1044, in _endBuild
+    if getattr(self,'_doSave',1): self.canv.save()
+                                  ~~~~~~~~~~~~~~^^
+  File "C:\Users\felip\OneDrive\Logtudo\Automações\Notas_Compensadas\.venv\Lib\site-packages\reportlab\pdfgen\canvas.py", line 1301, in save
+    self._doc.SaveToFile(self._filename, self)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\felip\OneDrive\Logtudo\Automações\Notas_Compensadas\.venv\Lib\site-packages\reportlab\pdfbase\pdfdoc.py", line 208, in SaveToFile
+    f = open(filename, "wb")
+PermissionError: [Errno 13] Permission denied: 'C:/Users/felip/Downloads/relatorio_final.pdf'
+2025-10-17 11:34:17,351 - utils - SUCCESS - Arquivo .pdf exportado com sucesso para: C:/Users/felip/Downloads/relatorio_final.pdf
+2025-10-17 11:34:55,486 - utils - SUCCESS - Painel de Controle iniciado. Pronto para operação.
+2025-10-17 11:35:00,434 - utils - INFO - Arquivo selecionado: C:/Users/felip/Downloads/FBL LOG TUDO (1).XLSX
+2025-10-17 11:35:02,496 - utils - INFO - Arquivo selecionado: C:/Users/felip/Downloads/relatorio (4).xls
+2025-10-17 11:35:03,793 - utils - SUCCESS - ==================================================
+2025-10-17 11:35:03,801 - utils - SUCCESS - Iniciando novo ciclo de processamento via interface.
+2025-10-17 11:35:03,829 - utils - STAGE - ==================================================
+2025-10-17 11:35:03,830 - utils - STAGE - Iniciando novo ciclo de processamento.
+2025-10-17 11:35:03,845 - utils - STAGE - FASE 1: Processando arquivo base...
+2025-10-17 11:35:03,845 - utils - INFO - --- INICIANDO ETAPA 1: Processamento da Planilha Principal ---
+2025-10-17 11:35:03,846 - utils - INFO - Iniciando a leitura do arquivo principal: C:/Users/felip/Downloads/FBL LOG TUDO (1).XLSX
+2025-10-17 11:35:13,126 - utils - INFO - Arquivo principal carregado com sucesso. 37768 linhas encontradas.
+
+2025-10-17 11:35:13,127 - utils - INFO - Etapa 1: Filtrando por data (removendo vazios e ano 2023).
+2025-10-17 11:35:13,141 - utils - INFO -   - 1 linhas removidas por data vazia.
+2025-10-17 11:35:13,178 - utils - INFO -   - 0 linhas removidas por erro de conversão de data.
+2025-10-17 11:35:13,195 - utils - INFO -   - 259 linhas removidas por pertencerem ao ano de 2023.
+2025-10-17 11:35:13,197 - utils - INFO - Etapa 1: Selecionando colunas: Conta, Referência, Montante em moeda interna, Data do documento, Data de lançamento, Data de compensação
+2025-10-17 11:35:13,213 - utils - INFO - Etapa 1: Tratando a coluna 'Referência'.
+2025-10-17 11:35:13,271 - utils - INFO -   - Removidos sufixos após '-' na coluna 'Referência'.
+2025-10-17 11:35:13,304 - utils - INFO -   - 6693 linhas removidas por valores não numéricos em 'Referência'.
+2025-10-17 11:35:13,307 - utils - INFO - --- Processamento da Etapa 1 concluído --- 
+
+2025-10-17 11:35:13,329 - utils - INFO - --- INICIANDO ETAPA 2: Divisão por Conta para o Ano de 2025 ---
+2025-10-17 11:35:13,351 - utils - INFO - Total de 21775 linhas encontradas para o ano de 2025.
+2025-10-17 11:35:13,352 - utils - INFO - Filtrando dados para a conta 302282 para gerar a aba '302282 - Bahia'...
+2025-10-17 11:35:13,355 - utils - INFO -   - 17818 linhas separadas para a conta 302282.
+2025-10-17 11:35:13,355 - utils - INFO - Filtrando dados para a conta 303264 para gerar a aba '303264 - Ceará'...
+2025-10-17 11:35:13,362 - utils - INFO -   - Regra especial aplicada: Incluindo dados da conta 302282 (Bahia) na aba de Ceará.
+2025-10-17 11:35:13,366 - utils - INFO -   - 18536 linhas separadas para a conta 303264.
+2025-10-17 11:35:13,372 - utils - INFO - Filtrando dados para a conta 303432 para gerar a aba '303432 - Pernambuco'...
+2025-10-17 11:35:13,375 - utils - INFO -   - 3239 linhas separadas para a conta 303432.
+2025-10-17 11:35:13,377 - utils - INFO - --- Etapa 2 concluída --- 
+
+2025-10-17 11:35:13,404 - utils - INFO - --- INICIANDO ETAPAS 3 e 4: Tratamento e Estruturação Final ---
+2025-10-17 11:35:13,404 - utils - INFO - --- Processando '302282 - Bahia' para gerar a aba 'Bahia' ---
+2025-10-17 11:35:13,406 - utils - INFO - [Bahia] Etapa 3: Identificando referências únicas com valor positivo para exclusão.
+2025-10-17 11:35:13,414 - utils - INFO - [Bahia] Etapa 3: 40 linhas removidas.
+2025-10-17 11:35:13,419 - utils - INFO - [Bahia] Etapa 4: 1141 linhas duplicadas removidas com base na 'Referência'.
+2025-10-17 11:35:13,424 - utils - INFO - [Bahia] Etapa 4: Estrutura final de colunas aplicada.
+2025-10-17 11:35:13,432 - utils - INFO - [Bahia] Etapa 4: Preenchendo 'Valor pagamento' com base na soma de '302282 - Bahia'.
+2025-10-17 11:35:13,438 - utils - INFO - [Bahia] Etapa 4: Formatando e preenchendo 'Data de compensação'.
+2025-10-17 11:35:13,541 - utils - INFO - --- Processando '303264 - Ceará' para gerar a aba 'Ceará' ---
+2025-10-17 11:35:13,547 - utils - INFO - [Ceará] Etapa 3: Identificando referências únicas com valor positivo para exclusão.
+2025-10-17 11:35:13,559 - utils - INFO - [Ceará] Etapa 3: 40 linhas removidas.
+2025-10-17 11:35:13,565 - utils - INFO - [Ceará] Etapa 4: 1197 linhas duplicadas removidas com base na 'Referência'.
+2025-10-17 11:35:13,570 - utils - INFO - [Ceará] Etapa 4: Estrutura final de colunas aplicada.
+2025-10-17 11:35:13,571 - utils - INFO - [Ceará] Etapa 4: Preenchendo 'Valor pagamento' com base na soma de '303264 - Ceará'.
+2025-10-17 11:35:13,582 - utils - INFO - [Ceará] Etapa 4: Formatando e preenchendo 'Data de compensação'.
+2025-10-17 11:35:13,683 - utils - INFO - --- Processando '303432 - Pernambuco' para gerar a aba 'Pernambuco' ---
+2025-10-17 11:35:13,683 - utils - INFO - [Pernambuco] Etapa 3: Identificando referências únicas com valor positivo para exclusão.
+2025-10-17 11:35:13,693 - utils - INFO - [Pernambuco] Etapa 3: 0 linhas removidas.
+2025-10-17 11:35:13,700 - utils - INFO - [Pernambuco] Etapa 4: 28 linhas duplicadas removidas com base na 'Referência'.
+2025-10-17 11:35:13,706 - utils - INFO - [Pernambuco] Etapa 4: Estrutura final de colunas aplicada.
+2025-10-17 11:35:13,712 - utils - INFO - [Pernambuco] Etapa 4: Preenchendo 'Valor pagamento' com base na soma de '303432 - Pernambuco'.
+2025-10-17 11:35:13,715 - utils - INFO - [Pernambuco] Etapa 4: Formatando e preenchendo 'Data de compensação'.
+2025-10-17 11:35:13,741 - utils - INFO - --- Etapas 3 e 4 concluídas ---
+2025-10-17 11:35:13,767 - utils - STAGE - FASE 2: Processando relatório externo...
+2025-10-17 11:35:13,767 - utils - INFO - --- INICIANDO PROCESSAMENTO DO RELATÓRIO EXTERNO ---
+2025-10-17 11:35:13,773 - utils - INFO - Lendo o arquivo de relatório: C:/Users/felip/Downloads/relatorio (4).xls
+2025-10-17 11:35:13,950 - utils - INFO - Arquivo lido, pulando as primeiras 6 linhas.
+2025-10-17 11:35:13,950 - utils - INFO - Consolidando cabeçalho de múltiplas linhas.
+2025-10-17 11:35:13,960 - utils - INFO - Cabeçalho consolidado e linhas de cabeçalho iniciais removidas.
+2025-10-17 11:35:13,966 - utils - INFO - Selecionando colunas de interesse pelos índices: [3, 4, 9, 14, 15, 16, 17, 18, 20, 25, 35]
+2025-10-17 11:35:13,973 - utils - INFO - Renomeando colunas para os nomes padronizados.
+2025-10-17 11:35:13,975 - utils - INFO - Tratando coluna 'CTRC' para remover prefixo '2025' e zeros à esquerda.
+2025-10-17 11:35:13,984 - utils - INFO - Prefixo '2025' e zeros subsequentes removidos da coluna 'CTRC'.
+2025-10-17 11:35:13,990 - utils - INFO - Tratando coluna 'Cliente': Padronizando nomes 'ITAMBE' e 'LACTALIS'.
+2025-10-17 11:35:14,009 - utils - INFO - Coluna 'Cliente' padronizada com sucesso.
+2025-10-17 11:35:14,015 - utils - INFO - Formatando a coluna 'Emissao' para o formato de data (dd/mm/aaaa).
+2025-10-17 11:35:14,043 - utils - INFO - Adicionando e preparando novas colunas: Mês, Transportadora, Serviço.
+2025-10-17 11:35:14,084 - utils - INFO - Adicionando colunas de pagamento (serão preenchidas na etapa de análise).
+2025-10-17 11:35:14,086 - utils - INFO - Preenchendo colunas com base nas regras.
+2025-10-17 11:35:14,093 - utils - INFO - Preenchendo coluna 'Transportadora' com base na 'UF Origem'.
+2025-10-17 11:35:14,098 - utils - INFO - Coluna 'Transportadora' preenchida com sucesso.
+2025-10-17 11:35:14,102 - utils - INFO - Preenchendo coluna 'Serviço' com base em 'DT Frete'.
+2025-10-17 11:35:14,119 - utils - INFO - Coluna 'Serviço' preenchida com base nas regras definidas.
+2025-10-17 11:35:14,125 - utils - INFO - Limpando a coluna 'DT Frete', substituindo textos por '-'.
+2025-10-17 11:35:14,134 - utils - INFO - Coluna 'DT Frete' limpa.
+2025-10-17 11:35:14,142 - utils - INFO - Removendo linhas onde 'Valor CTe' é 0 ou nulo.
+2025-10-17 11:35:14,153 - utils - INFO - 312 linhas foram removidas com 'Valor CTe' igual a 0.
+2025-10-17 11:35:14,159 - utils - INFO - Colunas reordenadas para a estrutura final do relatório.
+2025-10-17 11:35:14,165 - utils - INFO - --- Processamento do relatório concluído. 2775 linhas finais. ---
+
+2025-10-17 11:35:14,190 - utils - INFO - Processador de Análise inicializado.
+2025-10-17 11:35:14,191 - utils - STAGE - FASE 3: Cruzando dados...
+2025-10-17 11:35:14,196 - utils - INFO - Iniciando o cruzamento de dados para preencher a coluna 'Status pgto'.
+2025-10-17 11:35:14,227 - utils - INFO - Coluna 'Status pgto' preenchida com sucesso.
+2025-10-17 11:35:14,227 - utils - INFO - Iniciando o preenchimento das colunas 'Valor pago', 'Valor recebido' e 'diferença'.
+2025-10-17 11:35:14,272 - utils - INFO - Coluna 'Valor pago' preenchida.
+2025-10-17 11:35:14,273 - utils - INFO - Preenchendo a coluna 'Valor recebido' com base no módulo de 'Valor pago'.
+2025-10-17 11:35:14,277 - utils - INFO - Coluna 'Valor recebido' preenchida.
+2025-10-17 11:35:14,282 - utils - INFO - Calculando a coluna 'diferença' ('Valor CTe' - 'Valor recebido').
+2025-10-17 11:35:14,289 - utils - INFO - Coluna 'diferença' calculada com sucesso.
+2025-10-17 11:35:14,315 - utils - STAGE - FASE 4: Gerando arquivo de saída: 'dados_estruturados.xlsx'
+2025-10-17 11:35:18,929 - utils - STAGE - FASE 5: Gerando relatório final consolidado...
+2025-10-17 11:35:18,930 - utils - INFO - Gerador de Relatório Final inicializado.
+2025-10-17 11:35:18,931 - utils - INFO - --- INICIANDO GERAÇÃO DO RELATÓRIO FINAL CONSOLIDADO ---
+2025-10-17 11:35:18,933 - utils - INFO - Gerando tabela consolidada de resumo...
+2025-10-17 11:35:18,935 - utils - INFO - Processando transportadora: Logtudo Bahia
+2025-10-17 11:35:18,964 - utils - INFO - Processando transportadora: Logtudo Ceará
+2025-10-17 11:35:18,992 - utils - INFO - Processando transportadora: Logtudo Pernambuco
+2025-10-17 11:35:19,017 - utils - INFO - Tabela consolidada gerada com sucesso.
+2025-10-17 11:35:19,040 - utils - INFO - Iniciando a criação da tabela de detalhes de pagamentos pendentes.
+2025-10-17 11:35:19,043 - utils - INFO - Foram encontradas 608 linhas para a tabela de detalhes.
+2025-10-17 11:35:19,050 - utils - INFO - Colunas para a tabela de detalhes foram selecionadas e renomeadas.
+2025-10-17 11:35:19,115 - utils - INFO - Tabela de detalhes escrita na aba 'Resumo Consolidado' a partir da coluna G.
+2025-10-17 11:35:19,356 - utils - INFO - Formatação executiva aplicada à tabela de detalhes.
+2025-10-17 11:35:19,357 - utils - INFO - --- GERAÇÃO DO RELATÓRIO FINAL CONCLUÍDA. ---
+2025-10-17 11:35:28,238 - utils - SUCCESS - Arquivo multipágina salvo com sucesso em: 'dados_estruturados.xlsx'
+2025-10-17 11:35:28,263 - utils - STAGE - Fim do processamento.
+2025-10-17 11:35:28,263 - utils - STAGE - ==================================================
+
+2025-10-17 11:35:28,268 - utils - SUCCESS - Processamento concluído com sucesso!
+2025-10-17 11:35:28,614 - utils - INFO - Tabela 'Resumo Consolidado' carregada para visualização.
+2025-10-17 11:35:28,950 - utils - INFO - Tabela 'Detalhes de Pendências' carregada para visualização.
+2025-10-17 11:35:33,033 - utils - SUCCESS - ==================================================
+
+2025-10-17 11:35:38,295 - utils - SUCCESS - Arquivo .pdf exportado com sucesso para: C:/Users/felip/Downloads/relatorio_final.pdf
