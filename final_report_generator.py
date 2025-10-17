@@ -127,10 +127,12 @@ class FinalReportGenerator:
 
         # --- Definição de Estilos ---
         header_font = Font(bold=True, color='FFFFFF', name='Calibri', size=11)
-        # Uma cor de cabeçalho diferente para distinguir da tabela principal
         header_fill = PatternFill(start_color='4F81BD', end_color='4F81BD', fill_type='solid')
         header_alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
         cell_alignment = Alignment(horizontal='left', vertical='center')
+        
+        # (NOVO) Cor de fundo vermelho claro para status 'Não lançado'
+        light_red_fill = PatternFill(start_color='FFCCCC', end_color='FFCCCC', fill_type='solid')
         
         thin_side = Side(style='thin', color='BFBFBF')
         border = Border(left=thin_side, right=thin_side, top=thin_side, bottom=thin_side)
@@ -139,9 +141,7 @@ class FinalReportGenerator:
         num_rows = len(dataframe)
 
         # --- Largura das Colunas ---
-        # Mapeia o índice da coluna (a partir de 0) para a largura desejada
         column_widths = [12, 12, 22, 12, 28, 18, 15, 15, 20, 15, 15, 15, 15, 15]
-        
         for i, width in enumerate(column_widths):
             col_letter = get_column_letter(table_start_col + i)
             worksheet.column_dimensions[col_letter].width = width
@@ -158,14 +158,30 @@ class FinalReportGenerator:
         logger.debug("Cabeçalho da tabela de detalhes formatado.")
 
         # --- Formatação das Células de Dados ---
+        # Para evitar erros se as colunas não existirem, obtemos seus índices de forma segura
+        try:
+            status_pgto_col_idx = dataframe.columns.get_loc('Status Pgto')
+            recebido_col_idx = dataframe.columns.get_loc('Recebido/A receber')
+        except KeyError as e:
+            logger.error(f"Coluna não encontrada no DataFrame de detalhes: {e}. A formatação condicional será ignorada.")
+            status_pgto_col_idx, recebido_col_idx = -1, -1
+
         for row_idx in range(num_rows):
+            # Pega o valor do status para a linha atual
+            status_pgto = dataframe.iloc[row_idx, status_pgto_col_idx] if status_pgto_col_idx != -1 else None
+
             for col_idx in range(num_cols):
                 cell = worksheet.cell(row=table_start_row + 1 + row_idx, column=table_start_col + col_idx)
                 cell.border = border
                 cell.alignment = cell_alignment
                 
-                # Formatação especial para colunas de valor
                 col_name = dataframe.columns[col_idx]
+
+                # (NOVO) Aplica o fundo vermelho se a condição for atendida
+                if status_pgto == 'Não lançado' and col_name == 'Recebido/A receber':
+                    cell.fill = light_red_fill
+
+                # Formatação especial para colunas de valor
                 if col_name in ['Valor CTe', 'Valor pago', 'Recebido/A receber']:
                     cell.number_format = 'R$ #,##0.00'
         

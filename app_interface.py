@@ -477,11 +477,33 @@ class App(ctk.CTk):
                     elements.append(Paragraph("DETALHES DE PENDÊNCIAS", styles['Heading2']))
                     elements.append(Spacer(1, 12))
 
+                    # Garante que todos os dados sejam strings antes da verificação
                     df_details = df_details.fillna('').astype(str)
+
+                    # Lógica de formatação condicional
+                    conditional_styles = []
+                    try:
+                        status_col_name = 'Status Pgto'
+                        recebido_col_name = 'Recebido/A receber'
+                        
+                        if status_col_name in df_details.columns and recebido_col_name in df_details.columns:
+                            status_col_idx = df_details.columns.get_loc(status_col_name)
+                            recebido_col_idx = df_details.columns.get_loc(recebido_col_name)
+
+                            for i, row_values in enumerate(df_details.iloc[1:].values):
+                                table_row_index = i + 1
+                                status_value = row_values[status_col_idx]
+                                
+                                if status_value.strip() == 'Não lançado':
+                                    conditional_styles.append(
+                                        ('BACKGROUND', (recebido_col_idx, table_row_index), (recebido_col_idx, table_row_index), colors.HexColor('#FFCCCC'))
+                                    )
+                    except Exception as e:
+                        logger.warning(f"Não foi possível aplicar o estilo condicional ao PDF: {e}")
+
                     # A primeira linha de dados é uma duplicata do cabeçalho, então a removemos.
                     table_data_details = [df_details.columns.tolist()] + df_details.values.tolist()[1:]
                     
-                    # Ajusta as larguras das colunas com base nas colunas realmente presentes
                     col_widths_details = [1*inch, 0.7*inch, 1.5*inch, 0.8*inch, 1.2*inch, 1*inch, 1.2*inch, 0.9*inch, 1.2*inch]
                     
                     table_details = Table(table_data_details, colWidths=col_widths_details[:len(df_details.columns)], repeatRows=1)
@@ -494,6 +516,10 @@ class App(ctk.CTk):
                         ('GRID', (0, 0), (-1, -1), 1, colors.darkgrey),
                         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
                     ])
+
+                    for style in conditional_styles:
+                        style_details.add(*style)
+
                     table_details.setStyle(style_details)
                     elements.append(table_details)
                 

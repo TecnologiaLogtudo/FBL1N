@@ -126,14 +126,28 @@ class AnalysisProcessor:
         # 2. Preenchimento de 'Recebido/A receber' com base no módulo de 'Valor pago'
         logger.info("Preenchendo a coluna 'Recebido/A receber' com base no módulo de 'Valor pago'.")
         
-        # Converte 'Valor pago' para numérico, transformando textos (ex: 'Não lançado') em NaN
+        # Lógica para 'Recebido/A receber':
+        # Se 'Status pgto' for 'Não lançado', copia 'Valor CTe'.
+        # Se 'Valor pago' não for numérico (ex: 'Não compensado'), usa '-'.
+        # Caso contrário, usa o valor absoluto de 'Valor pago'.
+        
+        # Inicializa a coluna 'Recebido/A receber' com NaN para facilitar o preenchimento condicional
+        df['Recebido/A receber'] = pd.NA
+
+        # Condição 1: 'Status pgto' é 'Não lançado'
+        mask_nao_lancado = df['Status pgto'] == 'Não lançado'
+        df.loc[mask_nao_lancado, 'Recebido/A receber'] = df.loc[mask_nao_lancado, 'Valor CTe']
+
+        # Condição 2: 'Valor pago' não é numérico (e não foi tratado pela condição 1)
+        # Converte 'Valor pago' para numérico, transformando textos em NaN
         valor_pago_numeric = pd.to_numeric(df['Valor pago'], errors='coerce')
+        mask_nao_numerico_valor_pago = valor_pago_numeric.isna() & ~mask_nao_lancado
+        df.loc[mask_nao_numerico_valor_pago, 'Recebido/A receber'] = '-'
+
+        # Condição 3: 'Valor pago' é numérico (e não foi tratado pelas condições anteriores)
+        mask_numerico_valor_pago = valor_pago_numeric.notna() & ~mask_nao_lancado & ~mask_nao_numerico_valor_pago
+        df.loc[mask_numerico_valor_pago, 'Recebido/A receber'] = valor_pago_numeric.abs()
         
-        # Calcula o valor absoluto (módulo) onde 'Valor pago' é numérico
-        df['Recebido/A receber'] = valor_pago_numeric.abs()
-        
-        # Onde o valor original não era numérico (resultando em NaN), preenche com '-'
-        df['Recebido/A receber'] = df['Recebido/A receber'].fillna('-')
         logger.info("Coluna 'Recebido/A receber' preenchida.")
 
         # 3. Cálculo da 'diferença'
