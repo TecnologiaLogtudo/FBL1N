@@ -38,6 +38,8 @@ class TkinterLogHandler(logging.Handler):
             msg_type = "error"
         elif record.levelno == logging.WARNING:
             msg_type = "warning"
+        elif record.levelno == logging.STAGE:
+            msg_type = "stage"
         
         # A UI deve ser atualizada na thread principal
         self.text_widget.after(0, self.text_widget.log, msg, msg_type)
@@ -62,7 +64,7 @@ class App(ctk.CTk):
         elif msg_type == "error":
             color = "red"
         elif msg_type == "stage":
-            color = "cyan"
+            color = "blue"
         else: # info, warning
             color = "white"
 
@@ -77,6 +79,12 @@ class App(ctk.CTk):
             return # Ainda não existe o rótulo de status
         
         self.status_label.configure(text=f"Status: {message}", text_color=color)
+
+    def update_progress(self, value):
+        """Atualiza a barra de progresso."""
+        if not hasattr(self, 'progress_bar') or not self.progress_bar.winfo_exists():
+            return
+        self.progress_bar.set(value)
 
     def select_file(self, path_variable):
         """Abre o explorador de arquivos e atualiza a variável de caminho."""
@@ -193,12 +201,17 @@ class App(ctk.CTk):
         logging.SUCCESS = 25  # Entre INFO (20) e WARNING (30)
         logging.addLevelName(logging.SUCCESS, "SUCCESS")
 
+        # Adiciona um novo nível de log para "stage"
+        logging.STAGE = 26 # Depois de SUCCESS
+        logging.addLevelName(logging.STAGE, "STAGE")
+
         # Cria o handler e o adiciona ao logger raiz
         tkinter_handler = TkinterLogHandler(self)
         logging.getLogger().addHandler(tkinter_handler)
         
         # Define um método de atalho para o novo nível
         logging.Logger.success = lambda self, msg, *args, **kwargs: self.log(logging.SUCCESS, msg, *args, **kwargs)
+        logging.Logger.stage = lambda self, msg, *args, **kwargs: self.log(logging.STAGE, msg, *args, **kwargs)
 
         logger.success("Painel de Controle iniciado. Pronto para operação.")
         self.update_status("Pronto", "green")
@@ -235,7 +248,7 @@ class App(ctk.CTk):
             report_file = self.report_file_path.get()
             output_file = OUTPUT_FILE_PATH 
 
-            run_main_process(input_file, report_file, output_file)
+            run_main_process(input_file, report_file, output_file, progress_callback=self.update_progress)
             
             logger.success("Processamento concluído com sucesso!")
             self.update_status("Concluído com Sucesso", "green")
