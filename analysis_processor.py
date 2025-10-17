@@ -84,7 +84,7 @@ class AnalysisProcessor:
 
     def _populate_payment_values(self, report_df, final_sheets_data):
         """
-        (Análise) Preenche as colunas 'Valor pago', 'Valor recebido' e 'diferença'.
+        (Análise) Preenche as colunas 'Valor pago', 'Recebido/A receber' e 'diferença'.
         
         Args:
             report_df (pd.DataFrame): DataFrame do relatório (já com 'Status pgto' preenchido).
@@ -93,7 +93,7 @@ class AnalysisProcessor:
         Returns:
             pd.DataFrame: DataFrame do relatório com as colunas de pagamento preenchidas.
         """
-        logger.info("Iniciando o preenchimento das colunas 'Valor pago', 'Valor recebido' e 'diferença'.")
+        logger.info("Iniciando o preenchimento das colunas 'Valor pago', 'Recebido/A receber' e 'diferença'.")
         df = report_df.copy()
 
         # Mapeamento de transportadora para nome da aba
@@ -104,7 +104,7 @@ class AnalysisProcessor:
         }
         
         # Garante que as colunas de valor sejam do tipo 'object' para aceitar textos e números
-        df[['Valor pago', 'Valor recebido']] = df[['Valor pago', 'Valor recebido']].astype(object)
+        df[['Valor pago', 'Recebido/A receber']] = df[['Valor pago', 'Recebido/A receber']].astype(object)
 
         # 1. Preenchimento de 'Valor pago' (lógica similar ao PROCV)
         for transportadora, sheet_name in transportadora_to_sheet_map.items():
@@ -123,25 +123,25 @@ class AnalysisProcessor:
         
         logger.info("Coluna 'Valor pago' preenchida.")
 
-        # 2. Preenchimento de 'Valor recebido' com base no módulo de 'Valor pago'
-        logger.info("Preenchendo a coluna 'Valor recebido' com base no módulo de 'Valor pago'.")
+        # 2. Preenchimento de 'Recebido/A receber' com base no módulo de 'Valor pago'
+        logger.info("Preenchendo a coluna 'Recebido/A receber' com base no módulo de 'Valor pago'.")
         
         # Converte 'Valor pago' para numérico, transformando textos (ex: 'Não lançado') em NaN
         valor_pago_numeric = pd.to_numeric(df['Valor pago'], errors='coerce')
         
         # Calcula o valor absoluto (módulo) onde 'Valor pago' é numérico
-        df['Valor recebido'] = valor_pago_numeric.abs()
+        df['Recebido/A receber'] = valor_pago_numeric.abs()
         
         # Onde o valor original não era numérico (resultando em NaN), preenche com '-'
-        df['Valor recebido'] = df['Valor recebido'].fillna('-')
-        logger.info("Coluna 'Valor recebido' preenchida.")
+        df['Recebido/A receber'] = df['Recebido/A receber'].fillna('-')
+        logger.info("Coluna 'Recebido/A receber' preenchida.")
 
         # 3. Cálculo da 'diferença'
-        logger.info("Calculando a coluna 'diferença' ('Valor CTe' - 'Valor recebido').")
+        logger.info("Calculando a coluna 'diferença' ('Valor CTe' - 'Recebido/A receber').")
         # Converte 'Valor CTe' para numérico, tratando erros e preenchendo nulos com 0.
         valor_cte_numeric = pd.to_numeric(df['Valor CTe'], errors='coerce').fillna(0)
-        # Converte 'Valor recebido' para numérico, tratando o texto '-' como 0.
-        valor_recebido_numeric = pd.to_numeric(df['Valor recebido'], errors='coerce').fillna(0)
+        # Converte 'Recebido/A receber' para numérico, tratando o texto '-' como 0.
+        valor_recebido_numeric = pd.to_numeric(df['Recebido/A receber'], errors='coerce').fillna(0)
         
         # Realiza a subtração para calcular a diferença.
         df['diferença'] = valor_cte_numeric - valor_recebido_numeric
@@ -168,7 +168,7 @@ class AnalysisProcessor:
             # Mesmo sem lookup, ainda podemos preencher as outras colunas
             report_df['Status pgto'] = 'Não lançado'
             report_df['Valor pago'] = 'Não lançado'
-            report_df['Valor recebido'] = '-' # Se não há lookup, não há valor pago
+            report_df['Recebido/A receber'] = '-' # Se não há lookup, não há valor pago
             report_df['diferença'] = pd.to_numeric(report_df['Valor CTe'], errors='coerce').fillna(0)
             return report_df
 

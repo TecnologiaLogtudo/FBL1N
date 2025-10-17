@@ -296,7 +296,7 @@ class App(ctk.CTk):
             df_details = df_details_full.iloc[:, 6:]
 
             if not df_details.empty:
-                detail_headers = ['Emissão', 'Mês', 'Transportadora', 'CTRC', 'Cliente', 'Serviço', 'Senha Ravex', 'DT Frete', 'Destino', 'Nota fiscal', 'Status Pgto', 'Valor CTe', 'Valor pago', 'Valor recebido']
+                detail_headers = ['Emissão', 'Mês', 'Transportadora', 'CTRC', 'Cliente', 'Serviço', 'Senha Ravex', 'DT Frete', 'Destino', 'Nota fiscal', 'Status Pgto', 'Valor CTe', 'Valor pago', 'Recebido/A receber']
                 df_details.columns = detail_headers[:len(df_details.columns)]
                 self.display_dataframe(self.details_tree, df_details)
                 logger.info("Tabela 'Detalhes de Pendências' carregada para visualização.")
@@ -363,9 +363,13 @@ class App(ctk.CTk):
                 )
                 if dest_path:
                     import shutil
-                    shutil.copy(OUTPUT_FILE_PATH, dest_path)
-                    logger.success(f"Arquivo .xlsx exportado com sucesso para: {dest_path}")
-                    messagebox.showinfo("Exportação Bem-sucedida", f"O arquivo Excel foi salvo em:\n{dest_path}")
+                    try:
+                        shutil.copy(OUTPUT_FILE_PATH, dest_path)
+                        logger.success(f"Arquivo .xlsx exportado com sucesso para: {dest_path}")
+                        messagebox.showinfo("Exportação Bem-sucedida", f"O arquivo Excel foi salvo em:\n{dest_path}")
+                    except PermissionError:
+                        logger.error(f"Erro de permissão ao salvar o arquivo: {dest_path}. Verifique se o arquivo já está aberto.")
+                        messagebox.showerror("Erro de Permissão", f"Não foi possível salvar o arquivo em:\n{dest_path}\n\nVerifique se o arquivo já está aberto em outro programa e tente novamente.")
             except Exception as e:
                 logger.error(f"Erro ao exportar arquivo .xlsx: {e}")
                 messagebox.showerror("Erro de Exportação", f"Não foi possível exportar o arquivo .xlsx.\n\nErro: {e}")
@@ -400,11 +404,11 @@ class App(ctk.CTk):
                 df_details = pd.DataFrame()
                 if not df_details_raw.empty:
                     # Define todos os cabeçalhos possíveis para a seção de detalhes
-                    detail_headers = ['Emissão', 'Mês', 'Transportadora', 'CTRC', 'Cliente', 'Serviço', 'Senha Ravex', 'DT Frete', 'Destino', 'Nota fiscal', 'Status Pgto', 'Valor CTe', 'Valor pago', 'Valor recebido']
+                    detail_headers = ['Emissão', 'Mês', 'Transportadora', 'CTRC', 'Cliente', 'Serviço', 'Senha Ravex', 'DT Frete', 'Destino', 'Nota fiscal', 'Valor CTe', 'Status Pgto', 'Valor pago', 'Recebido/A receber']
                     df_details_raw.columns = detail_headers[:len(df_details_raw.columns)]
                     
                     # Seleciona apenas as colunas desejadas para o PDF
-                    cols_to_keep = ['Emissão', 'Mês', 'Transportadora', 'CTRC', 'Serviço', 'Valor CTe', 'Status Pgto', 'Valor pago', 'Valor recebido']
+                    cols_to_keep = ['Emissão', 'Mês', 'Transportadora', 'CTRC', 'Serviço', 'Valor CTe', 'Status Pgto', 'Valor pago', 'Recebido/A receber']
                     
                     # Garante que apenas colunas existentes sejam selecionadas para evitar erros
                     existing_cols = [col for col in cols_to_keep if col in df_details_raw.columns]
@@ -460,6 +464,7 @@ class App(ctk.CTk):
                         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
                         ('GRID', (0, 0), (-1, -1), 1, colors.black),
                         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                        ('BACKGROUND', (0, -3), (-1, -1), colors.cyan),
                     ])
                     table_summary.setStyle(style_summary)
                     elements.append(table_summary)
@@ -473,10 +478,11 @@ class App(ctk.CTk):
                     elements.append(Spacer(1, 12))
 
                     df_details = df_details.fillna('').astype(str)
-                    table_data_details = [df_details.columns.tolist()] + df_details.values.tolist()
+                    # A primeira linha de dados é uma duplicata do cabeçalho, então a removemos.
+                    table_data_details = [df_details.columns.tolist()] + df_details.values.tolist()[1:]
                     
                     # Ajusta as larguras das colunas com base nas colunas realmente presentes
-                    col_widths_details = [1*inch, 0.7*inch, 1.5*inch, 0.8*inch, 1.2*inch, 1.2*inch, 0.9*inch, 0.9*inch, 1*inch]
+                    col_widths_details = [1*inch, 0.7*inch, 1.5*inch, 0.8*inch, 1.2*inch, 1*inch, 1.2*inch, 0.9*inch, 1.2*inch]
                     
                     table_details = Table(table_data_details, colWidths=col_widths_details[:len(df_details.columns)], repeatRows=1)
                     style_details = TableStyle([
@@ -490,11 +496,14 @@ class App(ctk.CTk):
                     ])
                     table_details.setStyle(style_details)
                     elements.append(table_details)
-
-                doc.build(elements)
                 
-                logger.success(f"Arquivo .pdf exportado com sucesso para: {dest_path}")
-                messagebox.showinfo("Exportação Bem-sucedida", f"O arquivo PDF foi salvo em:\n{dest_path}")
+                try:
+                    doc.build(elements)
+                    logger.success(f"Arquivo .pdf exportado com sucesso para: {dest_path}")
+                    messagebox.showinfo("Exportação Bem-sucedida", f"O arquivo PDF foi salvo em:\n{dest_path}")
+                except PermissionError:
+                    logger.error(f"Erro de permissão ao salvar o arquivo: {dest_path}. Verifique se o arquivo já está aberto.")
+                    messagebox.showerror("Erro de Permissão", f"Não foi possível salvar o arquivo em:\n{dest_path}\n\nVerifique se o arquivo já está aberto em outro programa e tente novamente.")
 
             except Exception as e:
                 logger.error(f"Erro ao exportar arquivo .pdf: {e}", exc_info=True)

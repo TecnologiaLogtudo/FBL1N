@@ -146,7 +146,7 @@ class ReportProcessor:
             logger.info("Adicionando colunas de pagamento (serão preenchidas na etapa de análise).")
             self.df['Status pgto'] = ''
             self.df['Valor pago'] = 0.0
-            self.df['Valor recebido'] = 0.0
+            self.df['Recebido/A receber'] = 0.0
             self.df['diferença'] = 0.0
             
             logger.info("Preenchendo colunas com base nas regras.")
@@ -159,7 +159,7 @@ class ReportProcessor:
                 'Emissao', 'Mês', 'Transportadora', 'CTRC', 'Cliente', 'Serviço',
                 'Senha Ravex', 'DT Frete', 'Origem', 'UF Origem', 'Destino', 'UF',
                 'Nota Fiscal', 'Valor CTe', 'Status pgto', 'Valor pago', 
-                'Valor recebido', 'diferença'
+                'Recebido/A receber', 'diferença'
             ]
             self.df = self.df[final_column_order]
             logger.info("Colunas reordenadas para a estrutura final do relatório.")

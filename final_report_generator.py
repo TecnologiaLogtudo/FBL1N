@@ -166,7 +166,7 @@ class FinalReportGenerator:
                 
                 # Formatação especial para colunas de valor
                 col_name = dataframe.columns[col_idx]
-                if col_name in ['Valor CTe', 'Valor pago', 'Valor recebido']:
+                if col_name in ['Valor CTe', 'Valor pago', 'Recebido/A receber']:
                     cell.number_format = 'R$ #,##0.00'
         
         logger.debug(f"{num_rows} linhas de dados formatadas na tabela de detalhes.")
@@ -182,7 +182,7 @@ class FinalReportGenerator:
             logger.warning("DataFrame de análise está vazio. Nenhuma tabela será gerada.")
             return pd.DataFrame()
 
-        self.analyzed_df['Valor recebido'] = pd.to_numeric(self.analyzed_df['Valor recebido'], errors='coerce').fillna(0)
+        self.analyzed_df['Recebido/A receber'] = pd.to_numeric(self.analyzed_df['Recebido/A receber'], errors='coerce').fillna(0)
         
         expected_services = [
             'Complemento', 'Descarga', 'Diária no cliente', 'Diária parado', 
@@ -203,7 +203,7 @@ class FinalReportGenerator:
             
             pivot = pd.pivot_table(
                 df_transportadora,
-                values='Valor recebido',
+                values='Recebido/A receber',
                 index='Serviço',
                 columns='Status pgto',
                 aggfunc='sum',
@@ -357,7 +357,7 @@ class FinalReportGenerator:
             columns_to_keep = [
                 'Emissao', 'Mês', 'Transportadora', 'CTRC', 'Cliente', 'Serviço',
                 'Senha Ravex', 'DT Frete', 'Destino', 'Nota Fiscal', 'Valor CTe',
-                'Status pgto', 'Valor pago', 'Valor recebido'
+                'Status pgto', 'Valor pago', 'Recebido/A receber'
             ]
             
             final_details_df = filtered_details_df[columns_to_keep]
@@ -370,7 +370,7 @@ class FinalReportGenerator:
             })
             
             # Converte as colunas de valor para numérico para formatação correta no Excel
-            for col in ['Valor CTe', 'Valor pago', 'Valor recebido']:
+            for col in ['Valor CTe', 'Valor pago', 'Recebido/A receber']:
                 if col in final_details_df.columns:
                     final_details_df[col] = pd.to_numeric(final_details_df[col], errors='coerce')
 
