@@ -4,6 +4,9 @@
 # --- Configurações Gerais ---
 LOG_FILE = 'processamento.log'
 
+# config.py (garanta que esta linha exista)
+OUTPUT_FILE_PATH = 'dados_estruturados.xlsx'
+
 # --- Configurações para a Etapa 1 (DataProcessor) ---
 # Nomes exatos das colunas a serem mantidas após a leitura inicial
 COLUNAS_ETAPA1_PARA_MANTER = [
