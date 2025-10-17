@@ -389,16 +389,26 @@ class App(ctk.CTk):
                     return
 
                 # --- Carregamento e Preparação dos Dados ---
+                # Tabela 1: Resumo Consolidado
                 df_summary = pd.read_excel(OUTPUT_FILE_PATH, sheet_name='Resumo Consolidado', skiprows=2, usecols="A:E")
-                df_all = pd.read_excel(OUTPUT_FILE_PATH, sheet_name='Resumo Consolidado', skiprows=2)
-                
-                df_details_raw = df_all.iloc[:, 6:]
-                cols_to_keep = ['Emissão', 'Mês', 'Transportadora', 'CTRC', 'Serviço', 'Valor CTe', 'Status Pgto', 'Valor pago', 'Valor recebido']
+                df_summary.dropna(how='all', inplace=True) # Remove linhas totalmente vazias
+
+                # Tabela 2: Detalhes de Pendências
+                df_details_full = pd.read_excel(OUTPUT_FILE_PATH, sheet_name='Resumo Consolidado', skiprows=2, header=None)
+                df_details_raw = df_details_full.iloc[:, 6:]
                 
                 df_details = pd.DataFrame()
                 if not df_details_raw.empty:
-                    existing_cols_to_keep = [col for col in cols_to_keep if col in df_details_raw.columns]
-                    df_details = df_details_raw[existing_cols_to_keep]
+                    # Define todos os cabeçalhos possíveis para a seção de detalhes
+                    detail_headers = ['Emissão', 'Mês', 'Transportadora', 'CTRC', 'Cliente', 'Serviço', 'Senha Ravex', 'DT Frete', 'Destino', 'Nota fiscal', 'Status Pgto', 'Valor CTe', 'Valor pago', 'Valor recebido']
+                    df_details_raw.columns = detail_headers[:len(df_details_raw.columns)]
+                    
+                    # Seleciona apenas as colunas desejadas para o PDF
+                    cols_to_keep = ['Emissão', 'Mês', 'Transportadora', 'CTRC', 'Serviço', 'Valor CTe', 'Status Pgto', 'Valor pago', 'Valor recebido']
+                    
+                    # Garante que apenas colunas existentes sejam selecionadas para evitar erros
+                    existing_cols = [col for col in cols_to_keep if col in df_details_raw.columns]
+                    df_details = df_details_raw[existing_cols]
 
                 if df_summary.empty and df_details.empty:
                     messagebox.showwarning("Dados Vazios", "Não há dados na aba 'Resumo Consolidado' para gerar o PDF.")
@@ -440,8 +450,7 @@ class App(ctk.CTk):
                     df_summary = df_summary.fillna('').astype(str)
                     table_data_summary = [df_summary.columns.tolist()] + df_summary.values.tolist()
                     
-                    # AJUSTE: Larguras de coluna reduzidas para caber em uma página retrato
-                    col_widths_summary = [1.6*inch, 1.2*inch, 1.2*inch, 1.2*inch, 1.2*inch] # Total: 6.0 polegadas
+                    col_widths_summary = [1.6*inch, 1.2*inch, 1.2*inch, 1.2*inch, 1.2*inch]
                     
                     table_summary = Table(table_data_summary, colWidths=col_widths_summary, repeatRows=1)
                     style_summary = TableStyle([
@@ -466,9 +475,10 @@ class App(ctk.CTk):
                     df_details = df_details.fillna('').astype(str)
                     table_data_details = [df_details.columns.tolist()] + df_details.values.tolist()
                     
-                    col_widths_details = [1*inch, 0.7*inch, 1.5*inch, 1*inch, 1.2*inch, 1*inch, 1*inch, 1*inch, 1*inch]
+                    # Ajusta as larguras das colunas com base nas colunas realmente presentes
+                    col_widths_details = [1*inch, 0.7*inch, 1.5*inch, 0.8*inch, 1.2*inch, 1.2*inch, 0.9*inch, 0.9*inch, 1*inch]
                     
-                    table_details = Table(table_data_details, colWidths=col_widths_details, repeatRows=1)
+                    table_details = Table(table_data_details, colWidths=col_widths_details[:len(df_details.columns)], repeatRows=1)
                     style_details = TableStyle([
                         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4F81BD')),
                         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
