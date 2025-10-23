@@ -131,14 +131,14 @@ class App(ctk.CTk):
         
         # Input File
         ctk.CTkLabel(config_frame, text="Base de Dados (.xlsx):").grid(row=1, column=0, padx=10, pady=(10, 5), sticky="w")
-        self.input_file_path = tk.StringVar(value="base_de_dados.xlsx")
+        self.input_file_path = tk.StringVar(value="arquivo FBL1N")
         input_entry = ctk.CTkEntry(config_frame, textvariable=self.input_file_path, width=400)
         input_entry.grid(row=1, column=1, padx=10, pady=(10, 5), sticky="ew")
         ctk.CTkButton(config_frame, text="Selecionar", command=lambda: self.select_file(self.input_file_path)).grid(row=1, column=2, padx=10, pady=(10, 5))
         
         # Report File
         ctk.CTkLabel(config_frame, text="Relatório Externo (.xls):").grid(row=2, column=0, padx=10, pady=5, sticky="w")
-        self.report_file_path = tk.StringVar(value="relatorio.xls")
+        self.report_file_path = tk.StringVar(value="relatorio BSoft")
         report_entry = ctk.CTkEntry(config_frame, textvariable=self.report_file_path, width=400)
         report_entry.grid(row=2, column=1, padx=10, pady=5, sticky="ew")
         ctk.CTkButton(config_frame, text="Selecionar", command=lambda: self.select_file(self.report_file_path)).grid(row=2, column=2, padx=10, pady=5)

@@ -87,10 +87,14 @@ class ReportProcessor:
         logger.info("Coluna 'DT Frete' limpa.")
 
     def _treat_ctrc_column(self):
-        """(Tratamento) Remove o prefixo '2025' e os zeros subsequentes da coluna CTRC."""
-        logger.info("Tratando coluna 'CTRC' para remover prefixo '2025' e zeros à esquerda.")
-        self.df['CTRC'] = self.df['CTRC'].astype(str).str.replace(r'^20250*', '', regex=True)
-        logger.info("Prefixo '2025' e zeros subsequentes removidos da coluna 'CTRC'.")
+        """(Tratamento) Remove o prefixo '2025' (e zeros subsequentes) e o sufixo '2025' da coluna CTRC."""
+        logger.info("Tratando coluna 'CTRC' para remover prefixo '2025' e sufixo '2025'.")
+        self.df['CTRC'] = self.df['CTRC'].astype(str).str.replace(r'^20250*|2025', '', regex=True)
+        logger.info("Prefixo '2025' e sufixo '2025' removidos da coluna 'CTRC'.")
+
+        logger.info("Removendo linhas onde a coluna 'CTRC' tem 7 ou mais caracteres.")
+        self.df = self.df[self.df['CTRC'].str.len() < 7]
+        logger.info("Linhas com 7 ou mais caracteres em 'CTRC' removidas.")
 
     def _filter_valor_cte(self):
         """(Filtro) Remove linhas onde 'Valor CTe' é zero."""
