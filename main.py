@@ -8,8 +8,8 @@ def main(input_file, report_file, output_file, progress_callback=None):
     """
     Função principal que orquestra todo o processo de ETL e Análise.
     """
-    logger.stage("==================================================")
-    logger.stage(f"Iniciando novo ciclo de processamento.")
+    logger.stage("===================================================")
+    logger.stage(f"Iniciando novo ciclo de processamento...")
     if progress_callback: progress_callback(0.05)
     
     # Adia as importações para dentro da função para evitar dependências circulares
@@ -19,7 +19,7 @@ def main(input_file, report_file, output_file, progress_callback=None):
     from final_report_generator import FinalReportGenerator
 
     # --- FASE 1: Processamento do arquivo base ---
-    logger.stage("FASE 1: Processando arquivo base...")
+    logger.stage("FASE 1: Processando arquivo base...\n")
     data_proc = DataProcessor(input_file)
     processed_df_step1 = data_proc.process_step1()
     if progress_callback: progress_callback(0.2)
@@ -31,7 +31,7 @@ def main(input_file, report_file, output_file, progress_callback=None):
         if progress_callback: progress_callback(0.4)
 
         # --- FASE 2: Processamento do relatório externo ---
-        logger.stage("FASE 2: Processando relatório externo...")
+        logger.stage("FASE 2: Processando relatório externo...\n")
         report_proc = ReportProcessor(report_file)
         report_df = report_proc.process()
         if progress_callback: progress_callback(0.5)
@@ -39,7 +39,7 @@ def main(input_file, report_file, output_file, progress_callback=None):
         # --- FASE 3: Análise e Cruzamento de Dados ---
         if report_df is not None:
             analyzer = AnalysisProcessor()
-            logger.stage("FASE 3: Cruzando dados...")
+            logger.stage("FASE 3: Cruzando dados...\n")
             analyzed_report_df = analyzer.run_analysis(report_df, final_sheets_step4)
             if progress_callback: progress_callback(0.7)
         else:
@@ -70,7 +70,7 @@ def main(input_file, report_file, output_file, progress_callback=None):
 
                 # --- FASE 5: Geração do relatório final ---
                 if analyzed_report_df is not None and not analyzed_report_df.empty:                    
-                    logger.stage("FASE 5: Gerando relatório final consolidado...")
+                    logger.stage("FASE 5: Gerando relatório final consolidado...\n")
                     report_generator = FinalReportGenerator(analyzed_report_df)
                     report_generator.generate_report(writer)
                     if progress_callback: progress_callback(0.9)

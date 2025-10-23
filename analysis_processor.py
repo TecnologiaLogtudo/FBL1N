@@ -1,4 +1,5 @@
 # analysis_processor.py
+# 5º Etapa: Cruzamento e Análise de Dados
 # Módulo responsável por cruzar e analisar dados de diferentes fontes já processadas.
 
 import pandas as pd
@@ -159,7 +160,7 @@ class AnalysisProcessor:
         
         # Realiza a subtração para calcular a diferença.
         df['diferença'] = valor_cte_numeric - valor_recebido_numeric
-        logger.info("Coluna 'diferença' calculada com sucesso.")
+        logger.info("Coluna 'diferença' calculada com sucesso.\n")
 
         return df
 

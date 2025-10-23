@@ -1,4 +1,7 @@
 # final_report_generator.py
+# 6º Etapa: Geração do Relatório Final Consolidado
+# Módulo para gerar o relatório final em Excel com análises e tabelas dinâmicas.
+
 import pandas as pd
 import numpy as np
 from utils import logger, format_currency
@@ -294,7 +297,7 @@ class FinalReportGenerator:
         """
         Gera o relatório final consolidado com formatação executiva.
         """
-        logger.info("--- INICIANDO GERAÇÃO DO RELATÓRIO FINAL CONSOLIDADO ---")
+        logger.stair("--- INICIANDO GERAÇÃO DO RELATÓRIO FINAL CONSOLIDADO ---")
         
         consolidated_data = self._generate_comprehensive_summary()
         export_df = self._create_dataframe_from_nested_dict(consolidated_data)
@@ -413,5 +416,5 @@ class FinalReportGenerator:
 
         final_report_sheets = {sheet_name: final_export_df}
         
-        logger.info("--- GERAÇÃO DO RELATÓRIO FINAL CONCLUÍDA. ---")
+        logger.success("--- GERAÇÃO DO RELATÓRIO FINAL CONCLUÍDA. ---\n")
         return final_report_sheets

@@ -1,4 +1,5 @@
 # report_processor.py
+# 2º Etapa: Processamento do Relatório Externo
 # Módulo para processar o relatório externo baixado do sistema web.
 
 import pandas as pd
@@ -104,7 +105,7 @@ class ReportProcessor:
         """
         Executa o pipeline de limpeza e estruturação do relatório externo.
         """
-        logger.info("--- INICIANDO PROCESSAMENTO DO RELATÓRIO EXTERNO ---")
+        logger.stair("--- INICIANDO PROCESSAMENTO DO RELATÓRIO EXTERNO ---")
         try:
             logger.info(f"Lendo o arquivo de relatório: {self.filepath}")
             df = pd.read_excel(self.filepath, header=None, skiprows=REPORT_SKIP_ROWS, engine='xlrd')
@@ -164,7 +165,7 @@ class ReportProcessor:
             self.df = self.df[final_column_order]
             logger.info("Colunas reordenadas para a estrutura final do relatório.")
             
-            logger.info(f"--- Processamento do relatório concluído. {len(self.df)} linhas finais. ---\n")
+            logger.success(f"--- Processamento do relatório concluído. {len(self.df)} linhas finais. ---\n")
             return self.df
 
         except FileNotFoundError:

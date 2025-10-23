@@ -1,4 +1,5 @@
 # data_processor.py
+# 1º Etapa: Processamento da Planilha Principal
 # Módulo para o processamento da planilha principal (base_de_dados.xlsx).
 
 import pandas as pd
@@ -41,7 +42,7 @@ class DataProcessor:
     def filter_by_date_step1(self):
         """(Etapa 1) Remove linhas com data vazia ou do ano de 2023."""
         if self.df is None: return
-        logger.info("Etapa 1: Filtrando por data (removendo vazios e ano 2023).")
+        logger.info("Filtrando por data (removendo vazios e ano 2023).")
         
         initial_rows = len(self.df)
         
@@ -66,7 +67,7 @@ class DataProcessor:
     def select_columns_step1(self):
         """(Etapa 1) Seleciona apenas as colunas especificadas para a Etapa 1."""
         if self.df is None: return
-        logger.info(f"Etapa 1: Selecionando colunas: {', '.join(COLUNAS_ETAPA1_PARA_MANTER)}")
+        logger.info(f"Selecionando colunas: {', '.join(COLUNAS_ETAPA1_PARA_MANTER)}")
         try:
             # Filtra o DataFrame para manter apenas as colunas desejadas
             self.df = self.df[COLUNAS_ETAPA1_PARA_MANTER]
@@ -78,7 +79,7 @@ class DataProcessor:
     def treat_reference_column(self):
         """(Etapa 1) Aplica os tratamentos na coluna 'Referência'."""
         if self.df is None: return
-        logger.info("Etapa 1: Tratando a coluna 'Referência'.")
+        logger.info("Tratando a coluna 'Referência'.")
         initial_rows = len(self.df)
         
         # Converte para string, remove o traço e o que vem depois, e remove espaços
@@ -117,12 +118,12 @@ class DataProcessor:
 
     def process_step1(self):
         """Executa o pipeline da primeira etapa de processamento."""
-        logger.info("--- INICIANDO ETAPA 1: Processamento da Planilha Principal ---")
+        logger.stair("--- INICIANDO ETAPA 1: Processamento da Planilha Principal ---")
         if self.load_data():
             self.filter_by_date_step1()
             self.select_columns_step1()
             self.treat_reference_column()
-            logger.info("--- Processamento da Etapa 1 concluído --- \n")
+            logger.success("--- Processamento da Etapa 1 concluído --- \n")
             return self.df
         return None
 
@@ -132,7 +133,7 @@ class DataProcessor:
             logger.warning("DataFrame de entrada para Etapa 2 está vazio. Pulando etapa.")
             return {}
         
-        logger.info("--- INICIANDO ETAPA 2: Divisão por Conta para o Ano de 2025 ---")
+        logger.stair("--- INICIANDO ETAPA 2: Divisão por Conta para o Ano de 2025 ---")
         df_step2 = dataframe.copy()
         
         # Garante que a coluna de data é do tipo datetime para filtrar pelo ano
@@ -140,7 +141,7 @@ class DataProcessor:
         df_step2.dropna(subset=[COLUNA_DATA_DOCUMENTO], inplace=True)
         
         df_2025 = df_step2[df_step2[COLUNA_DATA_DOCUMENTO].dt.year == 2025].copy()
-        logger.info(f"Total de {len(df_2025)} linhas encontradas para o ano de 2025.")
+        logger.info(f"Total de {len(df_2025)} linhas encontradas para o ano de 2025.\n")
 
         sheets_data = {}
         for conta, nome_aba in CONTAS_MAPEAMENTO_ETAPA2.items():
@@ -156,12 +157,12 @@ class DataProcessor:
             sheets_data[nome_aba] = df_conta
             logger.info(f"  - {len(df_conta)} linhas separadas para a conta {conta}.")
 
-        logger.info("--- Etapa 2 concluída --- \n")
+        logger.success("--- Etapa 2 concluída --- \n")
         return sheets_data
 
     def process_steps_3_and_4(self, sheets_data_step2):
         """(Etapas 3 e 4) Executa os tratamentos sequenciais para gerar as abas finais."""
-        logger.info("--- INICIANDO ETAPAS 3 e 4: Tratamento e Estruturação Final ---")
+        logger.stair("--- INICIANDO ETAPAS 3 e 4: Tratamento e Estruturação Final ---")
         final_sheets = {}
         step2_to_step4_map = {v: CONTAS_MAPEAMENTO_ETAPA4[k] for k, v in CONTAS_MAPEAMENTO_ETAPA2.items()}
         
@@ -172,7 +173,7 @@ class DataProcessor:
             
             df_copy = df.copy()
             final_sheet_name = step2_to_step4_map.get(sheet_name_step2, sheet_name_step2 + "_final")
-            logger.info(f"--- Processando '{sheet_name_step2}' para gerar a aba '{final_sheet_name}' ---")
+            logger.info(f"\n--- Processando '{sheet_name_step2}' para gerar a aba '{final_sheet_name}' ---")
             
             # --- ETAPA 3: Filtrar e excluir linhas ---
             logger.info(f"[{final_sheet_name}] Etapa 3: Identificando referências únicas com valor positivo para exclusão.")
@@ -212,5 +213,5 @@ class DataProcessor:
             
             final_sheets[final_sheet_name] = df_final_cols
         
-        logger.info("--- Etapas 3 e 4 concluídas ---")
+        logger.success("--- Etapas 3 e 4 concluídas ---\n")
         return final_sheets

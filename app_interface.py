@@ -1,5 +1,6 @@
 # app_interface.py
 # Interface Gráfica para o Processador de Planilhas
+
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk # ttk importado aqui
 import customtkinter as ctk
@@ -10,10 +11,20 @@ import sys
 import logging
 
 # Adiciona o diretório atual ao sys.path para garantir que os imports funcionem
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+# Esta função é necessária para o PyInstaller encontrar os arquivos
+def resource_path(relative_path):
+    """ Obtenha o caminho absoluto para o recurso, funciona para o desenvolvimento e para o PyInstaller """
+    try:
+        # PyInstaller cria uma pasta temporária e armazena o caminho em _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
 
+    return os.path.join(base_path, relative_path)
+
+# Seus imports existentes
+# Importamos aqui, após definir resource_path
 try:
-    # Seus imports existentes
     from main import main as run_main_process
     from utils import logger # Garanta que utils.py esteja na mesma pasta
     from config import OUTPUT_FILE_PATH # Garanta que config.py esteja na mesma pasta
@@ -21,6 +32,7 @@ except ImportError as e:
     print(f"Erro ao importar módulos: {e}")
     print("Certifique-se de que main.py, utils.py e config.py estão no mesmo diretório.")
     sys.exit()
+
 
 class TkinterLogHandler(logging.Handler):
     """Handler de logging customizado que redireciona logs para um widget de texto do Tkinter."""
@@ -40,6 +52,8 @@ class TkinterLogHandler(logging.Handler):
             msg_type = "warning"
         elif record.levelno == logging.STAGE:
             msg_type = "stage"
+        elif record.levelno == logging.STAIR:
+            msg_type = "stair"
         
         # A UI deve ser atualizada na thread principal
         self.text_widget.after(0, self.text_widget.log, msg, msg_type)
@@ -65,6 +79,8 @@ class App(ctk.CTk):
             color = "red"
         elif msg_type == "stage":
             color = "blue"
+        elif msg_type == "stair":
+            color = "cyan"
         else: # info, warning
             color = "white"
 
@@ -205,6 +221,10 @@ class App(ctk.CTk):
         logging.STAGE = 26 # Depois de SUCCESS
         logging.addLevelName(logging.STAGE, "STAGE")
 
+        # Adiciona um novo nível de log para o início de cada ETAPA
+        logging.STAIR = 27 # Depois de STAGE
+        logging.addLevelName(logging.STAIR, "STAIR")
+
         # Cria o handler e o adiciona ao logger raiz
         tkinter_handler = TkinterLogHandler(self)
         logging.getLogger().addHandler(tkinter_handler)
@@ -212,6 +232,7 @@ class App(ctk.CTk):
         # Define um método de atalho para o novo nível
         logging.Logger.success = lambda self, msg, *args, **kwargs: self.log(logging.SUCCESS, msg, *args, **kwargs)
         logging.Logger.stage = lambda self, msg, *args, **kwargs: self.log(logging.STAGE, msg, *args, **kwargs)
+        logging.Logger.stair = lambda self, msg, *args, **kwargs: self.log(logging.STAIR, msg, *args, **kwargs)
 
         logger.success("Painel de Controle iniciado. Pronto para operação.")
         self.update_status("Pronto", "green")
@@ -240,13 +261,13 @@ class App(ctk.CTk):
     def run_process_wrapper(self):
         """Envolve a chamada da função principal para capturar erros."""
         try:
-            logger.success("==================================================")
+            logger.success("===================================================")
             logger.success("Iniciando novo ciclo de processamento via interface.")
             self.update_status("Executando...", "orange")
             
             input_file = self.input_file_path.get()
             report_file = self.report_file_path.get()
-            output_file = OUTPUT_FILE_PATH 
+            output_file = resource_path(OUTPUT_FILE_PATH) 
 
             run_main_process(input_file, report_file, output_file, progress_callback=self.update_progress)
             
@@ -287,14 +308,15 @@ class App(ctk.CTk):
             # 1. Resumo Consolidado (A3:E27)
             # O skiprows=2 faz começar da linha 3. usecols="A:E" limita as colunas.
             # nrows=25 lê 25 linhas de dados, que corresponde ao intervalo de 3 a 27.
-            df_summary = pd.read_excel(OUTPUT_FILE_PATH, sheet_name='Resumo Consolidado', skiprows=2, usecols="A:E", nrows=25)
+            output_file_path = resource_path(OUTPUT_FILE_PATH)
+            df_summary = pd.read_excel(output_file_path, sheet_name='Resumo Consolidado', skiprows=2, usecols="A:E", nrows=25)
             if not df_summary.empty:
                 self.display_dataframe(self.summary_tree, df_summary)
                 logger.info("Tabela 'Resumo Consolidado' carregada para visualização (A3:E27).")
 
             # 2. Detalhes de Pendências (G3:T?)
             # Carrega a planilha, pula as 2 primeiras linhas, sem cabeçalho
-            df_details_full = pd.read_excel(OUTPUT_FILE_PATH, sheet_name='Resumo Consolidado', skiprows=2, header=None)
+            df_details_full = pd.read_excel(output_file_path, sheet_name='Resumo Consolidado', skiprows=2, header=None)
             
             # Seleciona as colunas da 7ª (G) em diante
             df_details_raw = df_details_full.iloc[:, 6:]
@@ -367,7 +389,9 @@ class App(ctk.CTk):
 
     def export_file(self, file_type):
         """Exporta o arquivo de saída para .xlsx ou .pdf."""
-        if not os.path.exists(OUTPUT_FILE_PATH):
+        output_file_path = resource_path(OUTPUT_FILE_PATH)
+
+        if not os.path.exists(output_file_path):
             messagebox.showwarning("Arquivo Não Encontrado", "O arquivo de saída ainda não foi gerado. Execute o processamento primeiro.")
             return
 
@@ -381,7 +405,7 @@ class App(ctk.CTk):
                 if dest_path:
                     import shutil
                     try:
-                        shutil.copy(OUTPUT_FILE_PATH, dest_path)
+                        shutil.copy(output_file_path, dest_path)
                         logger.success(f"Arquivo .xlsx exportado com sucesso para: {dest_path}")
                         messagebox.showinfo("Exportação Bem-sucedida", f"O arquivo Excel foi salvo em:\n{dest_path}")
                     except PermissionError:
@@ -411,11 +435,11 @@ class App(ctk.CTk):
 
                 # --- Carregamento e Preparação dos Dados ---
                 # Tabela 1: Resumo Consolidado
-                df_summary = pd.read_excel(OUTPUT_FILE_PATH, sheet_name='Resumo Consolidado', skiprows=2, usecols="A:E")
+                df_summary = pd.read_excel(output_file_path, sheet_name='Resumo Consolidado', skiprows=2, usecols="A:E")
                 df_summary.dropna(how='all', inplace=True) # Remove linhas totalmente vazias
 
                 # Tabela 2: Detalhes de Pendências
-                df_details_full = pd.read_excel(OUTPUT_FILE_PATH, sheet_name='Resumo Consolidado', skiprows=2, header=None)
+                df_details_full = pd.read_excel(output_file_path, sheet_name='Resumo Consolidado', skiprows=2, header=None)
                 df_details_raw = df_details_full.iloc[:, 6:]
                 
                 df_details = pd.DataFrame()
