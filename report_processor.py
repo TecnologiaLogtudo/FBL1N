@@ -41,27 +41,56 @@ class ReportProcessor:
     def _populate_service_column(self):
         """(Tratamento) Preenche a coluna 'Serviço' com base em regras da coluna 'DT Frete'."""
         logger.info("Preenchendo coluna 'Serviço' com base em 'DT Frete'.")
-        dt_frete_series = self.df['DT Frete'].astype(str)
         
-        conditions = [
-            dt_frete_series.str.match(r'^\d+$', na=False),
-            dt_frete_series.str.upper() == 'DIARIA NO CLIENTE',
-            dt_frete_series.str.startswith('REENTREGA', na=False),
-            dt_frete_series.str.upper() == 'DIARIA PARADO',
-            dt_frete_series.str.startswith('COMPLEMENTO', na=False),
-            dt_frete_series.str.startswith('AVARIAS', na=False),
-            dt_frete_series.str.upper() == 'PEDAGIO',
-            dt_frete_series.str.upper() == 'PERNOITE',
-            dt_frete_series.str.upper().str.contains('COLETA DE PALETE|COLETA DE PALLETE', na=False, regex=True),
-            dt_frete_series.str.upper() == 'DESCARGA',
-        ]
+        # Normaliza a série para evitar problemas com NaN e espaços
+        dt_frete_series = self.df['DT Frete'].fillna('').astype(str).str.strip().str.upper()
+        
+        # Padrões regex mais flexíveis para capturar variações comuns
+        patterns = {
+            'Frete_numerico': r'^\d+$|(?:\d+[\s/E]+\d+)+',
+            'Frete_texto': r'FRETE|SILVA',
+            'Frete_substituicao': r'SUBSTITUI[ÇC][AÃ]O|SUBSTI[TÇ]UIR|SUS?BT?UITI[ÇC][AÃ]O|(?:CTE\s*)?SU[BS]?[TB]I?TUI[CÇ][AÃ]O|TROC[AS]|SUSBTITUIÇÃO|SUSBTITUICAO',
+            'Diária no cliente': r'D[IÍ][AÁ]RIA\s*(NO|N[AO])?\s*CLI?ENT[EI]|PERNO[IY]TE|ESA[YI]ADIA.*ROTA|ROTA',
+            'Reentrega': r'R[EÉ]+[\-\s]*[EH]?NT[RE]*G[AS]|RET[OÔ]RN[OÔ]|DEVOLU[CÇ][AÃ]O|CAR[OÔ]NA',
+            'Diaria_parado': r'D[IÍ][AÁ]RIA\s*(PARAD[OA]|ESPERA)|PARAD[OA]',
+            'Complemento': r'CO[MN]PLE[MN][EÊ]NTO?|COMPLEMENTAR|COMPLEMEN?TAR|COMPLENETAR|AJUSTE|AC[EÊ]RTO|DIFEREN[CÇ]A|.*[CO][MN]PLE[MN][EÊ]NTAR|.*COMPLEMENATR',
+            'Avarias': r'AVAR[IÍ][AS]|DAN[OÔ]S?|PREJU[IÍ]Z[OÔ]S?|SINISTR[OÔ]',
+            'Pedagio': r'P[AE]D[AÁ]?[GJ][IÍ][OÔ]|TAG[S]?',
+            'Descarga_palete': r'COL[EÊ]TA\s*(DE\s*)?(PAL+[EÊ]?T[ES]|PALHETE)|PALL?ETS?',
+            'Descarga_geral': r'DESCARGA|DESCARTGA|DE[SC][AC]*[AR]*G[AS]|DESCARR[EÊ]G[AS]|DESCARR[EÊ][GJ]AMENTO',
+            'Descarga_ajudante': r'AJUD[AÁ]NTE|CHAP[AS]?|AUX[IÍ]LI[AO]R?',
+            'Descarga_classificacao': r'CLASSIFIC[AÇ][AÃ]O|SEPAR[AÇ][AÃ]O',
+            'Estadia': r'EST[AÁ]DIA|PERMAN[EÊ]NCIA'
+        }
+        
+        conditions = [dt_frete_series.str.contains(pattern, regex=True, na=False) 
+                    for pattern in patterns.values()]
         
         choices = [
-            'Frete', 'Diária no cliente', 'Reentrega', 'Diária parado', 'Complemento',
-            'Descarga', 'Pedágio', 'Diária no cliente', 'Descarga', 'Descarga'
+            'Frete',             # Frete_numerico
+            'Frete',             # Frete_texto
+            'Frete',             # Frete_substituicao
+            'Diária no cliente', # Diária no cliente
+            'Reentrega',         # Reentrega
+            'Diária parado',     # Diária parado
+            'Complemento',       # Complemento
+            'Descarga',          # Avarias
+            'Pedágio',           # Pedágio
+            'Descarga',          # Descarga_palete
+            'Descarga',          # Descarga_geral
+            'Descarga',          # Descarga_ajudante
+            'Descarga',          # Descarga_classificacao
+            'Diária no cliente'  # Estadia
         ]
         
-        self.df['Serviço'] = np.select(conditions, choices, default=self.df['Serviço'])
+        # Aplica as regras e registra no log casos não mapeados
+        self.df['Serviço'] = np.select(conditions, choices, default='Outros')
+        
+        # Identifica valores não mapeados para análise
+        valores_nao_mapeados = dt_frete_series[self.df['Serviço'] == 'Outros'].unique()
+        if len(valores_nao_mapeados) > 0:
+            logger.warning(f"Valores não mapeados encontrados em 'DT Frete': {valores_nao_mapeados}")
+        
         logger.info("Coluna 'Serviço' preenchida com base nas regras definidas.")
 
     def _populate_transportadora_column(self):
@@ -97,13 +126,13 @@ class ReportProcessor:
         logger.info("Linhas com 7 ou mais caracteres em 'CTRC' removidas.")
 
     def _filter_valor_cte(self):
-        """(Filtro) Remove linhas onde 'Valor CTe' é zero."""
-        logger.info("Removendo linhas onde 'Valor CTe' é 0 ou nulo.")
+        """(Filtro) Remove linhas onde 'Valor CTe' é zero ou 0,01."""
+        logger.info("Removendo linhas onde 'Valor CTe' é 0, 0.01 ou nulo.")
         initial_rows = len(self.df)
         self.df['Valor CTe'] = pd.to_numeric(self.df['Valor CTe'], errors='coerce').fillna(0)
-        self.df = self.df[self.df['Valor CTe'] != 0].reset_index(drop=True)
+        self.df = self.df[~self.df['Valor CTe'].isin([0, 0.01])].reset_index(drop=True)
         rows_removed = initial_rows - len(self.df)
-        logger.info(f"{rows_removed} linhas foram removidas com 'Valor CTe' igual a 0.")
+        logger.info(f"{rows_removed} linhas foram removidas com 'Valor CTe' igual a 0 ou 0.01.")
 
     def process(self):
         """
@@ -124,7 +153,15 @@ class ReportProcessor:
             logger.info("Cabeçalho consolidado e linhas de cabeçalho iniciais removidas.")
 
             logger.info(f"Selecionando colunas de interesse pelos índices: {REPORT_COLUMN_INDICES}")
-            df_selected = df.iloc[:, REPORT_COLUMN_INDICES]
+            
+            # --- Verificação de segurança para evitar IndexError ---
+            num_cols_disponiveis = df.shape[1]
+            colunas_validas = [idx for idx in REPORT_COLUMN_INDICES if idx < num_cols_disponiveis]
+            if len(colunas_validas) < len(REPORT_COLUMN_INDICES):
+                colunas_faltantes = [idx for idx in REPORT_COLUMN_INDICES if idx >= num_cols_disponiveis]
+                logger.warning(f"O arquivo de relatório tem apenas {num_cols_disponiveis} colunas. As colunas nos índices {colunas_faltantes} não puderam ser encontradas e serão ignoradas.")
+            
+            df_selected = df.iloc[:, colunas_validas]
 
             logger.info("Renomeando colunas para os nomes padronizados.")
             df_selected.columns = REPORT_FINAL_COLUMNS
