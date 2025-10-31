@@ -116,11 +116,26 @@ class ReportProcessor:
         logger.info("Coluna 'DT Frete' limpa.")
 
     def _treat_ctrc_column(self):
-        """(Tratamento) Remove o prefixo '2025' (e zeros subsequentes) e o sufixo '2025' da coluna CTRC."""
-        logger.info("Tratando coluna 'CTRC' para remover prefixo '2025' e sufixo '2025'.")
-        self.df['CTRC'] = self.df['CTRC'].astype(str).str.replace(r'^20250*|2025', '', regex=True)
-        logger.info("Prefixo '2025' e sufixo '2025' removidos da coluna 'CTRC'.")
-
+        """(Tratamento) Remove o prefixo '2025' e, condicionalmente, o sufixo '2025' da coluna CTRC."""
+        logger.info("Tratando coluna 'CTRC' para remover prefixos e sufixos '2025'.")
+        
+        df_copy = self.df.copy()
+        
+        # Condição: Serviço é 'Frete' E Origem é diferente de Destino
+        condition_to_keep_suffix = (
+            (df_copy['Serviço'] == 'Frete') & 
+            (df_copy['Origem'] != df_copy['Destino'])
+        )
+        
+        # Aplica a remoção do prefixo para todas as linhas
+        df_copy['CTRC'] = df_copy['CTRC'].astype(str).str.replace(r'^20250*', '', regex=True)
+        
+        # Remove o sufixo '2025' apenas onde a condição NÃO é atendida
+        df_copy.loc[~condition_to_keep_suffix, 'CTRC'] = df_copy.loc[~condition_to_keep_suffix, 'CTRC'].str.replace(r'2025$', '', regex=True)
+        
+        self.df = df_copy
+        logger.info("Coluna 'CTRC' tratada com a nova lógica condicional.")
+        
         logger.info("Removendo linhas onde a coluna 'CTRC' tem 7 ou mais caracteres.")
         self.df = self.df[self.df['CTRC'].str.len() < 7]
         logger.info("Linhas com 7 ou mais caracteres em 'CTRC' removidas.")
@@ -168,8 +183,6 @@ class ReportProcessor:
             self.df = df_selected.copy()
             
             # --- Sequência de Tratamentos ---
-            self._treat_ctrc_column()
-            self._clean_client_column()
             
             logger.info("Formatando a coluna 'Emissao' para o formato de data (dd/mm/aaaa).")
             self.df['Emissao'] = pd.to_datetime(self.df['Emissao'], errors='coerce').dt.strftime('%d/%m/%Y')
@@ -192,8 +205,10 @@ class ReportProcessor:
             self.df['diferença'] = 0.0
             
             logger.info("Preenchendo colunas com base nas regras.")
+            self._clean_client_column()
             self._populate_transportadora_column()
             self._populate_service_column()
+            self._treat_ctrc_column() # Movido para depois de _populate_service_column
             self._treat_dt_frete_column()
             self._filter_valor_cte()
             
