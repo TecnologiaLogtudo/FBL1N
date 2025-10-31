@@ -2,24 +2,43 @@
 # Interface Gráfica para o Processador de Planilhas
 
 import tkinter as tk
-from tkinter import filedialog, messagebox, ttk # ttk importado aqui
-import customtkinter as ctk
-import pandas as pd
+from tkinter import filedialog, messagebox, ttk
 import threading
 import os
 import sys
 import logging
+import pandas as pd
+import customtkinter as ctk
 
-# Adiciona o diretório atual ao sys.path para garantir que os imports funcionem
-# Esta função é necessária para o PyInstaller encontrar os arquivos
+# --- Importação de dependência opcional (ReportLab) ---
+try:
+    from reportlab.platypus import BaseDocTemplate, Frame, PageTemplate, NextPageTemplate, Paragraph, Spacer, PageBreak, Table, TableStyle
+    from reportlab.lib.pagesizes import letter, landscape
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import inch
+    from reportlab.lib import colors
+    REPORTLAB_AVAILABLE = True
+except ImportError:
+    # Se a biblioteca não estiver instalada, o programa continuará funcionando,
+    # mas a funcionalidade de exportar para PDF será desativada.
+    REPORTLAB_AVAILABLE = False
+
+
 def resource_path(relative_path):
-    """ Obtenha o caminho absoluto para o recurso, funciona para o desenvolvimento e para o PyInstaller """
+    """
+    Obtenha o caminho absoluto para o recurso, funciona para o desenvolvimento e para o PyInstaller.
+    """
+    # PyInstaller cria uma pasta temporária e armazena o caminho em _MEIPASS
     try:
-        # PyInstaller cria uma pasta temporária e armazena o caminho em _MEIPASS
+        # Estamos executando como executável PyInstaller
+        # pylint: disable=protected-access, no-member
         base_path = sys._MEIPASS
-    except Exception:
+    except (AttributeError, Exception): # pylint: disable=broad-exception-caught
+        # Capturando Exception genéricamente porque queremos garantir que 
+        # o código nunca quebre, mesmo que algo inesperado aconteça
+        # Estamos executando em ambiente de desenvolvimento
         base_path = os.path.abspath(".")
-
+    
     return os.path.join(base_path, relative_path)
 
 # Seus imports existentes
@@ -71,8 +90,8 @@ class App(ctk.CTk):
         if not hasattr(self, 'log_text') or not self.log_text.winfo_exists():
             return # Ainda não existe a caixa de log
 
-        self.log_text.config(state=tk.NORMAL)
-        
+        self.log_text.config(state=tk.NORMAL) 
+
         if msg_type == "success":
             color = "green"
         elif msg_type == "error":
@@ -110,7 +129,7 @@ class App(ctk.CTk):
         )
         if filename:
             path_variable.set(filename)
-            logger.info(f"Arquivo selecionado: {filename}")
+            logger.info("Arquivo selecionado: %s", filename)
 
     # ===================================================================
     # MÉTODO PRINCIPAL DE CONSTRUÇÃO DA UI (setup_ui)
@@ -192,7 +211,12 @@ class App(ctk.CTk):
         
         ctk.CTkLabel(self.export_frame, text="Exportar Arquivo:", font=ctk.CTkFont(size=16, weight="bold")).grid(row=0, column=0, padx=10, pady=10, sticky="w")
         ctk.CTkButton(self.export_frame, text="Exportar para .xlsx", command=lambda: self.export_file("xlsx")).grid(row=0, column=1, padx=10, pady=10)
-        ctk.CTkButton(self.export_frame, text="Exportar para .pdf", command=lambda: self.export_file("pdf")).grid(row=0, column=2, padx=10, pady=10)
+        
+        self.pdf_button = ctk.CTkButton(self.export_frame, text="Exportar para .pdf", command=lambda: self.export_file("pdf"))
+        self.pdf_button.grid(row=0, column=2, padx=10, pady=10)
+        if not REPORTLAB_AVAILABLE:
+            self.pdf_button.configure(state=tk.DISABLED, text="Exportar para .pdf (indisponível)")
+
 
     # ===================================================================
     # MÉTODO DE INICIALIZAÇÃO (__init__)
@@ -277,13 +301,24 @@ class App(ctk.CTk):
             self.export_frame.grid(row=3, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
             messagebox.showinfo("Sucesso", "O processamento foi concluído e os resultados estão disponíveis para visualização e exportação.")
 
-        except Exception as e:
-            logger.error(f"ERRO CRÍTICO DURANTE O PROCESSAMENTO: {str(e)}")
+        except (ValueError, TypeError, KeyError) as e:
+            # Erros de dados e valores
+            logger.error("Erro de validação de dados: %s", e)
+            messagebox.showerror("Erro de Dados", f"Dados inválidos ou formatos incorretos:\n\n{str(e)}")
+        except (RuntimeError, ConnectionError, OSError) as e:
+            # Erros de sistema e execução
+            logger.error("ERRO CRÍTICO DURANTE O PROCESSAMENTO: %s", e)
             logger.error("Verifique os logs detalhados para mais informações.")
             self.update_status("Erro", "red")
             messagebox.showerror("Erro de Processamento", f"Ocorreu um erro durante a execução:\n\n{str(e)}")
+        except Exception as e: # pylint: disable=broad-exception-caught
+            # Último recurso: captura o restante
+            logger.exception("ERRO INESPERADO: %s", e)
+            logger.error("Verifique os logs detalhados para mais informações.")
+            self.update_status("Erro", "red")
+            messagebox.showerror("Erro Inesperado", "Ocorreu um erro não esperado. Verifique os logs detalhados.")
         finally:
-            self.progress_bar.grid_forget() 
+            self.progress_bar.set(0)
             self.execute_button.configure(state=tk.NORMAL)
             logger.success("==================================================\n")
 
@@ -293,11 +328,11 @@ class App(ctk.CTk):
         report_file = self.report_file_path.get()
 
         if not os.path.exists(input_file):
-            logger.error(f"ERRO: Arquivo de entrada não encontrado: {input_file}")
+            logger.error("ERRO: Arquivo de entrada não encontrado: %s", input_file)
             messagebox.showerror("Erro de Arquivo", f"O arquivo de entrada não foi encontrado:\n{input_file}")
             return False
         if not os.path.exists(report_file):
-            logger.error(f"ERRO: Arquivo de relatório não encontrado: {report_file}")
+            logger.error("ERRO: Arquivo de relatório não encontrado: %s", report_file)
             messagebox.showerror("Erro de Arquivo", f"O arquivo de relatório não foi encontrado:\n{report_file}")
             return False
         return True
@@ -337,8 +372,8 @@ class App(ctk.CTk):
 
                 self.display_dataframe(self.details_tree, df_details)
                 logger.info("Tabela 'Detalhes de Pendências' carregada para visualização com colunas selecionadas.")
-        except Exception as e:
-            logger.error(f"Não foi possível carregar os dados para visualização: {e}")
+        except Exception as e: # pylint: disable=broad-exception-caught
+            logger.error("Não foi possível carregar os dados para visualização: %s", e, exc_info=True)
 
     def display_dataframe(self, tree, df):
         """Exibe um DataFrame em um ttk.Treeview."""
@@ -379,8 +414,8 @@ class App(ctk.CTk):
                     
                     # Aplica a formatação monetária para exibição
                     df_display[col] = numeric_values.apply(lambda x: f"R$ {x:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-                except Exception as e:
-                    logger.error(f"Aviso: Não foi possível formatar a coluna monetária '{col}'. Erro: {e}")
+                except Exception as e: # pylint: disable=broad-exception-caught
+                    logger.warning("Não foi possível formatar a coluna monetária '%s'. Erro: %s", col, e)
                     df_display[col] = df_display[col].fillna('')
         
         # Insere os dados no Treeview linha por linha
@@ -406,23 +441,20 @@ class App(ctk.CTk):
                     import shutil
                     try:
                         shutil.copy(output_file_path, dest_path)
-                        logger.success(f"Arquivo .xlsx exportado com sucesso para: {dest_path}")
+                        logger.success("Arquivo .xlsx exportado com sucesso para: %s", dest_path)
                         messagebox.showinfo("Exportação Bem-sucedida", f"O arquivo Excel foi salvo em:\n{dest_path}")
                     except PermissionError:
-                        logger.error(f"Erro de permissão ao salvar o arquivo: {dest_path}. Verifique se o arquivo já está aberto.")
+                        logger.error("Erro de permissão ao salvar o arquivo em: %s. Verifique se o arquivo já está aberto.", dest_path)
                         messagebox.showerror("Erro de Permissão", f"Não foi possível salvar o arquivo em:\n{dest_path}\n\nVerifique se o arquivo já está aberto em outro programa e tente novamente.")
-            except Exception as e:
-                logger.error(f"Erro ao exportar arquivo .xlsx: {e}")
+            except Exception as e: # pylint: disable=broad-exception-caught
+                logger.error("Erro ao exportar arquivo .xlsx: %s", e, exc_info=True)
                 messagebox.showerror("Erro de Exportação", f"Não foi possível exportar o arquivo .xlsx.\n\nErro: {e}")
 
         elif file_type == "pdf":
+            if not REPORTLAB_AVAILABLE:
+                messagebox.showerror("Dependência Faltando", "A biblioteca 'reportlab' é necessária para exportar para PDF.\n\nInstale-a com: pip install reportlab")
+                return
             try:
-                from reportlab.platypus import BaseDocTemplate, Frame, PageTemplate, NextPageTemplate, Paragraph, Spacer, PageBreak, Table, TableStyle
-                from reportlab.lib.pagesizes import letter, landscape
-                from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-                from reportlab.lib.units import inch
-                from reportlab.lib import colors
-                import pandas as pd
 
                 dest_path = filedialog.asksaveasfilename(
                     defaultextension=".pdf",
@@ -464,8 +496,8 @@ class App(ctk.CTk):
                     def __init__(self, filename, **kw):
                         super().__init__(filename, **kw)
                         
-                        frame_portrait = Frame(self.leftMargin, self.bottomMargin, self.width, self.height, id='frame_portrait')
-                        frame_landscape = Frame(self.leftMargin, self.bottomMargin, self.height, self.width, id='frame_landscape')
+                        frame_portrait = Frame(self.leftMargin, self.bottomMargin, self.width, self.height, id='frame_portrait')  # pylint: disable=no-member
+                        frame_landscape = Frame(self.leftMargin, self.bottomMargin, self.height, self.width, id='frame_landscape') # pylint: disable=no-member
 
                         self.addPageTemplates([
                             PageTemplate(id='portrait', frames=[frame_portrait], onPage=self._add_footer, pagesize=letter),
@@ -540,7 +572,7 @@ class App(ctk.CTk):
                                         ('BACKGROUND', (recebido_col_idx, table_row_index), (recebido_col_idx, table_row_index), colors.HexColor('#FFCCCC'))
                                     )
                     except Exception as e:
-                        logger.warning(f"Não foi possível aplicar o estilo condicional ao PDF: {e}")
+                        logger.warning("Não foi possível aplicar o estilo condicional ao PDF: %s", e)
 
                     # A primeira linha de dados é uma duplicata do cabeçalho, então a removemos.
                     table_data_details = [df_details.columns.tolist()] + df_details.values.tolist()[1:]
@@ -566,14 +598,14 @@ class App(ctk.CTk):
                 
                 try:
                     doc.build(elements)
-                    logger.success(f"Arquivo .pdf exportado com sucesso para: {dest_path}")
+                    logger.success("Arquivo .pdf exportado com sucesso para: %s", dest_path)
                     messagebox.showinfo("Exportação Bem-sucedida", f"O arquivo PDF foi salvo em:\n{dest_path}")
                 except PermissionError:
-                    logger.error(f"Erro de permissão ao salvar o arquivo: {dest_path}. Verifique se o arquivo já está aberto.")
+                    logger.error("Erro de permissão ao salvar o arquivo: %s. Verifique se o arquivo já está aberto.", dest_path)
                     messagebox.showerror("Erro de Permissão", f"Não foi possível salvar o arquivo em:\n{dest_path}\n\nVerifique se o arquivo já está aberto em outro programa e tente novamente.")
 
             except Exception as e:
-                logger.error(f"Erro ao exportar arquivo .pdf: {e}", exc_info=True)
+                logger.error("Erro ao exportar arquivo .pdf: %s", e, exc_info=True)
                 messagebox.showerror("Erro de Exportação", f"Não foi possível exportar o arquivo .PDF.\n\nErro: {e}")
 
 # --- Ponto de Entrada da Aplicação ---

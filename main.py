@@ -9,7 +9,7 @@ def main(input_file, report_file, output_file, progress_callback=None):
     Função principal que orquestra todo o processo de ETL e Análise.
     """
     logger.stage("===================================================")
-    logger.stage(f"Iniciando novo ciclo de processamento...")
+    logger.stage("Iniciando novo ciclo de processamento...")
     if progress_callback: progress_callback(0.05)
     
     # Adia as importações para dentro da função para evitar dependências circulares
@@ -48,7 +48,7 @@ def main(input_file, report_file, output_file, progress_callback=None):
 
         # --- FASE 4: Salvamento ---
         try:
-            logger.stage(f"FASE 4: Gerando arquivo de saída: '{output_file}'")
+            logger.stage("FASE 4: Gerando arquivo de saída: '%s'", output_file)
             with pd.ExcelWriter(output_file, engine='openpyxl') as writer:
                 if processed_df_step1 is not None and not processed_df_step1.empty:
                     data_proc.format_date_columns(processed_df_step1).to_excel(writer, sheet_name='Dados Consolidados', index=False)
@@ -75,11 +75,11 @@ def main(input_file, report_file, output_file, progress_callback=None):
                     report_generator.generate_report(writer)
                     if progress_callback: progress_callback(0.9)
 
-            logger.success(f"Arquivo multipágina salvo com sucesso em: '{output_file}'")
+            logger.success("Arquivo multipágina salvo com sucesso em: '%s'", output_file)
             if progress_callback: progress_callback(1.0)
 
         except Exception as e:
-            logger.error(f"Não foi possível salvar o arquivo de saída. Erro: {e}", exc_info=True)
+            logger.error("Não foi possível salvar o arquivo de saída. Erro: %s", e, exc_info=True)
     else:
             logger.warning("Nenhum dado foi processado na Etapa 1. O arquivo de saída não será gerado.")
     
@@ -93,8 +93,8 @@ if __name__ == "__main__":
     report_filepath = REPORT_FILE_PATH
     output_filepath = 'dados_estruturados.xlsx'
     
-    print(f"🚀 Iniciando processamento...")
-    print(f"   - Arquivo de entrada: {input_filepath}")
+    print("🚀 Iniciando processamento...")
+    print(f"   - Arquivo de entrada: {input_filepath}") # f-string é aceitável aqui pois print() não é logging
     print(f"   - Relatório externo: {report_filepath}")
     print(f"   - Arquivo de saída: {output_filepath}")
     

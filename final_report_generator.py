@@ -126,7 +126,7 @@ class FinalReportGenerator:
         from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
         from openpyxl.utils import get_column_letter
         
-        logger.debug(f"Aplicando estilo na tabela de detalhes a partir da linha {table_start_row}, coluna {table_start_col}.")
+        logger.debug("Aplicando estilo na tabela de detalhes a partir da linha %d, coluna %d.", table_start_row, table_start_col)
 
         # --- Definição de Estilos ---
         header_font = Font(bold=True, color='FFFFFF', name='Calibri', size=11)
@@ -148,7 +148,7 @@ class FinalReportGenerator:
         for i, width in enumerate(column_widths):
             col_letter = get_column_letter(table_start_col + i)
             worksheet.column_dimensions[col_letter].width = width
-            logger.debug(f"Definindo largura da coluna {col_letter} para {width}.")
+            logger.debug("Definindo largura da coluna %s para %d.", col_letter, width)
 
         # --- Formatação do Cabeçalho ---
         for col_idx in range(num_cols):
@@ -166,7 +166,7 @@ class FinalReportGenerator:
             status_pgto_col_idx = dataframe.columns.get_loc('Status Pgto')
             recebido_col_idx = dataframe.columns.get_loc('Recebido/A receber')
         except KeyError as e:
-            logger.error(f"Coluna não encontrada no DataFrame de detalhes: {e}. A formatação condicional será ignorada.")
+            logger.error("Coluna não encontrada no DataFrame de detalhes: %s. A formatação condicional será ignorada.", e)
             status_pgto_col_idx, recebido_col_idx = -1, -1
 
         for row_idx in range(num_rows):
@@ -188,7 +188,7 @@ class FinalReportGenerator:
                 if col_name in ['Valor CTe', 'Valor pago', 'Recebido/A receber']:
                     cell.number_format = 'R$ #,##0.00'
         
-        logger.debug(f"{num_rows} linhas de dados formatadas na tabela de detalhes.")
+        logger.debug("%d linhas de dados formatadas na tabela de detalhes.", num_rows)
 
 
     def _generate_comprehensive_summary(self):
@@ -213,7 +213,7 @@ class FinalReportGenerator:
         all_results = {}
         
         for transportadora in transportadoras:
-            logger.info(f"Processando transportadora: {transportadora}")
+            logger.info("Processando transportadora: %s", transportadora)
             
             df_transportadora = self.analyzed_df[
                 (self.analyzed_df['Transportadora'] == transportadora) &

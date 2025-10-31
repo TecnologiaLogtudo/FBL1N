@@ -89,7 +89,7 @@ class ReportProcessor:
         # Identifica valores não mapeados para análise
         valores_nao_mapeados = dt_frete_series[self.df['Serviço'] == 'Outros'].unique()
         if len(valores_nao_mapeados) > 0:
-            logger.warning(f"Valores não mapeados encontrados em 'DT Frete': {valores_nao_mapeados}")
+            logger.warning("Valores não mapeados encontrados em 'DT Frete': %s", valores_nao_mapeados)
         
         logger.info("Coluna 'Serviço' preenchida com base nas regras definidas.")
 
@@ -132,7 +132,7 @@ class ReportProcessor:
         self.df['Valor CTe'] = pd.to_numeric(self.df['Valor CTe'], errors='coerce').fillna(0)
         self.df = self.df[~self.df['Valor CTe'].isin([0, 0.01])].reset_index(drop=True)
         rows_removed = initial_rows - len(self.df)
-        logger.info(f"{rows_removed} linhas foram removidas com 'Valor CTe' igual a 0 ou 0.01.")
+        logger.info("%d linhas foram removidas com 'Valor CTe' igual a 0 ou 0.01.", rows_removed)
 
     def process(self):
         """
@@ -140,9 +140,9 @@ class ReportProcessor:
         """
         logger.stair("--- INICIANDO PROCESSAMENTO DO RELATÓRIO EXTERNO ---")
         try:
-            logger.info(f"Lendo o arquivo de relatório: {self.filepath}")
+            logger.info("Lendo o arquivo de relatório: %s", self.filepath)
             df = pd.read_excel(self.filepath, header=None, skiprows=REPORT_SKIP_ROWS, engine='xlrd')
-            logger.info(f"Arquivo lido, pulando as primeiras {REPORT_SKIP_ROWS} linhas.")
+            logger.info("Arquivo lido, pulando as primeiras %d linhas.", REPORT_SKIP_ROWS)
 
             logger.info("Consolidando cabeçalho de múltiplas linhas.")
             header_row1 = df.iloc[0].fillna("").astype(str)
@@ -152,14 +152,14 @@ class ReportProcessor:
             df = df.iloc[2:].reset_index(drop=True)
             logger.info("Cabeçalho consolidado e linhas de cabeçalho iniciais removidas.")
 
-            logger.info(f"Selecionando colunas de interesse pelos índices: {REPORT_COLUMN_INDICES}")
+            logger.info("Selecionando colunas de interesse pelos índices: %s", REPORT_COLUMN_INDICES)
             
             # --- Verificação de segurança para evitar IndexError ---
             num_cols_disponiveis = df.shape[1]
             colunas_validas = [idx for idx in REPORT_COLUMN_INDICES if idx < num_cols_disponiveis]
             if len(colunas_validas) < len(REPORT_COLUMN_INDICES):
                 colunas_faltantes = [idx for idx in REPORT_COLUMN_INDICES if idx >= num_cols_disponiveis]
-                logger.warning(f"O arquivo de relatório tem apenas {num_cols_disponiveis} colunas. As colunas nos índices {colunas_faltantes} não puderam ser encontradas e serão ignoradas.")
+                logger.warning("O arquivo de relatório tem apenas %d colunas. As colunas nos índices %s não puderam ser encontradas e serão ignoradas.", num_cols_disponiveis, colunas_faltantes)
             
             df_selected = df.iloc[:, colunas_validas]
 
@@ -205,17 +205,17 @@ class ReportProcessor:
             ]
             self.df = self.df[final_column_order]
             logger.info("Colunas reordenadas para a estrutura final do relatório.")
-            
-            logger.success(f"--- Processamento do relatório concluído. {len(self.df)} linhas finais. ---\n")
+
+            logger.success("--- Processamento do relatório concluído. %d linhas finais. ---\n", len(self.df))
             return self.df
 
         except FileNotFoundError:
-            logger.error(f"Erro Crítico: O arquivo de relatório '{self.filepath}' não foi encontrado.")
+            logger.error("Erro Crítico: O arquivo de relatório '%s' não foi encontrado.", self.filepath)
             return None
         except IndexError as e:
-            logger.error(f"Erro Crítico de Índice: o relatório pode estar vazio ou com formato inesperado. Erro: {e}")
+            logger.error("Erro Crítico de Índice: o relatório pode estar vazio ou com formato inesperado. Erro: %s", e)
             return None
         except Exception as e:
-            logger.error(f"Ocorreu um erro inesperado ao processar o relatório: {e}")
+            logger.error("Ocorreu um erro inesperado ao processar o relatório: %s", e, exc_info=True)
             return None
         

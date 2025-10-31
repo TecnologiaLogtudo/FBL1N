@@ -53,7 +53,7 @@ class AnalysisProcessor:
             lookup_df = final_sheets_data.get(sheet_name)
 
             if lookup_df is None or lookup_df.empty:
-                logger.warning(f"Aba de lookup '{sheet_name}' está vazia. Status para '{transportadora}' será 'Não lançado'.")
+                logger.warning("Aba de lookup '%s' está vazia. Status para '%s' será 'Não lançado'.", sheet_name, transportadora)
                 report_subset = report_subset.copy()
                 report_subset['Status pgto'] = 'Não lançado'
                 all_merged_dfs.append(report_subset)
@@ -111,7 +111,7 @@ class AnalysisProcessor:
         for transportadora, sheet_name in transportadora_to_sheet_map.items():
             lookup_df = final_sheets_data.get(sheet_name)
             if lookup_df is None or lookup_df.empty:
-                logger.warning(f"Aba de lookup '{sheet_name}' para 'Valor pago' está vazia.")
+                logger.warning("Aba de lookup '%s' para 'Valor pago' está vazia.", sheet_name)
                 continue
 
             # Cria um dicionário de mapeamento: {Referência: Valor pagamento}

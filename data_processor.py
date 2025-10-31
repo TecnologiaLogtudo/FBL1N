@@ -28,15 +28,15 @@ class DataProcessor:
     def load_data(self):
         """Carrega os dados da planilha Excel em um DataFrame pandas."""
         try:
-            logger.info(f"Iniciando a leitura do arquivo principal: {self.filepath}")
+            logger.info("Iniciando a leitura do arquivo principal: %s", self.filepath)
             self.df = pd.read_excel(self.filepath)
-            logger.info(f"Arquivo principal carregado com sucesso. {len(self.df)} linhas encontradas.\n")
+            logger.info("Arquivo principal carregado com sucesso. %d linhas encontradas.\n", len(self.df))
             return True
         except FileNotFoundError:
-            logger.error(f"Erro: O arquivo principal '{self.filepath}' não foi encontrado.")
+            logger.error("Erro: O arquivo principal '%s' não foi encontrado.", self.filepath)
             return False
         except Exception as e:
-            logger.error(f"Ocorreu um erro inesperado ao ler o arquivo principal: {e}")
+            logger.error("Ocorreu um erro inesperado ao ler o arquivo principal: %s", e)
             return False
 
     def filter_by_date_step1(self):
@@ -49,7 +49,7 @@ class DataProcessor:
         # Remove linhas onde a data do documento é nula
         self.df.dropna(subset=[COLUNA_DATA_DOCUMENTO], inplace=True)
         rows_after_na = len(self.df)
-        logger.info(f"  - {initial_rows - rows_after_na} linhas removidas por data vazia.")
+        logger.info("  - %d linhas removidas por data vazia.", initial_rows - rows_after_na)
         
         # Converte a coluna para o formato de data, tratando erros
         self.df[COLUNA_DATA_DOCUMENTO] = pd.to_datetime(self.df[COLUNA_DATA_DOCUMENTO], errors='coerce')
@@ -57,17 +57,17 @@ class DataProcessor:
         # Remove linhas que não puderam ser convertidas para data
         rows_before_coerce_drop = len(self.df)
         self.df.dropna(subset=[COLUNA_DATA_DOCUMENTO], inplace=True)
-        logger.info(f"  - {rows_before_coerce_drop - len(self.df)} linhas removidas por erro de conversão de data.")
+        logger.info("  - %d linhas removidas por erro de conversão de data.", rows_before_coerce_drop - len(self.df))
         
         # Filtra para remover qualquer linha cujo ano seja 2023
         rows_before_year_filter = len(self.df)
         self.df = self.df[self.df[COLUNA_DATA_DOCUMENTO].dt.year != 2023]
-        logger.info(f"  - {rows_before_year_filter - len(self.df)} linhas removidas por pertencerem ao ano de 2023.")
+        logger.info("  - %d linhas removidas por pertencerem ao ano de 2023.", rows_before_year_filter - len(self.df))
 
     def select_columns_step1(self):
         """(Etapa 1) Seleciona apenas as colunas especificadas para a Etapa 1."""
         if self.df is None: return
-        logger.info(f"Selecionando colunas: {', '.join(COLUNAS_ETAPA1_PARA_MANTER)}")
+        logger.info("Selecionando colunas: %s", ', '.join(COLUNAS_ETAPA1_PARA_MANTER))
         try:
             # Filtra o DataFrame para manter apenas as colunas desejadas
             self.df = self.df[COLUNAS_ETAPA1_PARA_MANTER]
@@ -91,7 +91,7 @@ class DataProcessor:
         
         # Remove linhas onde a 'Referência' se tornou nula (era texto ou vazia)
         self.df.dropna(subset=[COLUNA_REFERENCIA], inplace=True)
-        logger.info(f"  - {initial_rows - len(self.df)} linhas removidas por valores não numéricos em 'Referência'.")
+        logger.info("  - %d linhas removidas por valores não numéricos em 'Referência'.", initial_rows - len(self.df))
         
         # Converte a coluna para inteiro para remover casas decimais
         self.df[COLUNA_REFERENCIA] = self.df[COLUNA_REFERENCIA].astype(int)
@@ -141,21 +141,21 @@ class DataProcessor:
         df_step2.dropna(subset=[COLUNA_DATA_DOCUMENTO], inplace=True)
         
         df_2025 = df_step2[df_step2[COLUNA_DATA_DOCUMENTO].dt.year == 2025].copy()
-        logger.info(f"Total de {len(df_2025)} linhas encontradas para o ano de 2025.\n")
+        logger.info("Total de %d linhas encontradas para o ano de 2025.\n", len(df_2025))
 
         sheets_data = {}
         for conta, nome_aba in CONTAS_MAPEAMENTO_ETAPA2.items():
-            logger.info(f"Filtrando dados para a conta {conta} para gerar a aba '{nome_aba}'...")
+            logger.info("Filtrando dados para a conta %d para gerar a aba '%s'...", conta, nome_aba)
             
             # Condição especial para a conta do Ceará
             if conta == 303264:
                 df_conta = df_2025[df_2025[COLUNA_CONTA].isin([303264, 302282])].copy()
-                logger.info(f"  - Regra especial aplicada: Incluindo dados da conta 302282 (Bahia) na aba de Ceará.")
+                logger.info("  - Regra especial aplicada: Incluindo dados da conta 302282 (Bahia) na aba de Ceará.")
             else:
                 df_conta = df_2025[df_2025[COLUNA_CONTA] == conta].copy()
             
             sheets_data[nome_aba] = df_conta
-            logger.info(f"  - {len(df_conta)} linhas separadas para a conta {conta}.")
+            logger.info("  - %d linhas separadas para a conta %d.", len(df_conta), conta)
 
         logger.success("--- Etapa 2 concluída --- \n")
         return sheets_data
@@ -168,46 +168,46 @@ class DataProcessor:
         
         for sheet_name_step2, df in sheets_data_step2.items():
             if df is None or df.empty:
-                logger.warning(f"DataFrame para a aba '{sheet_name_step2}' está vazio. Pulando etapas 3 e 4.")
+                logger.warning("DataFrame para a aba '%s' está vazio. Pulando etapas 3 e 4.", sheet_name_step2)
                 continue
             
             df_copy = df.copy()
             final_sheet_name = step2_to_step4_map.get(sheet_name_step2, sheet_name_step2 + "_final")
-            logger.info(f"\n--- Processando '{sheet_name_step2}' para gerar a aba '{final_sheet_name}' ---")
+            logger.info("\n--- Processando '%s' para gerar a aba '%s' ---", sheet_name_step2, final_sheet_name)
             
             # --- ETAPA 3: Filtrar e excluir linhas ---
-            logger.info(f"[{final_sheet_name}] Etapa 3: Identificando referências únicas com valor positivo para exclusão.")
+            logger.info("[%s] Etapa 3: Identificando referências únicas com valor positivo para exclusão.", final_sheet_name)
             ref_counts = df_copy[COLUNA_REFERENCIA].value_counts()
             unique_refs = ref_counts[ref_counts == 1].index
             df_copy[COLUNA_MONTANTE] = pd.to_numeric(df_copy[COLUNA_MONTANTE], errors='coerce').fillna(0)
             
             indices_to_drop = df_copy[(df_copy[COLUNA_REFERENCIA].isin(unique_refs)) & (df_copy[COLUNA_MONTANTE] > 0)].index
             df_after_step3 = df_copy.drop(indices_to_drop)
-            logger.info(f"[{final_sheet_name}] Etapa 3: {len(indices_to_drop)} linhas removidas.")
+            logger.info("[%s] Etapa 3: %d linhas removidas.", final_sheet_name, len(indices_to_drop))
 
             # --- ETAPA 4: Limpeza, formatação e preenchimento ---
             df_after_step4 = df_after_step3.copy()
             initial_rows = len(df_after_step4)
             df_after_step4.drop_duplicates(subset=[COLUNA_REFERENCIA], keep='first', inplace=True)
-            logger.info(f"[{final_sheet_name}] Etapa 4: {initial_rows - len(df_after_step4)} linhas duplicadas removidas com base na 'Referência'.")
+            logger.info("[%s] Etapa 4: %d linhas duplicadas removidas com base na 'Referência'.", final_sheet_name, initial_rows - len(df_after_step4))
             
             # Seleciona e reordena as colunas para o formato final
             try:
                 df_final_cols = df_after_step4.reindex(columns=COLUNAS_ETAPA4_FINAIS).copy()
-                logger.info(f"[{final_sheet_name}] Etapa 4: Estrutura final de colunas aplicada.")
+                logger.info("[%s] Etapa 4: Estrutura final de colunas aplicada.", final_sheet_name)
             except KeyError as e:
-                logger.error(f"[{final_sheet_name}] Erro ao selecionar colunas finais: {e}.")
+                logger.error("[%s] Erro ao selecionar colunas finais: %s.", final_sheet_name, e)
                 continue
 
             # Preenchimento do 'Valor pagamento' (lógica SOMASE)
-            logger.info(f"[{final_sheet_name}] Etapa 4: Preenchendo 'Valor pagamento' com base na soma de '{sheet_name_step2}'.")
+            logger.info("[%s] Etapa 4: Preenchendo 'Valor pagamento' com base na soma de '%s'.", final_sheet_name, sheet_name_step2)
             df_intermediario = sheets_data_step2.get(sheet_name_step2)
             if df_intermediario is not None and not df_intermediario.empty:
                 somas_por_referencia = df_intermediario.groupby(COLUNA_REFERENCIA)[COLUNA_MONTANTE].sum()
                 df_final_cols['Valor pagamento'] = df_final_cols[COLUNA_REFERENCIA].map(somas_por_referencia).fillna(0)
             
             # Preenchimento da 'Data de compensação'
-            logger.info(f"[{final_sheet_name}] Etapa 4: Formatando e preenchendo 'Data de compensação'.")
+            logger.info("[%s] Etapa 4: Formatando e preenchendo 'Data de compensação'.", final_sheet_name)
             df_final_cols['Data de compensação'] = pd.to_datetime(df_final_cols['Data de compensação'], errors='coerce').dt.strftime('%d/%m/%Y')
             df_final_cols['Data de compensação'] = df_final_cols['Data de compensação'].fillna('Não compensado')
             
