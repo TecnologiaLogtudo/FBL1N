@@ -5,6 +5,7 @@
 import pandas as pd
 import numpy as np
 from utils import logger, format_currency
+from config import SERVICOS_ESPERADOS
 
 class FinalReportGenerator:
     """
@@ -200,13 +201,9 @@ class FinalReportGenerator:
         if self.analyzed_df.empty:
             logger.warning("DataFrame de análise está vazio. Nenhuma tabela será gerada.")
             return pd.DataFrame()
-
-        self.analyzed_df['Recebido/A receber'] = pd.to_numeric(self.analyzed_df['Recebido/A receber'], errors='coerce').fillna(0)
         
-        expected_services = [
-            'Complemento', 'Descarga', 'Diária no cliente', 'Diária parado', 
-            'Frete', 'Pedágio', 'Reentrega'
-        ]
+        self.analyzed_df['Recebido/A receber'] = pd.to_numeric(self.analyzed_df['Recebido/A receber'], errors='coerce').fillna(0)        
+        expected_services = SERVICOS_ESPERADOS
         
         transportadoras = ['Logtudo Bahia', 'Logtudo Ceará', 'Logtudo Pernambuco']
         
@@ -274,8 +271,7 @@ class FinalReportGenerator:
         
         # Garante a ordem correta das transportadoras
         transportadoras_ordered = ['Logtudo Bahia', 'Logtudo Ceará', 'Logtudo Pernambuco']
-        services_ordered = ['Complemento', 'Descarga', 'Diária no cliente', 'Diária parado', 'Frete', 'Pedágio', 'Reentrega']
-
+        services_ordered = SERVICOS_ESPERADOS
         for transportadora in transportadoras_ordered:
             if transportadora in nested_dict:
                 services_data = nested_dict[transportadora]

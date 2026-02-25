@@ -13,14 +13,16 @@ class ReportProcessor:
     Classe para carregar, limpar e estruturar os dados do relatório externo.
     Sua única responsabilidade é transformar o arquivo .xls bruto em um DataFrame limpo e padronizado.
     """
-    def __init__(self, filepath):
+    def __init__(self, filepath, analysis_year):
         """
         Inicializa o processador com o caminho do arquivo do relatório.
         
         Args:
             filepath (str): Caminho para o arquivo .xls do relatório.
+            analysis_year (int): O ano a ser usado para o processamento.
         """
         self.filepath = filepath
+        self.analysis_year = str(analysis_year)
         self.df = None
 
     def _clean_client_column(self):
@@ -52,7 +54,7 @@ class ReportProcessor:
             'Frete_substituicao': r'SUBSTITUI[ÇC][AÃ]O|SUBSTI[TÇ]UIR|SUS?BT?UITI[ÇC][AÃ]O|(?:CTE\s*)?SU[BS]?[TB]I?TUI[CÇ][AÃ]O|TROC[AS]|SUSBTITUIÇÃO|SUSBTITUICAO',
             'Diária no cliente': r'D[IÍ][AÁ]RIA\s*(NO|N[AO])?\s*CLI?ENT[EI]|PERNO[IY]TE|ESA[YI]ADIA.*ROTA|ROTA',
             'Reentrega': r'R[EÉ]+[\-\s]*[EH]?NT[RE]*G[AS]|RET[OÔ]RN[OÔ]|DEVOLU[CÇ][AÃ]O|CAR[OÔ]NA',
-            'Diaria_parado': r'D[IÍ][AÁ]RIA\s*(PARAD[OA]|ESPERA)|PARAD[OA]',
+            'Diaria_parado': r'D[IÍ][AÁ]RIA\s*(PARAD[OA]|ESPERA|PÁRADO)|PARAD[OA]',
             'Complemento': r'CO[MN]PLE[MN][EÊ]NTO?|COMPLEMENTAR|COMPLEMEN?TAR|COMPLENETAR|AJUSTE|AC[EÊ]RTO|DIFEREN[CÇ]A|.*[CO][MN]PLE[MN][EÊ]NTAR|.*COMPLEMENATR',
             'Avarias': r'AVAR[IÍ][AS]|DAN[OÔ]S?|PREJU[IÍ]Z[OÔ]S?|SINISTR[OÔ]',
             'Pedagio': r'P[AE]D[AÁ]?[GJ][IÍ][OÔ]|TAG[S]?',
@@ -60,7 +62,10 @@ class ReportProcessor:
             'Descarga_geral': r'DESCARGA|DESCARTGA|DE[SC][AC]*[AR]*G[AS]|DESCARR[EÊ]G[AS]|DESCARR[EÊ][GJ]AMENTO',
             'Descarga_ajudante': r'AJUD[AÁ]NTE|CHAP[AS]?|AUX[IÍ]LI[AO]R?',
             'Descarga_classificacao': r'CLASSIFIC[AÇ][AÃ]O|SEPAR[AÇ][AÃ]O',
-            'Estadia': r'EST[AÁ]DIA|PERMAN[EÊ]NCIA'
+            'Estadia': r'EST[AÁ]DIA|PERMAN[EÊ]NCIA',
+            'Frete_B49': r'B49',
+            'Frete_municipal': r'^PCH|FRETE\s*MUNICIPAL',
+            'Nota_debito': r'NOTA\s*DE\s*D[EÉ]BITO|DE[BV][IÍ]TO|NOTA\s*D[EÉ]B[ÍI]TO'
         }
         
         conditions = [dt_frete_series.str.contains(pattern, regex=True, na=False) 
@@ -80,7 +85,10 @@ class ReportProcessor:
             'Descarga',          # Descarga_geral
             'Descarga',          # Descarga_ajudante
             'Descarga',          # Descarga_classificacao
-            'Diária no cliente'  # Estadia
+            'Diária no cliente', # Estadia
+            'Frete',             # Frete_B49
+            'Frete municipal',   # Frete_municipal
+            'Diária parado'      # Nota_debito
         ]
         
         # Aplica as regras e registra no log casos não mapeados
@@ -116,8 +124,8 @@ class ReportProcessor:
         logger.info("Coluna 'DT Frete' limpa.")
 
     def _treat_ctrc_column(self):
-        """(Tratamento) Remove o prefixo '2025' e, condicionalmente, o sufixo '2025' da coluna CTRC."""
-        logger.info("Tratando coluna 'CTRC' para remover prefixos e sufixos '2025'.")
+        """(Tratamento) Remove o prefixo e, condicionalmente, o sufixo do ano de análise da coluna CTRC."""
+        logger.info("Tratando coluna 'CTRC' para remover prefixos e sufixos '%s'.", self.analysis_year)
         
         df_copy = self.df.copy()
         
@@ -128,10 +136,10 @@ class ReportProcessor:
         )
         
         # Aplica a remoção do prefixo para todas as linhas
-        df_copy['CTRC'] = df_copy['CTRC'].astype(str).str.replace(r'^20250*', '', regex=True)
+        df_copy['CTRC'] = df_copy['CTRC'].astype(str).str.replace(f'^{self.analysis_year}0*', '', regex=True)
         
-        # Remove o sufixo '2025' apenas onde a condição NÃO é atendida
-        df_copy.loc[~condition_to_keep_suffix, 'CTRC'] = df_copy.loc[~condition_to_keep_suffix, 'CTRC'].str.replace(r'2025$', '', regex=True)
+        # Remove o sufixo do ano apenas onde a condição NÃO é atendida
+        df_copy.loc[~condition_to_keep_suffix, 'CTRC'] = df_copy.loc[~condition_to_keep_suffix, 'CTRC'].str.replace(f'{self.analysis_year}$', '', regex=True)
         
         self.df = df_copy
         logger.info("Coluna 'CTRC' tratada com a nova lógica condicional.")

@@ -56,5 +56,5 @@ REPORT_FINAL_COLUMNS = [
 # --- Configurações para o relatório final ---
 SERVICOS_ESPERADOS = [
     'Complemento', 'Descarga', 'Diária no cliente', 'Diária parado', 
-    'Frete', 'Pedágio', 'Reentrega'
+    'Frete', 'Frete municipal', 'Pedágio', 'Reentrega'
 ]

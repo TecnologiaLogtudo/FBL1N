@@ -24,7 +24,15 @@ a = Analysis(
     # 3. Use a variável 'customtkinter_path' aqui.
     binaries=[(customtkinter_path, 'customtkinter')], # <--- LINHA ALTERADA
     datas=[('config.py', '.'), ('utils.py', '.'), ('main.py', '.'), ('data_processor.py', '.'), ('report_processor.py', '.'), ('analysis_processor.py', '.'), ('final_report_generator.py', '.')],
-    hiddenimports=['customtkinter'], # Mantenha esta linha
+    hiddenimports=[
+        'customtkinter', 
+        'tkinter.font', 
+        'tkinter.ttk',
+        'reportlab',
+        'reportlab.platypus',
+        'reportlab.lib.pagesizes',
+        'reportlab.lib.styles',
+    ], # Mantenha esta linha
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],

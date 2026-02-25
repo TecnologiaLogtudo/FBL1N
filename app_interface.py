@@ -162,6 +162,12 @@ class App(ctk.CTk):
         report_entry.grid(row=2, column=1, padx=10, pady=5, sticky="ew")
         ctk.CTkButton(config_frame, text="Selecionar", command=lambda: self.select_file(self.report_file_path)).grid(row=2, column=2, padx=10, pady=5)
 
+        # Ano de Análise
+        ctk.CTkLabel(config_frame, text="Ano de Análise:").grid(row=3, column=0, padx=10, pady=(5, 10), sticky="w")
+        self.analysis_year = tk.StringVar(value="2025")
+        year_entry = ctk.CTkEntry(config_frame, textvariable=self.analysis_year, width=100)
+        year_entry.grid(row=3, column=1, padx=10, pady=(5, 10), sticky="w")
+
         # --- Seção 2: Controles e Status ---
         controls_frame = ctk.CTkFrame(self.main_frame)
         controls_frame.grid(row=1, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
@@ -291,9 +297,10 @@ class App(ctk.CTk):
             
             input_file = self.input_file_path.get()
             report_file = self.report_file_path.get()
+            analysis_year = int(self.analysis_year.get())
             output_file = resource_path(OUTPUT_FILE_PATH) 
 
-            run_main_process(input_file, report_file, output_file, progress_callback=self.update_progress)
+            run_main_process(input_file, report_file, output_file, analysis_year, progress_callback=self.update_progress)
             
             logger.success("Processamento concluído com sucesso!")
             self.update_status("Concluído com Sucesso", "green")
@@ -326,6 +333,14 @@ class App(ctk.CTk):
         """Valida se os arquivos de entrada existem."""
         input_file = self.input_file_path.get()
         report_file = self.report_file_path.get()
+        year_str = self.analysis_year.get()
+
+        try:
+            int(year_str)
+        except (ValueError, TypeError):
+            logger.error("ERRO: O ano de análise '%s' não é um número válido.", year_str)
+            messagebox.showerror("Erro de Validação", f"O ano de análise deve ser um número válido (ex: 2025).\nValor inserido: {year_str}")
+            return False
 
         if not os.path.exists(input_file):
             logger.error("ERRO: Arquivo de entrada não encontrado: %s", input_file)

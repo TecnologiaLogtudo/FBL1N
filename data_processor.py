@@ -1,6 +1,6 @@
 # data_processor.py
 # 1º Etapa: Processamento da Planilha Principal
-# Módulo para o processamento da planilha principal (base_de_dados.xlsx).
+# Módulo para o processamento da planilha principal (FBL1.xlsx).
 
 import pandas as pd
 from utils import logger
@@ -127,21 +127,21 @@ class DataProcessor:
             return self.df
         return None
 
-    def process_step2(self, dataframe):
-        """(Etapa 2) Filtra dados para o ano de 2025 e divide o DataFrame por conta."""
+    def process_step2(self, dataframe, analysis_year):
+        """(Etapa 2) Filtra dados para o ano selecionado e divide o DataFrame por conta."""
         if dataframe is None or dataframe.empty:
             logger.warning("DataFrame de entrada para Etapa 2 está vazio. Pulando etapa.")
             return {}
         
-        logger.stair("--- INICIANDO ETAPA 2: Divisão por Conta para o Ano de 2025 ---")
+        logger.stair(f"--- INICIANDO ETAPA 2: Divisão por Conta para o Ano de {analysis_year} ---")
         df_step2 = dataframe.copy()
         
         # Garante que a coluna de data é do tipo datetime para filtrar pelo ano
         df_step2[COLUNA_DATA_DOCUMENTO] = pd.to_datetime(df_step2[COLUNA_DATA_DOCUMENTO], errors='coerce')
         df_step2.dropna(subset=[COLUNA_DATA_DOCUMENTO], inplace=True)
         
-        df_2025 = df_step2[df_step2[COLUNA_DATA_DOCUMENTO].dt.year == 2025].copy()
-        logger.info("Total de %d linhas encontradas para o ano de 2025.\n", len(df_2025))
+        df_filtered_year = df_step2[df_step2[COLUNA_DATA_DOCUMENTO].dt.year == analysis_year].copy()
+        logger.info("Total de %d linhas encontradas para o ano de %d.\n", len(df_filtered_year), analysis_year)
 
         sheets_data = {}
         for conta, nome_aba in CONTAS_MAPEAMENTO_ETAPA2.items():
@@ -149,10 +149,10 @@ class DataProcessor:
             
             # Condição especial para a conta do Ceará
             if conta == 303264:
-                df_conta = df_2025[df_2025[COLUNA_CONTA].isin([303264, 302282])].copy()
+                df_conta = df_filtered_year[df_filtered_year[COLUNA_CONTA].isin([303264, 302282])].copy()
                 logger.info("  - Regra especial aplicada: Incluindo dados da conta 302282 (Bahia) na aba de Ceará.")
             else:
-                df_conta = df_2025[df_2025[COLUNA_CONTA] == conta].copy()
+                df_conta = df_filtered_year[df_filtered_year[COLUNA_CONTA] == conta].copy()
             
             sheets_data[nome_aba] = df_conta
             logger.info("  - %d linhas separadas para a conta %d.", len(df_conta), conta)
@@ -160,8 +160,8 @@ class DataProcessor:
         logger.success("--- Etapa 2 concluída --- \n")
         return sheets_data
 
-    def process_steps_3_and_4(self, sheets_data_step2):
-        """(Etapas 3 e 4) Executa os tratamentos sequenciais para gerar as abas finais."""
+    def process_steps_3_and_4(self, sheets_data_step2, analysis_year):
+        """(Etapas 3 e 4) Executa os tratamentos sequenciais para gerar as abas finais, considerando o ano."""
         logger.stair("--- INICIANDO ETAPAS 3 e 4: Tratamento e Estruturação Final ---")
         final_sheets = {}
         step2_to_step4_map = {v: CONTAS_MAPEAMENTO_ETAPA4[k] for k, v in CONTAS_MAPEAMENTO_ETAPA2.items()}

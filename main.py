@@ -4,7 +4,7 @@
 import pandas as pd
 from utils import logger
 
-def main(input_file, report_file, output_file, progress_callback=None):
+def main(input_file, report_file, output_file, analysis_year, progress_callback=None):
     """
     Função principal que orquestra todo o processo de ETL e Análise.
     """
@@ -25,14 +25,14 @@ def main(input_file, report_file, output_file, progress_callback=None):
     if progress_callback: progress_callback(0.2)
 
     if processed_df_step1 is not None:
-        sheets_data_step2 = data_proc.process_step2(processed_df_step1)
+        sheets_data_step2 = data_proc.process_step2(processed_df_step1, analysis_year)
         if progress_callback: progress_callback(0.3)
-        final_sheets_step4 = data_proc.process_steps_3_and_4(sheets_data_step2)
+        final_sheets_step4 = data_proc.process_steps_3_and_4(sheets_data_step2, analysis_year)
         if progress_callback: progress_callback(0.4)
 
         # --- FASE 2: Processamento do relatório externo ---
         logger.stage("FASE 2: Processando relatório externo...\n")
-        report_proc = ReportProcessor(report_file)
+        report_proc = ReportProcessor(report_file, analysis_year)
         report_df = report_proc.process()
         if progress_callback: progress_callback(0.5)
 
@@ -98,4 +98,4 @@ if __name__ == "__main__":
     print(f"   - Relatório externo: {report_filepath}")
     print(f"   - Arquivo de saída: {output_filepath}")
     
-    main(input_filepath, report_filepath, output_filepath)
+    main(input_filepath, report_filepath, output_filepath, analysis_year=2025)
