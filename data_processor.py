@@ -67,6 +67,12 @@ class DataProcessor:
     def select_columns_step1(self):
         """(Etapa 1) Seleciona apenas as colunas especificadas para a Etapa 1."""
         if self.df is None: return
+        
+        # Verifica se a coluna 'Conta' existe. Se não, cria com valor padrão (Bahia).
+        if COLUNA_CONTA not in self.df.columns:
+            logger.warning(f"Coluna '{COLUNA_CONTA}' não encontrada. Aplicando regra de contingência: Assumindo conta 302282 (Bahia) para todos os registros.")
+            self.df[COLUNA_CONTA] = 302282
+            
         logger.info("Selecionando colunas: %s", ', '.join(COLUNAS_ETAPA1_PARA_MANTER))
         try:
             # Filtra o DataFrame para manter apenas as colunas desejadas
