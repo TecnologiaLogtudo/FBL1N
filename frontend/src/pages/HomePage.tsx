@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Alert, Button, Card, FileInput, Group, NumberInput, Text } from "@mantine/core";
-import { startProcess } from "../api/client";
+import { Alert, Button, Card, FileInput, Group, NumberInput, Progress, Text } from "@mantine/core";
+import { getApiErrorMessage, startProcess } from "../api/client";
 import { useAppStore } from "../store/useAppStore";
 
 const MAX_BYTES = 25 * 1024 * 1024;
@@ -20,13 +20,17 @@ export function HomePage() {
   const [reportFile, setReportFile] = useState<File | null>(null);
   const [analysisYear, setAnalysisYear] = useState<number>(new Date().getFullYear());
   const [localError, setLocalError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const setJob = useAppStore((s) => s.setJob);
   const setError = useAppStore((s) => s.setError);
 
   const handleStart = async () => {
+    if (isSubmitting) return;
     setLocalError(null);
     setError(null);
+    setUploadProgress(0);
 
     const baseErr = validateFile(baseFile, [".xlsx"]);
     if (baseErr) {
@@ -41,10 +45,13 @@ export function HomePage() {
     }
 
     try {
-      const { job_id } = await startProcess(baseFile!, reportFile!, analysisYear);
+      setIsSubmitting(true);
+      const { job_id } = await startProcess(baseFile!, reportFile!, analysisYear, setUploadProgress);
       setJob(job_id);
-    } catch (err) {
-      setLocalError("Falha ao iniciar processamento");
+    } catch (error) {
+      setLocalError(getApiErrorMessage(error));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -62,8 +69,16 @@ export function HomePage() {
         max={2100}
         mb="md"
       />
+      {isSubmitting && (
+        <>
+          <Text size="sm" mb="xs">Enviando arquivos...</Text>
+          <Progress value={uploadProgress * 100} mb="md" />
+        </>
+      )}
       <Group justify="flex-end">
-        <Button onClick={handleStart}>Executar Processamento</Button>
+        <Button onClick={handleStart} loading={isSubmitting} disabled={isSubmitting}>
+          Executar Processamento
+        </Button>
       </Group>
     </Card>
   );
