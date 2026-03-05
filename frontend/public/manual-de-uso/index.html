@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="../logtudo.png" />
+    <title>Manual de Uso - Notas Compensadas FBL1</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, sans-serif;
+        margin: 0;
+        background: #f5f7fb;
+        color: #1b2430;
+      }
+      .wrap {
+        max-width: 860px;
+        margin: 24px auto;
+        background: #fff;
+        border: 1px solid #d9e1ec;
+        border-radius: 12px;
+        padding: 24px;
+      }
+      h1, h2, h3 { margin-top: 0; color: #0f3d75; }
+      h1 { font-size: 1.7rem; }
+      h2 { margin-top: 24px; font-size: 1.2rem; }
+      ul, ol { padding-left: 20px; }
+      code {
+        background: #eef3fa;
+        padding: 2px 6px;
+        border-radius: 6px;
+        font-family: Consolas, monospace;
+      }
+      .muted { color: #5a6a7d; font-size: 0.95rem; }
+      .top-link {
+        display: inline-block;
+        margin-top: 8px;
+        text-decoration: none;
+        color: #0f3d75;
+        font-weight: 600;
+      }
+      @media print {
+        body { background: #fff; }
+        .wrap { border: none; margin: 0; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <h1>Manual de Uso - Notas Compensadas FBL1 (Web)</h1>
+      <p class="muted">Versao 1.2 | Atualizado em 05/03/2026</p>
+      <a class="top-link" href="../">Voltar para o sistema</a>
+
+      <h2>1. Objetivo</h2>
+      <p>
+        Automatizar a conciliacao de pagamentos de frete cruzando dados contabeis (FBL1N)
+        com relatorio operacional (BSoft), com exportacao em XLSX e PDF.
+      </p>
+
+      <h2>2. Arquivos necessarios</h2>
+      <ul>
+        <li><strong>Base de Dados:</strong> formato <code>.xlsx</code> (maximo 25 MB)</li>
+        <li><strong>Relatorio Externo:</strong> formato <code>.xls</code> ou <code>.xlsx</code> (maximo 25 MB)</li>
+      </ul>
+
+      <h2>3. Como processar</h2>
+      <ol>
+        <li>Selecione a Base de Dados.</li>
+        <li>Selecione o Relatorio Externo.</li>
+        <li>Informe o Ano de Analise.</li>
+        <li>Clique em <strong>Executar Processamento</strong>.</li>
+        <li>Acompanhe envio, progresso e logs.</li>
+      </ol>
+
+      <h2>4. Resultados e exportacao</h2>
+      <ul>
+        <li><strong>Resumo Consolidado</strong></li>
+        <li><strong>Detalhes de Pendencias</strong></li>
+        <li>Download em <strong>XLSX</strong> e <strong>PDF</strong></li>
+      </ul>
+
+      <h2>5. Secao Operacao</h2>
+      <p>
+        Exibe indicadores de jobs (ativos, concluidos, falhos), taxa de sucesso e historico recente.
+      </p>
+
+      <h2>6. Erros comuns</h2>
+      <ul>
+        <li>Arquivo acima de 25 MB</li>
+        <li>Formato invalido de arquivo</li>
+        <li>Tentativa de iniciar novo job com outro ainda em execucao</li>
+      </ul>
+
+      <h2>7. Gerar PDF deste manual</h2>
+      <p>
+        Abra esta pagina e use <strong>Ctrl+P</strong> / <strong>Imprimir</strong> para salvar em PDF.
+      </p>
+    </main>
+  </body>
+</html>

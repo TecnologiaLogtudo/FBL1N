@@ -97,8 +97,8 @@ export function HomePage() {
     <Card withBorder p="md">
       <Text fw={700} mb="md">Conciliação de Pagamentos de Frete</Text>
       {localError && <Alert color="red" mb="md">{localError}</Alert>}
-      <FileInput label="Base de Dados (.xlsx)" value={baseFile} onChange={setBaseFile} clearable mb="sm" />
-      <FileInput label="Relatório Externo (.xls/.xlsx)" value={reportFile} onChange={setReportFile} clearable mb="sm" />
+      <FileInput label="Base de Dados FBL1N(.xlsx)" value={baseFile} onChange={setBaseFile} clearable mb="sm" />
+      <FileInput label="Relatório Externo BSOFT(.xls/.xlsx)" value={reportFile} onChange={setReportFile} clearable mb="sm" />
       <NumberInput
         label="Ano de Análise"
         value={analysisYear}
