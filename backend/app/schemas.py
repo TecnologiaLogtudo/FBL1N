@@ -36,6 +36,29 @@ class ResultsResponse(BaseModel):
     meta: dict[str, Any] = Field(default_factory=dict)
 
 
+class JobHistoryItem(BaseModel):
+    job_id: str
+    status: JobStatus
+    analysis_year: int
+    base_filename: str
+    report_filename: str
+    progress: float
+    created_at: datetime
+    started_at: datetime | None = None
+    finished_at: datetime | None = None
+    error: str | None = None
+
+
+class MetricsResponse(BaseModel):
+    total_jobs: int
+    active_jobs: int
+    completed_jobs: int
+    failed_jobs: int
+    expired_jobs: int
+    avg_duration_seconds: float
+    success_rate: float
+
+
 class WsMessage(BaseModel):
     type: str
     payload: dict[str, Any]

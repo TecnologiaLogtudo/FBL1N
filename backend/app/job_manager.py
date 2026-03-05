@@ -107,3 +107,36 @@ class JobManager:
                     expired.append(job)
 
         return expired
+
+    def list_jobs_for_user(self, user_id: str, limit: int = 20) -> list[JobRecord]:
+        with self._lock:
+            items = [job for job in self._jobs.values() if job.user_id == user_id]
+            items.sort(key=lambda job: job.created_at, reverse=True)
+            return items[: max(1, min(limit, 100))]
+
+    def get_metrics(self) -> dict[str, float | int]:
+        with self._lock:
+            total_jobs = len(self._jobs)
+            active_jobs = sum(1 for job in self._jobs.values() if job.status in {JobStatus.queued, JobStatus.running})
+            completed_jobs = sum(1 for job in self._jobs.values() if job.status == JobStatus.completed)
+            failed_jobs = sum(1 for job in self._jobs.values() if job.status == JobStatus.failed)
+            expired_jobs = sum(1 for job in self._jobs.values() if job.status == JobStatus.expired)
+
+            durations = []
+            for job in self._jobs.values():
+                if job.started_at and job.finished_at:
+                    durations.append((job.finished_at - job.started_at).total_seconds())
+
+            avg_duration_seconds = sum(durations) / len(durations) if durations else 0.0
+            finished_count = completed_jobs + failed_jobs
+            success_rate = (completed_jobs / finished_count) if finished_count > 0 else 0.0
+
+            return {
+                "total_jobs": total_jobs,
+                "active_jobs": active_jobs,
+                "completed_jobs": completed_jobs,
+                "failed_jobs": failed_jobs,
+                "expired_jobs": expired_jobs,
+                "avg_duration_seconds": round(avg_duration_seconds, 2),
+                "success_rate": round(success_rate, 4),
+            }

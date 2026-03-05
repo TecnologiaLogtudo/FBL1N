@@ -1,5 +1,5 @@
 import axios from "axios";
-import { ResultsResponse, StatusResponse } from "../types";
+import { JobHistoryItem, MetricsResponse, ResultsResponse, StatusResponse } from "../types";
 
 const APP_BASE_PATH = import.meta.env.VITE_APP_BASE_PATH ?? "/";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? APP_BASE_PATH;
@@ -49,6 +49,16 @@ export async function fetchStatus(jobId: string): Promise<StatusResponse> {
 
 export async function fetchResults(jobId: string): Promise<ResultsResponse> {
   const { data } = await api.get(`/api/process/${jobId}/results`);
+  return data;
+}
+
+export async function fetchHistory(limit = 20): Promise<JobHistoryItem[]> {
+  const { data } = await api.get(`/api/process/history?limit=${limit}`);
+  return data;
+}
+
+export async function fetchMetrics(): Promise<MetricsResponse> {
+  const { data } = await api.get("/api/metrics");
   return data;
 }
 

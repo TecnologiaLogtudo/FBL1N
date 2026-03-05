@@ -10,7 +10,7 @@ from .config import settings
 from .job_manager import JobManager
 from .job_runner import JobRunner
 from .realtime import RealtimeHub
-from .schemas import JobStatus, JobStatusResponse, ProcessStartResponse, ResultsResponse
+from .schemas import JobHistoryItem, JobStatus, JobStatusResponse, MetricsResponse, ProcessStartResponse, ResultsResponse
 from .service.pdf_export import generate_pdf_from_output
 from .service.result_parser import parse_results
 from .storage import create_job_paths
@@ -130,6 +130,35 @@ async def get_status(request: Request, job_id: str):
         finished_at=job.finished_at,
         error=job.error,
     )
+
+
+@router.get("/api/process/history", response_model=list[JobHistoryItem])
+async def get_history(request: Request, limit: int = 20):
+    job_manager: JobManager = request.app.state.job_manager
+    user_id = _get_user_id(request)
+    jobs = job_manager.list_jobs_for_user(user_id=user_id, limit=limit)
+    return [
+        JobHistoryItem(
+            job_id=job.job_id,
+            status=job.status,
+            analysis_year=job.analysis_year,
+            base_filename=job.base_filename,
+            report_filename=job.report_filename,
+            progress=job.progress,
+            created_at=job.created_at,
+            started_at=job.started_at,
+            finished_at=job.finished_at,
+            error=job.error,
+        )
+        for job in jobs
+    ]
+
+
+@router.get("/api/metrics", response_model=MetricsResponse)
+async def get_metrics(request: Request):
+    job_manager: JobManager = request.app.state.job_manager
+    metrics = job_manager.get_metrics()
+    return MetricsResponse(**metrics)
 
 
 @router.get("/api/process/{job_id}/results", response_model=ResultsResponse)
