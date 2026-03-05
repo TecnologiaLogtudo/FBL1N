@@ -1,0 +1,45 @@
+# OS / Editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.coverage
+.coverage.*
+htmlcov/
+.python-version
+.venv/
+venv/
+env/
+
+# Node / Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.cache/
+frontend/.npm/
+
+# Logs and runtime
+*.log
+processamento.log
+backend/*.log
+
+# Build artifacts
+dist/
+build/
+*.spec.tmp
+
+# Local generated data files
+dados_estruturados.xlsx
+*.tmp
+*.temp
+

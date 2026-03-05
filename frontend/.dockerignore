@@ -1,0 +1,10 @@
+node_modules
+dist
+.vite
+.cache
+.npm
+*.log
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db

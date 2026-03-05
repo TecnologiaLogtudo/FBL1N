@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+processamento.log
+dist/
+*.log
+*.tmp
+*.temp
+dados_estruturados.xlsx

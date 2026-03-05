@@ -1,0 +1,38 @@
+# VCS and metadata
+.git
+.gitignore
+
+# Local environments
+.venv
+venv
+env
+__pycache__
+.pytest_cache
+.mypy_cache
+.ruff_cache
+
+# Python artifacts
+*.pyc
+*.pyo
+*.pyd
+*.log
+processamento.log
+
+# Frontend artifacts
+frontend/node_modules
+frontend/dist
+frontend/.vite
+
+# Build outputs and temp files
+dist
+build
+*.tmp
+*.temp
+dados_estruturados.xlsx
+
+# Editor/system junk
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
