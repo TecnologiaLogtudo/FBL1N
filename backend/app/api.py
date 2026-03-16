@@ -182,15 +182,15 @@ async def get_history(request: Request, limit: int = 20):
     job_manager: JobManager = request.app.state.job_manager
     user_id = _get_user_id(request)
     jobs = job_manager.list_jobs_for_user(user_id=user_id, limit=limit)
-        return [
-            JobHistoryItem(
-                job_id=job.job_id,
-                status=job.status,
-                analysis_year=job.analysis_year,
-                base_filename=job.base_filename,
-                report_filename=job.report_filename,
-                process_mode=job.process_mode,
-                progress=job.progress,
+    return [
+        JobHistoryItem(
+            job_id=job.job_id,
+            status=job.status,
+            analysis_year=job.analysis_year,
+            base_filename=job.base_filename,
+            report_filename=job.report_filename,
+            process_mode=job.process_mode,
+            progress=job.progress,
             created_at=job.created_at,
             started_at=job.started_at,
             finished_at=job.finished_at,
