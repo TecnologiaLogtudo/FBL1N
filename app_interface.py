@@ -444,13 +444,15 @@ class App(ctk.CTk):
         if not os.path.exists(output_file_path):
             messagebox.showwarning("Arquivo Não Encontrado", "O arquivo de saída ainda não foi gerado. Execute o processamento primeiro.")
             return
+            
+        default_filename = f"Job_Processo_{self.analysis_year.get()}"
 
         if file_type == "xlsx":
             try:
                 dest_path = filedialog.asksaveasfilename(
                     defaultextension=".xlsx",
                     filetypes=[("Arquivos Excel", "*.xlsx"), ("Todos os arquivos", "*.*")],
-                    initialfile="relatorio_final.xlsx"
+                    initialfile=f"{default_filename}.xlsx"
                 )
                 if dest_path:
                     import shutil
@@ -474,7 +476,7 @@ class App(ctk.CTk):
                 dest_path = filedialog.asksaveasfilename(
                     defaultextension=".pdf",
                     filetypes=[("Arquivos PDF", "*.pdf"), ("Todos os arquivos", "*.*")],
-                    initialfile="relatorio_final.pdf"
+                    initialfile=f"{default_filename}.pdf"
                 )
                 
                 if not dest_path:
@@ -501,6 +503,22 @@ class App(ctk.CTk):
                     # Garante que apenas colunas existentes sejam selecionadas para evitar erros
                     existing_cols = [col for col in cols_to_keep if col in df_details_raw.columns]
                     df_details = df_details_raw[existing_cols]
+                    
+                def _format_currency_pdf(val):
+                    if pd.isna(val) or str(val).strip() in ['', '-', 'Não lançado', 'Não compensado']:
+                        return val
+                    try:
+                        clean_val = str(val).replace('R$', '').replace('.', '').replace(',', '.').strip()
+                        return f"R$ {float(clean_val):,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+                    except (ValueError, TypeError):
+                        return val
+
+                for col in ['Não compensado', 'Não lançado', 'Total Geral']:
+                    if col in df_summary.columns:
+                        df_summary[col] = df_summary[col].apply(_format_currency_pdf)
+                for col in ['Valor CTe', 'Valor pago', 'Recebido/A receber']:
+                    if col in df_details.columns:
+                        df_details[col] = df_details[col].apply(_format_currency_pdf)
 
                 if df_summary.empty and df_details.empty:
                     messagebox.showwarning("Dados Vazios", "Não há dados na aba 'Resumo Consolidado' para gerar o PDF.")
@@ -554,6 +572,18 @@ class App(ctk.CTk):
                         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
                         ('BACKGROUND', (0, -3), (-1, -1), colors.cyan),
                     ])
+
+                    # Adiciona formatação para números negativos em vermelho
+                    for i, row_values in enumerate(df_summary.values):
+                        table_row_index = i + 1
+                        for j, cell_value in enumerate(row_values):
+                            try:
+                                val_str = str(cell_value).replace('R$', '').replace('.', '').replace(',', '.').strip()
+                                if val_str and float(val_str) < 0:
+                                    style_summary.add('TEXTCOLOR', (j, table_row_index), (j, table_row_index), colors.red)
+                            except (ValueError, TypeError):
+                                continue # Ignora se não for um número
+                    ])
                     table_summary.setStyle(style_summary)
                     elements.append(table_summary)
 
@@ -586,6 +616,17 @@ class App(ctk.CTk):
                                     conditional_styles.append(
                                         ('BACKGROUND', (recebido_col_idx, table_row_index), (recebido_col_idx, table_row_index), colors.HexColor('#FFCCCC'))
                                     )
+
+                            # Novo: Formatação para números negativos em vermelho
+                            for i, row_values in enumerate(df_details.iloc[1:].values):
+                                table_row_index = i + 1
+                                for j, cell_value in enumerate(row_values):
+                                    try:
+                                        # Tenta converter para float, mesmo que seja string
+                                        if pd.notna(cell_value) and float(cell_value) < 0:
+                                            conditional_styles.append(('TEXTCOLOR', (j, table_row_index), (j, table_row_index), colors.red))
+                                    except (ValueError, TypeError):
+                                        continue # Ignora se não for um número
                     except Exception as e:
                         logger.warning("Não foi possível aplicar o estilo condicional ao PDF: %s", e)
 

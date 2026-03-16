@@ -137,7 +137,7 @@ A automação inversa identifica quais títulos marcados como "em aberto" no BSo
 
 ### Processamento
 1. O `DataProcessor` prepara as abas de lookup (Bahia, Ceará, Pernambuco) da mesma maneira que na Fase 1.
-2. O `OpenTitlesProcessor` limpa os CTRCs da planilha aberta, padroniza status/transportadora e cruza cada número com as abas finais por referência.
+2. O `OpenTitlesProcessor` limpa os CTRCs da planilha aberta (a coluna pode se chamar “CTe”, “CTRC”, “Conhecimento” ou “Referência”), padroniza status/transportadora e cruza cada número com as abas finais por referência; contudo, nesta análise específica só consideramos os lançamentos da conta Bahia (302282) da base FBL1.
 3. Para cada CTRC aberto são registrados:
    - o valor pago e a data de compensação identificados no FBL1 (quando existentes);
    - o status do arquivo original e a transportadora informada;

@@ -65,6 +65,8 @@ Antes de executar, escolha o modo no controle de topo da tela:
 - **Conciliação** (padrão): envia FBL1 + relatório BSoft completo; gera o `Resumo Consolidado` com tabela pivot e pendências.
 - **Títulos em aberto**: envia FBL1 + planilha filtrada com títulos em aberto; ignora o relatório completo e gera as abas `Resumo Aberto` e `Aberto vs Pago`.
 
+No modo “Títulos em aberto” a planilha deve conter uma coluna com o número do conhecimento (o mesmo campo usado nos relatórios padrão), que pode estar nomeada como “CTe”, “CTRC”, “Conhecimento” ou “Referência”. O sistema padroniza essa coluna para `CTRC` antes de cruzar com o FBL1 e considera apenas os lançamentos da conta 302282 (Bahia), que é a conta usada pela DPA.
+
 No modo “Títulos em aberto” você só precisa fazer upload da planilha BSoft já filtrada pelos títulos com status pendente (CTRC orientados). O relatório principal fica opcional e o sistema foca em cruzar apenas esses CTRCs com os lançamentos FBL1.
 
 --- 

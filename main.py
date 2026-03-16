@@ -152,6 +152,40 @@ def run_open_titles_process(
             summary_df.to_excel(writer, sheet_name="Resumo Aberto", index=False, startrow=2)
             detail_df.to_excel(writer, sheet_name="Aberto vs Pago", index=False, startrow=2)
 
+            # --- Estilização do Relatório Inverso ---
+            workbook = writer.book
+
+            # 1. Ocultar as abas referentes ao Ceará
+            for sheet_name in ["303264 - Ceará", "Ceará"]:
+                if sheet_name in workbook.sheetnames:
+                    workbook[sheet_name].sheet_state = "hidden"
+
+            # 2 e 3. Formato monetário e valores negativos em vermelho
+            currency_fmt = 'R$ #,##0.00;[Red]-R$ #,##0.00'
+
+            def _format_sheet(ws, currency_columns):
+                # 4. Auto-ajustar a largura das colunas (orientação total de conteúdo)
+                for col in ws.columns:
+                    max_length = 0
+                    col_letter = col[0].column_letter
+                    for cell in col:
+                        if cell.value is not None:
+                            max_length = max(max_length, len(str(cell.value)))
+                    ws.column_dimensions[col_letter].width = min(max_length + 2, 60)
+
+                # Localiza as colunas de moeda no cabeçalho (que fica na linha 3 do Excel devido ao startrow=2)
+                target_cols = [cell.column_letter for cell in ws[3] if cell.value in currency_columns]
+
+                for col_letter in target_cols:
+                    for cell in ws[col_letter]:
+                        if cell.row > 3 and isinstance(cell.value, (int, float)):
+                            cell.number_format = currency_fmt
+
+            if "Resumo Aberto" in workbook.sheetnames:
+                _format_sheet(workbook["Resumo Aberto"], ["Valor pago no FBL1"])
+            if "Aberto vs Pago" in workbook.sheetnames:
+                _format_sheet(workbook["Aberto vs Pago"], ["Valor pago", "Valor devido"])
+
         logger.success("Arquivo com processado inverso salvo em: '%s'", output_file)
         if progress_callback:
             progress_callback(1.0)
