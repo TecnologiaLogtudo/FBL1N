@@ -244,7 +244,7 @@ async def download_xlsx(request: Request, job_id: str):
     return FileResponse(
         path=job.output_path,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        filename=f"dados_estruturados_{job.job_id}.xlsx",
+        filename=f"Job_Processo_{job.analysis_year}.xlsx",
     )
 
 
@@ -265,7 +265,7 @@ async def download_pdf(request: Request, job_id: str):
     return FileResponse(
         path=pdf_path,
         media_type="application/pdf",
-        filename=f"resumo_conciliacao_{job.job_id}.pdf",
+        filename=f"Job_Processo_{job.analysis_year}.pdf",
     )
 
 
