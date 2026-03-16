@@ -141,9 +141,25 @@ class App(ctk.CTk):
         self.main_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
         self.main_frame.grid_columnconfigure(1, weight=1)
         
+        # --- Seção 0: Escolha de Fluxo (Destaque) ---
+        self.mode_frame = ctk.CTkFrame(self.main_frame, fg_color="#1a4371", border_color="#5fa1eb", border_width=2, corner_radius=10)
+        self.mode_frame.grid(row=0, column=0, columnspan=2, padx=10, pady=(10, 15), sticky="ew")
+        self.mode_frame.grid_columnconfigure(0, weight=1)
+        self.mode_frame.grid_columnconfigure(1, weight=1)
+
+        ctk.CTkLabel(self.mode_frame, text="📌 ESCOLHA O FLUXO DE PROCESSAMENTO", font=ctk.CTkFont(size=18, weight="bold"), text_color="#e0e0e0").grid(row=0, column=0, columnspan=2, pady=(15, 10))
+
+        self.process_mode_var = tk.StringVar(value="standard")
+        
+        self.radio_standard = ctk.CTkRadioButton(self.mode_frame, text="Processo Padrão (FBL1N x BSoft)", variable=self.process_mode_var, value="standard", command=self.update_ui_for_mode, font=ctk.CTkFont(size=14, weight="bold"))
+        self.radio_standard.grid(row=1, column=0, padx=20, pady=(0, 15), sticky="e")
+
+        self.radio_inverse = ctk.CTkRadioButton(self.mode_frame, text="Processo Inverso (Verificar Títulos em Aberto)", variable=self.process_mode_var, value="open_titles", command=self.update_ui_for_mode, font=ctk.CTkFont(size=14, weight="bold"))
+        self.radio_inverse.grid(row=1, column=1, padx=20, pady=(0, 15), sticky="w")
+
         # --- Seção 1: Configuração de Arquivos ---
         config_frame = ctk.CTkFrame(self.main_frame)
-        config_frame.grid(row=0, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
+        config_frame.grid(row=1, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
         config_frame.grid_columnconfigure(1, weight=1)
 
         ctk.CTkLabel(config_frame, text="Configuração de Arquivos", font=ctk.CTkFont(size=20, weight="bold")).grid(row=0, column=0, columnspan=2, pady=10)
@@ -156,11 +172,19 @@ class App(ctk.CTk):
         ctk.CTkButton(config_frame, text="Selecionar", command=lambda: self.select_file(self.input_file_path)).grid(row=1, column=2, padx=10, pady=(10, 5))
         
         # Report File
-        ctk.CTkLabel(config_frame, text="Relatório Externo (.xls):").grid(row=2, column=0, padx=10, pady=5, sticky="w")
+        self.report_label = ctk.CTkLabel(config_frame, text="Relatório Externo (.xls):")
+        self.report_label.grid(row=2, column=0, padx=10, pady=5, sticky="w")
         self.report_file_path = tk.StringVar(value="relatorio BSoft")
-        report_entry = ctk.CTkEntry(config_frame, textvariable=self.report_file_path, width=400)
-        report_entry.grid(row=2, column=1, padx=10, pady=5, sticky="ew")
-        ctk.CTkButton(config_frame, text="Selecionar", command=lambda: self.select_file(self.report_file_path)).grid(row=2, column=2, padx=10, pady=5)
+        self.report_entry = ctk.CTkEntry(config_frame, textvariable=self.report_file_path, width=400)
+        self.report_entry.grid(row=2, column=1, padx=10, pady=5, sticky="ew")
+        self.report_btn = ctk.CTkButton(config_frame, text="Selecionar", command=lambda: self.select_file(self.report_file_path))
+        self.report_btn.grid(row=2, column=2, padx=10, pady=5)
+        
+        # Open Titles File (Oculto por padrão)
+        self.open_titles_label = ctk.CTkLabel(config_frame, text="Títulos em Aberto (.xls/.xlsx):")
+        self.open_titles_path = tk.StringVar(value="planilha títulos em aberto")
+        self.open_titles_entry = ctk.CTkEntry(config_frame, textvariable=self.open_titles_path, width=400)
+        self.open_titles_btn = ctk.CTkButton(config_frame, text="Selecionar", command=lambda: self.select_file(self.open_titles_path))
 
         # Ano de Análise
         ctk.CTkLabel(config_frame, text="Ano de Análise:").grid(row=3, column=0, padx=10, pady=(5, 10), sticky="w")
@@ -170,7 +194,7 @@ class App(ctk.CTk):
 
         # --- Seção 2: Controles e Status ---
         controls_frame = ctk.CTkFrame(self.main_frame)
-        controls_frame.grid(row=1, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
+        controls_frame.grid(row=2, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
         
         # Status Bar
         self.status_label = ctk.CTkLabel(controls_frame, text="Status: Pronto", font=ctk.CTkFont(size=14), text_color="green")
@@ -187,7 +211,7 @@ class App(ctk.CTk):
 
         # --- Seção 3: Abas (Logs e Resultados) ---
         self.notebook = ctk.CTkTabview(self.main_frame)
-        self.notebook.grid(row=2, column=0, columnspan=2, padx=10, pady=10, sticky="nsew")
+        self.notebook.grid(row=3, column=0, columnspan=2, padx=10, pady=10, sticky="nsew")
 
         # Aba de Logs
         self.log_tab = self.notebook.add("Logs")
@@ -212,7 +236,7 @@ class App(ctk.CTk):
         
         # --- Seção 4: Exportação (aparece após sucesso) ---
         self.export_frame = ctk.CTkFrame(self.main_frame)
-        self.export_frame.grid(row=3, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
+        self.export_frame.grid(row=4, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
         self.export_frame.grid_remove() 
         
         ctk.CTkLabel(self.export_frame, text="Exportar Arquivo:", font=ctk.CTkFont(size=16, weight="bold")).grid(row=0, column=0, padx=10, pady=10, sticky="w")
@@ -222,6 +246,25 @@ class App(ctk.CTk):
         self.pdf_button.grid(row=0, column=2, padx=10, pady=10)
         if not REPORTLAB_AVAILABLE:
             self.pdf_button.configure(state=tk.DISABLED, text="Exportar para .pdf (indisponível)")
+
+    def update_ui_for_mode(self):
+        """Atualiza os campos de arquivo visíveis dependendo do modo selecionado."""
+        if self.process_mode_var.get() == "standard":
+            self.open_titles_label.grid_remove()
+            self.open_titles_entry.grid_remove()
+            self.open_titles_btn.grid_remove()
+            
+            self.report_label.grid(row=2, column=0, padx=10, pady=5, sticky="w")
+            self.report_entry.grid(row=2, column=1, padx=10, pady=5, sticky="ew")
+            self.report_btn.grid(row=2, column=2, padx=10, pady=5)
+        else:
+            self.report_label.grid_remove()
+            self.report_entry.grid_remove()
+            self.report_btn.grid_remove()
+            
+            self.open_titles_label.grid(row=2, column=0, padx=10, pady=5, sticky="w")
+            self.open_titles_entry.grid(row=2, column=1, padx=10, pady=5, sticky="ew")
+            self.open_titles_btn.grid(row=2, column=2, padx=10, pady=5)
 
 
     # ===================================================================
@@ -296,11 +339,16 @@ class App(ctk.CTk):
             self.update_status("Executando...", "orange")
             
             input_file = self.input_file_path.get()
-            report_file = self.report_file_path.get()
             analysis_year = int(self.analysis_year.get())
             output_file = resource_path(OUTPUT_FILE_PATH) 
+            mode = self.process_mode_var.get()
+            
+            report_file = self.report_file_path.get() if mode == "standard" else None
+            open_titles_file = self.open_titles_path.get() if mode == "open_titles" else None
 
-            run_main_process(input_file, report_file, output_file, analysis_year, progress_callback=self.update_progress)
+            run_main_process(input_file=input_file, report_file=report_file, output_file=output_file, 
+                             analysis_year=analysis_year, process_mode=mode, open_titles_file=open_titles_file, 
+                             progress_callback=self.update_progress)
             
             logger.success("Processamento concluído com sucesso!")
             self.update_status("Concluído com Sucesso", "green")
@@ -332,8 +380,8 @@ class App(ctk.CTk):
     def validate_inputs(self):
         """Valida se os arquivos de entrada existem."""
         input_file = self.input_file_path.get()
-        report_file = self.report_file_path.get()
         year_str = self.analysis_year.get()
+        mode = self.process_mode_var.get()
 
         try:
             int(year_str)
@@ -346,47 +394,56 @@ class App(ctk.CTk):
             logger.error("ERRO: Arquivo de entrada não encontrado: %s", input_file)
             messagebox.showerror("Erro de Arquivo", f"O arquivo de entrada não foi encontrado:\n{input_file}")
             return False
-        if not os.path.exists(report_file):
-            logger.error("ERRO: Arquivo de relatório não encontrado: %s", report_file)
-            messagebox.showerror("Erro de Arquivo", f"O arquivo de relatório não foi encontrado:\n{report_file}")
-            return False
+            
+        if mode == "standard":
+            report_file = self.report_file_path.get()
+            if not os.path.exists(report_file):
+                logger.error("ERRO: Arquivo de relatório não encontrado: %s", report_file)
+                messagebox.showerror("Erro de Arquivo", f"O arquivo de relatório não foi encontrado:\n{report_file}")
+                return False
+        else:
+            open_titles_file = self.open_titles_path.get()
+            if not os.path.exists(open_titles_file):
+                logger.error("ERRO: Arquivo de títulos em aberto não encontrado: %s", open_titles_file)
+                messagebox.showerror("Erro de Arquivo", f"A planilha de títulos em aberto não foi encontrada:\n{open_titles_file}")
+                return False
         return True
 
     def load_data_for_view(self):
         """Carrega os dados do arquivo de saída para as abas de visualização."""
         try:
-            # 1. Resumo Consolidado (A3:E27)
-            # O skiprows=2 faz começar da linha 3. usecols="A:E" limita as colunas.
-            # nrows=25 lê 25 linhas de dados, que corresponde ao intervalo de 3 a 27.
             output_file_path = resource_path(OUTPUT_FILE_PATH)
-            df_summary = pd.read_excel(output_file_path, sheet_name='Resumo Consolidado', skiprows=2, usecols="A:E", nrows=25)
-            if not df_summary.empty:
-                self.display_dataframe(self.summary_tree, df_summary)
-                logger.info("Tabela 'Resumo Consolidado' carregada para visualização (A3:E27).")
-
-            # 2. Detalhes de Pendências (G3:T?)
-            # Carrega a planilha, pula as 2 primeiras linhas, sem cabeçalho
-            df_details_full = pd.read_excel(output_file_path, sheet_name='Resumo Consolidado', skiprows=2, header=None)
+            mode = self.process_mode_var.get()
             
-            # Seleciona as colunas da 7ª (G) em diante
-            df_details_raw = df_details_full.iloc[:, 6:]
+            if mode == "standard":
+                df_summary = pd.read_excel(output_file_path, sheet_name='Resumo Consolidado', skiprows=2, usecols="A:E", nrows=25)
+                if not df_summary.empty:
+                    self.display_dataframe(self.summary_tree, df_summary)
+                    logger.info("Tabela 'Resumo Consolidado' carregada para visualização.")
 
-            if not df_details_raw.empty:
-                # Define os cabeçalhos e remove a linha de cabeçalho dos dados
-                all_detail_headers = ['Emissão', 'Mês', 'Transportadora', 'CTRC', 'Cliente', 'Serviço', 'Senha Ravex', 'DT Frete', 'Destino', 'Nota fiscal', 'Status Pgto', 'Valor CTe', 'Valor pago', 'Recebido/A receber']
-                df_details_raw.columns = all_detail_headers[:len(df_details_raw.columns)]
-                # A primeira linha de dados é uma duplicata do cabeçalho, então a removemos.
-                df_details_raw = df_details_raw.iloc[1:].reset_index(drop=True)
+                df_details_full = pd.read_excel(output_file_path, sheet_name='Resumo Consolidado', skiprows=2, header=None)
+                df_details_raw = df_details_full.iloc[:, 6:]
 
-                # Colunas desejadas para a visualização, conforme solicitado
-                cols_to_display = ['Emissão', 'Mês', 'Transportadora', 'CTRC', 'Serviço', 'Valor CTe', 'Status Pgto', 'Valor pago', 'Recebido/A receber']
+                if not df_details_raw.empty:
+                    all_detail_headers = ['Emissão', 'Mês', 'Transportadora', 'CTRC', 'Cliente', 'Serviço', 'Senha Ravex', 'DT Frete', 'Destino', 'Nota fiscal', 'Status Pgto', 'Valor CTe', 'Valor pago', 'Recebido/A receber']
+                    df_details_raw.columns = all_detail_headers[:len(df_details_raw.columns)]
+                    df_details_raw = df_details_raw.iloc[1:].reset_index(drop=True)
+
+                    cols_to_display = ['Emissão', 'Mês', 'Transportadora', 'CTRC', 'Serviço', 'Valor CTe', 'Status Pgto', 'Valor pago', 'Recebido/A receber']
+                    existing_cols = [col for col in cols_to_display if col in df_details_raw.columns]
+                    df_details = df_details_raw[existing_cols]
+
+                    self.display_dataframe(self.details_tree, df_details)
+                    logger.info("Tabela 'Detalhes de Pendências' carregada para visualização.")
+            else:
+                df_summary = pd.read_excel(output_file_path, sheet_name='Resumo Aberto', skiprows=2, usecols="A:F")
+                if not df_summary.empty:
+                    self.display_dataframe(self.summary_tree, df_summary)
                 
-                # Garante que apenas colunas existentes sejam selecionadas para evitar erros
-                existing_cols = [col for col in cols_to_display if col in df_details_raw.columns]
-                df_details = df_details_raw[existing_cols]
+                df_details = pd.read_excel(output_file_path, sheet_name='Aberto vs Pago', skiprows=2)
+                if not df_details.empty:
+                    self.display_dataframe(self.details_tree, df_details)
 
-                self.display_dataframe(self.details_tree, df_details)
-                logger.info("Tabela 'Detalhes de Pendências' carregada para visualização com colunas selecionadas.")
         except Exception as e: # pylint: disable=broad-exception-caught
             logger.error("Não foi possível carregar os dados para visualização: %s", e, exc_info=True)
 
@@ -480,6 +537,11 @@ class App(ctk.CTk):
                 )
                 
                 if not dest_path:
+                    return
+
+                mode = self.process_mode_var.get()
+                if mode == "open_titles":
+                    messagebox.showinfo("Exportação de PDF", "O design customizado em PDF está disponível nativamente apenas na versão Web para o Processo Inverso.\n\nPor favor, utilize o arquivo Excel Exportado que já possui toda formatação.")
                     return
 
                 # --- Carregamento e Preparação dos Dados ---

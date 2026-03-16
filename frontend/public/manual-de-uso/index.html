@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/png" href="../logtudo.png" />
     <title>Manual de Uso - Notas Compensadas FBL1</title>
-    <style>
-      body {
+      <style>
+        body {
         font-family: "Segoe UI", Tahoma, sans-serif;
         margin: 0;
         background: #f5f7fb;
@@ -41,8 +41,23 @@
       @media print {
         body { background: #fff; }
         .wrap { border: none; margin: 0; }
-      }
-    </style>
+        }
+        .mode-highlight {
+          border-radius: 12px;
+          border: 1px solid #155dc5;
+          background: linear-gradient(135deg, rgba(15, 93, 197, 0.08), rgba(15, 93, 197, 0.15));
+          padding: 16px;
+          margin-bottom: 16px;
+          transition: box-shadow 0.2s;
+        }
+        .mode-highlight:hover {
+          box-shadow: 0 8px 16px rgba(15, 93, 197, 0.15);
+        }
+        .mode-highlight strong {
+          display: block;
+          margin-bottom: 6px;
+        }
+      </style>
   </head>
   <body>
     <main class="wrap">
@@ -70,6 +85,15 @@
         <li>Clique em <strong>Executar Processamento</strong>.</li>
         <li>Acompanhe envio, progresso e logs.</li>
       </ol>
+
+      <div class="mode-highlight">
+        <strong>Escolha do processo</strong>
+        <p>
+          Selecione “Conciliação” para cruzar o relatório BSoft completo com o FBL1, ou “Títulos em aberto”
+          para focar apenas nos títulos filtrados e na conta Bahia. O painel dá feedback visual imediato
+          sobre o modo ativo para facilitar o entendimento do fluxo que será executado.
+        </p>
+      </div>
 
       <h2>4. Resultados e exportacao</h2>
       <ul>

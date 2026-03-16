@@ -11,6 +11,7 @@ import {
   SegmentedControl,
   Table,
   Text,
+  useMantineTheme,
 } from "@mantine/core";
 import { fetchHistory, fetchMetrics, getApiErrorMessage, startProcess } from "../api/client";
 import { useAppStore } from "../store/useAppStore";
@@ -40,6 +41,7 @@ export function HomePage() {
   const [metrics, setMetrics] = useState<MetricsResponse | null>(null);
   const [isLoadingOps, setIsLoadingOps] = useState(false);
   const [processMode, setProcessMode] = useState<ProcessMode>("standard");
+  const theme = useMantineTheme();
 
   const setJob = useAppStore((s) => s.setJob);
   const setError = useAppStore((s) => s.setError);
@@ -144,11 +146,31 @@ export function HomePage() {
         fullWidth
         mb="sm"
       />
-      <Text size="sm" color="dimmed" mb="md">
-        {processMode === "standard"
-          ? "Envie a base FBL1 e o relatório BSoft para conciliar valores."
-          : "Envie a base FBL1 e a planilha filtrada com os títulos em aberto para verificar quais já foram pagos."}
-      </Text>
+      <div
+        style={{
+          borderRadius: 12,
+          padding: `${theme.spacing.sm}px ${theme.spacing.md}px`,
+          marginBottom: theme.spacing.md,
+          transition: "transform 200ms ease, box-shadow 200ms ease",
+          background:
+            processMode === "standard"
+              ? "linear-gradient(145deg, rgba(15,61,117,0.08), rgba(15,61,117,0.18))"
+              : "linear-gradient(145deg, rgba(25,135,84,0.08), rgba(25,135,84,0.18))",
+          boxShadow:
+            processMode === "standard"
+              ? "0 4px 12px rgba(15,61,117,0.12)"
+              : "0 4px 12px rgba(25,135,84,0.12)",
+        }}
+      >
+        <Text mb="xs" weight={600}>
+          Fluxo ativo: {modeLabel(processMode)}
+        </Text>
+        <Text size="sm" color="dimmed">
+          {processMode === "standard"
+            ? "Envie a base FBL1 e o relatório BSoft para conciliar valores."
+            : "Envie a base FBL1 e a planilha filtrada com os títulos em aberto para verificar quais já foram pagos."}
+        </Text>
+      </div>
       {localError && <Alert color="red" mb="md">{localError}</Alert>}
       <FileInput label="Base de Dados FBL1N(.xlsx)" value={baseFile} onChange={setBaseFile} clearable mb="sm" />
       {processMode === "standard" && (

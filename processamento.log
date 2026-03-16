@@ -751,3 +751,183 @@
 2026-03-16 12:34:13,389 - utils - SUCCESS - Arquivo com processado inverso salvo em: 'C:\Users\felip\AppData\Local\Temp\notas_compensadas\f18dba68-9ae3-445e-af2e-eb2c826388f7\dados_estruturados.xlsx'
 2026-03-16 12:34:13,391 - utils - STAGE - Fim do processamento.
 2026-03-16 12:34:13,392 - utils - STAGE - ==================================================
+2026-03-16 12:45:08,463 - utils - STAGE - ===================================================
+2026-03-16 12:45:08,463 - utils - STAGE - Iniciando novo ciclo de processamento...
+2026-03-16 12:45:08,466 - utils - STAGE - ===================================================
+2026-03-16 12:45:08,467 - utils - STAGE - FASE 1: Processando arquivo base...
+2026-03-16 12:45:08,467 - utils - STAIR - --- INICIANDO ETAPA 1: Processamento da Planilha Principal ---
+2026-03-16 12:45:08,467 - utils - INFO - Iniciando a leitura do arquivo principal: C:\Users\felip\AppData\Local\Temp\notas_compensadas\f50195e3-c2d4-4ba2-8528-0229faa05564\FBL__RECEBIDA__DO__FBL3012__dpa_30.12.xlsx
+2026-03-16 12:45:11,577 - utils - INFO - Arquivo principal carregado com sucesso. 6762 linhas encontradas.
+
+2026-03-16 12:45:11,578 - utils - INFO - Filtrando por data (removendo vazios e ano 2023).
+2026-03-16 12:45:11,585 - utils - INFO -   - 1 linhas removidas por data vazia.
+2026-03-16 12:45:11,609 - utils - INFO -   - 0 linhas removidas por erro de conversão de data.
+2026-03-16 12:45:11,613 - utils - INFO -   - 0 linhas removidas por pertencerem ao ano de 2023.
+2026-03-16 12:45:11,614 - utils - WARNING - Coluna 'Conta' não encontrada. Aplicando regra de contingência: Assumindo conta 302282 (Bahia) para todos os registros.
+2026-03-16 12:45:11,616 - utils - INFO - Selecionando colunas: Conta, Referência, Montante em moeda interna, Data do documento, Data de lançamento, Data de compensação
+2026-03-16 12:45:11,620 - utils - INFO - Tratando a coluna 'Referência'.
+2026-03-16 12:45:11,638 - utils - INFO -   - Removidos sufixos após '-' na coluna 'Referência'.
+2026-03-16 12:45:11,650 - utils - INFO -   - 1437 linhas removidas por valores não numéricos em 'Referência'.
+2026-03-16 12:45:11,652 - utils - SUCCESS - --- Processamento da Etapa 1 concluído --- 
+
+2026-03-16 12:45:11,653 - utils - STAIR - --- INICIANDO ETAPA 2: Divisão por Conta para o Ano de 2025 ---
+2026-03-16 12:45:11,675 - utils - INFO - Total de 5024 linhas encontradas para o ano de 2025.
+
+2026-03-16 12:45:11,676 - utils - INFO - Filtrando dados para a conta 302282 para gerar a aba '302282 - Bahia'...
+2026-03-16 12:45:11,678 - utils - INFO -   - 5024 linhas separadas para a conta 302282.
+2026-03-16 12:45:11,679 - utils - INFO - Filtrando dados para a conta 303264 para gerar a aba '303264 - Ceará'...
+2026-03-16 12:45:11,682 - utils - INFO -   - Regra especial aplicada: Incluindo dados da conta 302282 (Bahia) na aba de Ceará.
+2026-03-16 12:45:11,683 - utils - INFO -   - 5024 linhas separadas para a conta 303264.
+2026-03-16 12:45:11,684 - utils - INFO - Filtrando dados para a conta 303432 para gerar a aba '303432 - Pernambuco'...
+2026-03-16 12:45:11,686 - utils - INFO -   - 0 linhas separadas para a conta 303432.
+2026-03-16 12:45:11,686 - utils - SUCCESS - --- Etapa 2 concluída --- 
+
+2026-03-16 12:45:11,687 - utils - STAIR - --- INICIANDO ETAPAS 3 e 4: Tratamento e Estruturação Final ---
+2026-03-16 12:45:11,688 - utils - INFO - 
+--- Processando '302282 - Bahia' para gerar a aba 'Bahia' ---
+2026-03-16 12:45:11,689 - utils - INFO - [Bahia] Etapa 3: Identificando referências únicas com valor positivo para exclusão.
+2026-03-16 12:45:11,696 - utils - INFO - [Bahia] Etapa 3: 0 linhas removidas.
+2026-03-16 12:45:11,699 - utils - INFO - [Bahia] Etapa 4: 132 linhas duplicadas removidas com base na 'Referência'.
+2026-03-16 12:45:11,702 - utils - INFO - [Bahia] Etapa 4: Estrutura final de colunas aplicada.
+2026-03-16 12:45:11,702 - utils - INFO - [Bahia] Etapa 4: Preenchendo 'Valor pagamento' com base na soma de '302282 - Bahia'.
+2026-03-16 12:45:11,706 - utils - INFO - [Bahia] Etapa 4: Formatando e preenchendo 'Data de compensação'.
+2026-03-16 12:45:11,783 - utils - INFO - 
+--- Processando '303264 - Ceará' para gerar a aba 'Ceará' ---
+2026-03-16 12:45:11,784 - utils - INFO - [Ceará] Etapa 3: Identificando referências únicas com valor positivo para exclusão.
+2026-03-16 12:45:11,790 - utils - INFO - [Ceará] Etapa 3: 0 linhas removidas.
+2026-03-16 12:45:11,793 - utils - INFO - [Ceará] Etapa 4: 132 linhas duplicadas removidas com base na 'Referência'.
+2026-03-16 12:45:11,796 - utils - INFO - [Ceará] Etapa 4: Estrutura final de colunas aplicada.
+2026-03-16 12:45:11,797 - utils - INFO - [Ceará] Etapa 4: Preenchendo 'Valor pagamento' com base na soma de '303264 - Ceará'.
+2026-03-16 12:45:11,802 - utils - INFO - [Ceará] Etapa 4: Formatando e preenchendo 'Data de compensação'.
+2026-03-16 12:45:11,880 - utils - WARNING - DataFrame para a aba '303432 - Pernambuco' está vazio. Pulando etapas 3 e 4.
+2026-03-16 12:45:11,881 - utils - SUCCESS - --- Etapas 3 e 4 concluídas ---
+
+2026-03-16 12:45:11,895 - utils - STAGE - FASE 2 (Inversa): Processando títulos em aberto...
+2026-03-16 12:45:12,218 - utils - INFO - Coluna de valor encontrada na planilha de títulos abertos: 'Total'
+2026-03-16 12:45:12,668 - utils - INFO - Processamento dos títulos em aberto concluído (total: 1408 linhas)
+2026-03-16 12:45:12,673 - utils - STAGE - FASE 3 (Inversa): Gerando arquivo diferenciado...
+2026-03-16 12:45:18,243 - utils - SUCCESS - Arquivo com processado inverso salvo em: 'C:\Users\felip\AppData\Local\Temp\notas_compensadas\f50195e3-c2d4-4ba2-8528-0229faa05564\dados_estruturados.xlsx'
+2026-03-16 12:45:18,245 - utils - STAGE - Fim do processamento.
+2026-03-16 12:45:18,245 - utils - STAGE - ==================================================
+2026-03-16 12:47:19,975 - utils - STAGE - ===================================================
+2026-03-16 12:47:19,975 - utils - STAGE - Iniciando novo ciclo de processamento...
+2026-03-16 12:47:19,976 - utils - STAGE - ===================================================
+2026-03-16 12:47:19,977 - utils - STAGE - FASE 1: Processando arquivo base...
+2026-03-16 12:47:19,977 - utils - STAIR - --- INICIANDO ETAPA 1: Processamento da Planilha Principal ---
+2026-03-16 12:47:19,977 - utils - INFO - Iniciando a leitura do arquivo principal: C:\Users\felip\AppData\Local\Temp\notas_compensadas\399c20c1-da46-48a3-a9f3-76a6046fa357\FBL__RECEBIDA__DO__FBL3012__dpa_30.12.xlsx
+2026-03-16 12:47:25,110 - utils - INFO - Arquivo principal carregado com sucesso. 6762 linhas encontradas.
+
+2026-03-16 12:47:25,113 - utils - INFO - Filtrando por data (removendo vazios e ano 2023).
+2026-03-16 12:47:25,148 - utils - INFO -   - 1 linhas removidas por data vazia.
+2026-03-16 12:47:25,202 - utils - INFO -   - 0 linhas removidas por erro de conversão de data.
+2026-03-16 12:47:25,209 - utils - INFO -   - 0 linhas removidas por pertencerem ao ano de 2023.
+2026-03-16 12:47:25,216 - utils - WARNING - Coluna 'Conta' não encontrada. Aplicando regra de contingência: Assumindo conta 302282 (Bahia) para todos os registros.
+2026-03-16 12:47:25,218 - utils - INFO - Selecionando colunas: Conta, Referência, Montante em moeda interna, Data do documento, Data de lançamento, Data de compensação
+2026-03-16 12:47:25,241 - utils - INFO - Tratando a coluna 'Referência'.
+2026-03-16 12:47:25,303 - utils - INFO -   - Removidos sufixos após '-' na coluna 'Referência'.
+2026-03-16 12:47:25,340 - utils - INFO -   - 1437 linhas removidas por valores não numéricos em 'Referência'.
+2026-03-16 12:47:25,342 - utils - SUCCESS - --- Processamento da Etapa 1 concluído --- 
+
+2026-03-16 12:47:25,344 - utils - STAIR - --- INICIANDO ETAPA 2: Divisão por Conta para o Ano de 2025 ---
+2026-03-16 12:47:25,394 - utils - INFO - Total de 5024 linhas encontradas para o ano de 2025.
+
+2026-03-16 12:47:25,394 - utils - INFO - Filtrando dados para a conta 302282 para gerar a aba '302282 - Bahia'...
+2026-03-16 12:47:25,400 - utils - INFO -   - 5024 linhas separadas para a conta 302282.
+2026-03-16 12:47:25,402 - utils - INFO - Filtrando dados para a conta 303264 para gerar a aba '303264 - Ceará'...
+2026-03-16 12:47:25,411 - utils - INFO -   - Regra especial aplicada: Incluindo dados da conta 302282 (Bahia) na aba de Ceará.
+2026-03-16 12:47:25,412 - utils - INFO -   - 5024 linhas separadas para a conta 303264.
+2026-03-16 12:47:25,421 - utils - INFO - Filtrando dados para a conta 303432 para gerar a aba '303432 - Pernambuco'...
+2026-03-16 12:47:25,427 - utils - INFO -   - 0 linhas separadas para a conta 303432.
+2026-03-16 12:47:25,428 - utils - SUCCESS - --- Etapa 2 concluída --- 
+
+2026-03-16 12:47:25,431 - utils - STAIR - --- INICIANDO ETAPAS 3 e 4: Tratamento e Estruturação Final ---
+2026-03-16 12:47:25,433 - utils - INFO - 
+--- Processando '302282 - Bahia' para gerar a aba 'Bahia' ---
+2026-03-16 12:47:25,434 - utils - INFO - [Bahia] Etapa 3: Identificando referências únicas com valor positivo para exclusão.
+2026-03-16 12:47:25,458 - utils - INFO - [Bahia] Etapa 3: 0 linhas removidas.
+2026-03-16 12:47:25,467 - utils - INFO - [Bahia] Etapa 4: 132 linhas duplicadas removidas com base na 'Referência'.
+2026-03-16 12:47:25,472 - utils - INFO - [Bahia] Etapa 4: Estrutura final de colunas aplicada.
+2026-03-16 12:47:25,475 - utils - INFO - [Bahia] Etapa 4: Preenchendo 'Valor pagamento' com base na soma de '302282 - Bahia'.
+2026-03-16 12:47:25,486 - utils - INFO - [Bahia] Etapa 4: Formatando e preenchendo 'Data de compensação'.
+2026-03-16 12:47:25,631 - utils - INFO - 
+--- Processando '303264 - Ceará' para gerar a aba 'Ceará' ---
+2026-03-16 12:47:25,632 - utils - INFO - [Ceará] Etapa 3: Identificando referências únicas com valor positivo para exclusão.
+2026-03-16 12:47:25,640 - utils - INFO - [Ceará] Etapa 3: 0 linhas removidas.
+2026-03-16 12:47:25,643 - utils - INFO - [Ceará] Etapa 4: 132 linhas duplicadas removidas com base na 'Referência'.
+2026-03-16 12:47:25,645 - utils - INFO - [Ceará] Etapa 4: Estrutura final de colunas aplicada.
+2026-03-16 12:47:25,646 - utils - INFO - [Ceará] Etapa 4: Preenchendo 'Valor pagamento' com base na soma de '303264 - Ceará'.
+2026-03-16 12:47:25,651 - utils - INFO - [Ceará] Etapa 4: Formatando e preenchendo 'Data de compensação'.
+2026-03-16 12:47:25,972 - utils - WARNING - DataFrame para a aba '303432 - Pernambuco' está vazio. Pulando etapas 3 e 4.
+2026-03-16 12:47:25,972 - utils - SUCCESS - --- Etapas 3 e 4 concluídas ---
+
+2026-03-16 12:47:25,973 - utils - STAGE - FASE 2 (Inversa): Processando títulos em aberto...
+2026-03-16 12:47:26,312 - utils - INFO - Coluna de valor encontrada na planilha de títulos abertos: 'Total'
+2026-03-16 12:47:26,771 - utils - INFO - Processamento dos títulos em aberto concluído (total: 1408 linhas)
+2026-03-16 12:47:26,776 - utils - STAGE - FASE 3 (Inversa): Gerando arquivo diferenciado...
+2026-03-16 12:47:34,127 - utils - SUCCESS - Arquivo com processado inverso salvo em: 'C:\Users\felip\AppData\Local\Temp\notas_compensadas\399c20c1-da46-48a3-a9f3-76a6046fa357\dados_estruturados.xlsx'
+2026-03-16 12:47:34,128 - utils - STAGE - Fim do processamento.
+2026-03-16 12:47:34,129 - utils - STAGE - ==================================================
+2026-03-16 13:00:08,336 - utils - STAGE - ===================================================
+2026-03-16 13:00:08,337 - utils - STAGE - Iniciando novo ciclo de processamento...
+2026-03-16 13:00:08,341 - utils - STAGE - ===================================================
+2026-03-16 13:00:08,342 - utils - STAGE - FASE 1: Processando arquivo base...
+2026-03-16 13:00:08,342 - utils - STAIR - --- INICIANDO ETAPA 1: Processamento da Planilha Principal ---
+2026-03-16 13:00:08,343 - utils - INFO - Iniciando a leitura do arquivo principal: C:\Users\felip\AppData\Local\Temp\notas_compensadas\ab6b9257-c71f-4d32-9226-30c837eb9b12\FBL__RECEBIDA__DO__FBL3012__dpa_30.12.xlsx
+2026-03-16 13:01:40,791 - utils - STAGE - ===================================================
+2026-03-16 13:01:40,792 - utils - STAGE - Iniciando novo ciclo de processamento...
+2026-03-16 13:01:40,795 - utils - STAGE - ===================================================
+2026-03-16 13:01:40,796 - utils - STAGE - FASE 1: Processando arquivo base...
+2026-03-16 13:01:40,797 - utils - STAIR - --- INICIANDO ETAPA 1: Processamento da Planilha Principal ---
+2026-03-16 13:01:40,798 - utils - INFO - Iniciando a leitura do arquivo principal: C:\Users\felip\AppData\Local\Temp\notas_compensadas\0bf42a7e-3067-460b-b995-606604803854\FBL__RECEBIDA__DO__FBL3012__dpa_30.12.xlsx
+2026-03-16 13:01:43,910 - utils - INFO - Arquivo principal carregado com sucesso. 6762 linhas encontradas.
+
+2026-03-16 13:01:43,911 - utils - INFO - Filtrando por data (removendo vazios e ano 2023).
+2026-03-16 13:01:43,919 - utils - INFO -   - 1 linhas removidas por data vazia.
+2026-03-16 13:01:43,947 - utils - INFO -   - 0 linhas removidas por erro de conversão de data.
+2026-03-16 13:01:43,952 - utils - INFO -   - 0 linhas removidas por pertencerem ao ano de 2023.
+2026-03-16 13:01:43,953 - utils - WARNING - Coluna 'Conta' não encontrada. Aplicando regra de contingência: Assumindo conta 302282 (Bahia) para todos os registros.
+2026-03-16 13:01:43,954 - utils - INFO - Selecionando colunas: Conta, Referência, Montante em moeda interna, Data do documento, Data de lançamento, Data de compensação
+2026-03-16 13:01:43,958 - utils - INFO - Tratando a coluna 'Referência'.
+2026-03-16 13:01:43,979 - utils - INFO -   - Removidos sufixos após '-' na coluna 'Referência'.
+2026-03-16 13:01:43,996 - utils - INFO -   - 1437 linhas removidas por valores não numéricos em 'Referência'.
+2026-03-16 13:01:43,998 - utils - SUCCESS - --- Processamento da Etapa 1 concluído --- 
+
+2026-03-16 13:01:43,999 - utils - STAIR - --- INICIANDO ETAPA 2: Divisão por Conta para o Ano de 2025 ---
+2026-03-16 13:01:44,021 - utils - INFO - Total de 5024 linhas encontradas para o ano de 2025.
+
+2026-03-16 13:01:44,022 - utils - INFO - Filtrando dados para a conta 302282 para gerar a aba '302282 - Bahia'...
+2026-03-16 13:01:44,026 - utils - INFO -   - 5024 linhas separadas para a conta 302282.
+2026-03-16 13:01:44,027 - utils - INFO - Filtrando dados para a conta 303264 para gerar a aba '303264 - Ceará'...
+2026-03-16 13:01:44,029 - utils - INFO -   - Regra especial aplicada: Incluindo dados da conta 302282 (Bahia) na aba de Ceará.
+2026-03-16 13:01:44,030 - utils - INFO -   - 5024 linhas separadas para a conta 303264.
+2026-03-16 13:01:44,031 - utils - INFO - Filtrando dados para a conta 303432 para gerar a aba '303432 - Pernambuco'...
+2026-03-16 13:01:44,033 - utils - INFO -   - 0 linhas separadas para a conta 303432.
+2026-03-16 13:01:44,034 - utils - SUCCESS - --- Etapa 2 concluída --- 
+
+2026-03-16 13:01:44,035 - utils - STAIR - --- INICIANDO ETAPAS 3 e 4: Tratamento e Estruturação Final ---
+2026-03-16 13:01:44,037 - utils - INFO - 
+--- Processando '302282 - Bahia' para gerar a aba 'Bahia' ---
+2026-03-16 13:01:44,037 - utils - INFO - [Bahia] Etapa 3: Identificando referências únicas com valor positivo para exclusão.
+2026-03-16 13:01:44,043 - utils - INFO - [Bahia] Etapa 3: 0 linhas removidas.
+2026-03-16 13:01:44,046 - utils - INFO - [Bahia] Etapa 4: 132 linhas duplicadas removidas com base na 'Referência'.
+2026-03-16 13:01:44,048 - utils - INFO - [Bahia] Etapa 4: Estrutura final de colunas aplicada.
+2026-03-16 13:01:44,049 - utils - INFO - [Bahia] Etapa 4: Preenchendo 'Valor pagamento' com base na soma de '302282 - Bahia'.
+2026-03-16 13:01:44,055 - utils - INFO - [Bahia] Etapa 4: Formatando e preenchendo 'Data de compensação'.
+2026-03-16 13:01:44,130 - utils - INFO - 
+--- Processando '303264 - Ceará' para gerar a aba 'Ceará' ---
+2026-03-16 13:01:44,131 - utils - INFO - [Ceará] Etapa 3: Identificando referências únicas com valor positivo para exclusão.
+2026-03-16 13:01:44,140 - utils - INFO - [Ceará] Etapa 3: 0 linhas removidas.
+2026-03-16 13:01:44,143 - utils - INFO - [Ceará] Etapa 4: 132 linhas duplicadas removidas com base na 'Referência'.
+2026-03-16 13:01:44,145 - utils - INFO - [Ceará] Etapa 4: Estrutura final de colunas aplicada.
+2026-03-16 13:01:44,146 - utils - INFO - [Ceará] Etapa 4: Preenchendo 'Valor pagamento' com base na soma de '303264 - Ceará'.
+2026-03-16 13:01:44,151 - utils - INFO - [Ceará] Etapa 4: Formatando e preenchendo 'Data de compensação'.
+2026-03-16 13:01:44,229 - utils - WARNING - DataFrame para a aba '303432 - Pernambuco' está vazio. Pulando etapas 3 e 4.
+2026-03-16 13:01:44,230 - utils - SUCCESS - --- Etapas 3 e 4 concluídas ---
+
+2026-03-16 13:01:44,233 - utils - STAGE - FASE 2 (Inversa): Processando títulos em aberto...
+2026-03-16 13:01:44,542 - utils - INFO - Coluna de valor encontrada na planilha de títulos abertos: 'Total'
+2026-03-16 13:01:44,879 - utils - INFO - Processamento dos títulos em aberto concluído (total: 1408 linhas)
+2026-03-16 13:01:44,882 - utils - STAGE - FASE 3 (Inversa): Gerando arquivo diferenciado...
+2026-03-16 13:01:50,290 - utils - SUCCESS - Arquivo com processado inverso salvo em: 'C:\Users\felip\AppData\Local\Temp\notas_compensadas\0bf42a7e-3067-460b-b995-606604803854\dados_estruturados.xlsx'
+2026-03-16 13:01:50,292 - utils - STAGE - Fim do processamento.
+2026-03-16 13:01:50,292 - utils - STAGE - ==================================================
