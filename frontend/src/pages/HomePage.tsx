@@ -162,7 +162,7 @@ export function HomePage() {
               : "0 4px 12px rgba(25,135,84,0.12)",
         }}
       >
-        <Text mb="xs" weight={600}>
+        <Text mb="xs" fw={600}>
           Fluxo ativo: {modeLabel(processMode)}
         </Text>
         <Text size="sm" color="dimmed">
