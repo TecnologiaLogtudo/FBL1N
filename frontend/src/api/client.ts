@@ -1,5 +1,5 @@
 import axios from "axios";
-import { JobHistoryItem, MetricsResponse, ResultsResponse, StatusResponse } from "../types";
+import { JobHistoryItem, MetricsResponse, ProcessMode, ResultsResponse, StatusResponse } from "../types";
 
 const APP_BASE_PATH = import.meta.env.VITE_APP_BASE_PATH ?? "/";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? APP_BASE_PATH;
@@ -24,14 +24,22 @@ const api = axios.create({
 
 export async function startProcess(
   baseFile: File,
-  reportFile: File,
+  reportFile: File | null,
   analysisYear: number,
+  processMode: ProcessMode,
+  openTitlesFile: File | null,
   onUploadProgress?: (progress: number) => void
 ): Promise<{ job_id: string }> {
   const formData = new FormData();
   formData.append("base_file", baseFile);
-  formData.append("report_file", reportFile);
+  if (processMode === "standard" && reportFile) {
+    formData.append("report_file", reportFile);
+  }
   formData.append("analysis_year", String(analysisYear));
+  formData.append("process_mode", processMode);
+  if (processMode === "open_titles" && openTitlesFile) {
+    formData.append("open_titles_file", openTitlesFile);
+  }
 
   const { data } = await api.post("/api/process", formData, {
     onUploadProgress: (event) => {

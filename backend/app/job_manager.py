@@ -6,7 +6,7 @@ from threading import Lock
 from typing import Dict
 from uuid import uuid4
 
-from .schemas import JobStatus
+from .schemas import JobStatus, ProcessMode
 
 
 @dataclass
@@ -26,6 +26,9 @@ class JobRecord:
     input_path: str | None = None
     report_path: str | None = None
     output_path: str | None = None
+    open_titles_path: str | None = None
+    process_mode: ProcessMode = ProcessMode.standard
+    open_titles_filename: str | None = None
 
 
 class JobManager:
@@ -33,7 +36,15 @@ class JobManager:
         self._lock = Lock()
         self._jobs: Dict[str, JobRecord] = {}
 
-    def create_job(self, user_id: str, analysis_year: int, base_filename: str, report_filename: str) -> JobRecord:
+    def create_job(
+        self,
+        user_id: str,
+        analysis_year: int,
+        base_filename: str,
+        report_filename: str,
+        process_mode: ProcessMode,
+        open_titles_filename: str | None = None,
+    ) -> JobRecord:
         with self._lock:
             for record in self._jobs.values():
                 if record.user_id == user_id and record.status in {JobStatus.queued, JobStatus.running}:
@@ -45,6 +56,8 @@ class JobManager:
                 analysis_year=analysis_year,
                 base_filename=base_filename,
                 report_filename=report_filename,
+                process_mode=process_mode,
+                open_titles_filename=open_titles_filename,
             )
             self._jobs[job.job_id] = job
             return job
@@ -53,13 +66,22 @@ class JobManager:
         with self._lock:
             return self._jobs.get(job_id)
 
-    def set_paths(self, job_id: str, job_dir: str, input_path: str, report_path: str, output_path: str) -> None:
+    def set_paths(
+        self,
+        job_id: str,
+        job_dir: str,
+        input_path: str,
+        report_path: str,
+        output_path: str,
+        open_titles_path: str | None = None,
+    ) -> None:
         with self._lock:
             job = self._jobs[job_id]
             job.job_dir = job_dir
             job.input_path = input_path
             job.report_path = report_path
             job.output_path = output_path
+            job.open_titles_path = open_titles_path
 
     def set_running(self, job_id: str) -> None:
         with self._lock:

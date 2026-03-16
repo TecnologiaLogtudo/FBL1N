@@ -11,13 +11,20 @@ from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, Tabl
 
 
 def _load_summary(output_path: str) -> pd.DataFrame:
-    df = pd.read_excel(
-        output_path,
-        sheet_name="Resumo Consolidado",
-        skiprows=2,
-        usecols="A:E",
-    )
-    return df.dropna(how="all")
+    for sheet in ("Resumo Consolidado", "Resumo Aberto"):
+        try:
+            df = pd.read_excel(
+                output_path,
+                sheet_name=sheet,
+                skiprows=2,
+                usecols="A:E",
+            )
+            df = df.dropna(how="all")
+            if not df.empty:
+                return df
+        except Exception:
+            continue
+    return pd.DataFrame()
 
 
 def _load_details(output_path: str) -> pd.DataFrame:
@@ -31,6 +38,14 @@ def _load_details(output_path: str) -> pd.DataFrame:
         df = df.dropna(how="all")
         if "Status Pgto" in df.columns:
             df = df[df["Status Pgto"].isin(["Não lançado", "Não compensado"])]
+        if not df.empty:
+            return df
+    except Exception:
+        pass
+
+    try:
+        df = pd.read_excel(output_path, sheet_name="Aberto vs Pago")
+        df = df.dropna(how="all")
         return df
     except Exception:
         return pd.DataFrame()

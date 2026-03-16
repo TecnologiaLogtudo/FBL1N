@@ -2,10 +2,12 @@ import { Button, Card, Group, Tabs, Text } from "@mantine/core";
 import { DataTable } from "../components/DataTable";
 import { useAppStore } from "../store/useAppStore";
 import { getDownloadUrl } from "../api/client";
+import { ProcessMode } from "../types";
 
 export function ResultView() {
   const results = useAppStore((s) => s.results);
   const jobId = useAppStore((s) => s.jobId);
+  const processMode = results?.meta?.process_mode as ProcessMode | undefined;
 
   if (!results) {
     return null;
@@ -15,6 +17,11 @@ export function ResultView() {
     <Card withBorder mt="md" p="md">
       <Group justify="space-between" mb="md">
         <Text fw={600}>Resultados</Text>
+        {processMode && (
+          <Text size="sm" color="dimmed">
+            Processo: {processMode === "open_titles" ? "Títulos em aberto" : "Conciliação"}
+          </Text>
+        )}
         {jobId && (
           <Group>
             <Button component="a" href={getDownloadUrl(jobId, "xlsx")}>

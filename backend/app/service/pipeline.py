@@ -5,6 +5,7 @@ from pathlib import Path
 
 from ..job_manager import JobManager
 from ..realtime import RealtimeHub
+from ..schemas import ProcessMode
 
 
 class _JobLogHandler(logging.Handler):
@@ -24,6 +25,8 @@ def run_legacy_pipeline(
     report_path: str,
     output_path: str,
     analysis_year: int,
+    process_mode: ProcessMode,
+    open_titles_path: str | None,
     job_manager: JobManager,
     realtime: RealtimeHub,
 ) -> None:
@@ -47,6 +50,8 @@ def run_legacy_pipeline(
             report_file=report_path,
             output_file=output_path,
             analysis_year=analysis_year,
+            process_mode=process_mode,
+            open_titles_file=open_titles_path,
             progress_callback=progress_callback,
         )
     finally:

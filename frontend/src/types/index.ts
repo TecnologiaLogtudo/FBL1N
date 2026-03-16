@@ -1,4 +1,5 @@
 export type JobStatus = "queued" | "running" | "completed" | "failed" | "expired";
+export type ProcessMode = "standard" | "open_titles";
 
 export interface StatusResponse {
   job_id: string;
@@ -8,6 +9,7 @@ export interface StatusResponse {
   started_at?: string | null;
   finished_at?: string | null;
   error?: string | null;
+  process_mode: ProcessMode;
 }
 
 export interface ResultsResponse {
@@ -22,6 +24,7 @@ export interface JobHistoryItem {
   analysis_year: number;
   base_filename: string;
   report_filename: string;
+  process_mode: ProcessMode;
   progress: number;
   created_at: string;
   started_at?: string | null;

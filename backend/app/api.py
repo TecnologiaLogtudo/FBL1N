@@ -3,14 +3,22 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from pathlib import Path
 
-from fastapi import APIRouter, File, HTTPException, Request, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
 
 from .config import settings
 from .job_manager import JobManager
 from .job_runner import JobRunner
 from .realtime import RealtimeHub
-from .schemas import JobHistoryItem, JobStatus, JobStatusResponse, MetricsResponse, ProcessStartResponse, ResultsResponse
+from .schemas import (
+    JobHistoryItem,
+    JobStatus,
+    JobStatusResponse,
+    MetricsResponse,
+    ProcessMode,
+    ProcessStartResponse,
+    ResultsResponse,
+)
 from .service.pdf_export import generate_pdf_from_output
 from .service.result_parser import parse_results
 from .storage import create_job_paths
@@ -46,14 +54,18 @@ async def _save_upload(upload: UploadFile, destination: str, max_bytes: int) -> 
             buffer.write(chunk)
 
 
-def _validate_extensions(base_file: UploadFile, report_file: UploadFile) -> None:
-    base_name = (base_file.filename or "").lower()
-    report_name = (report_file.filename or "").lower()
+def _has_allowed_extension(filename: str, allowed: tuple[str, ...]) -> bool:
+    lower = filename.lower()
+    return any(lower.endswith(ext) for ext in allowed)
 
-    if not base_name.endswith(".xlsx"):
-        raise HTTPException(status_code=400, detail="base_file deve ser .xlsx")
-    if not (report_name.endswith(".xls") or report_name.endswith(".xlsx")):
-        raise HTTPException(status_code=400, detail="report_file deve ser .xls ou .xlsx")
+
+def _validate_file_extension(upload: UploadFile, allowed: tuple[str, ...], field_name: str) -> None:
+    name = (upload.filename or "").strip()
+    if not name:
+        raise HTTPException(status_code=400, detail=f"{field_name} sem nome válido")
+    if not _has_allowed_extension(name, allowed):
+        allowed_list = " ou ".join(allowed)
+        raise HTTPException(status_code=400, detail=f"{field_name} deve ser {allowed_list}")
 
 
 @router.get("/health/live")
@@ -70,13 +82,26 @@ async def health_ready() -> dict:
 async def start_process(
     request: Request,
     base_file: UploadFile = File(...),
-    report_file: UploadFile = File(...),
+    report_file: UploadFile | None = File(None),
     analysis_year: int = 2025,
+    process_mode: ProcessMode = Form(ProcessMode.standard),
+    open_titles_file: UploadFile | None = File(None),
 ):
     if analysis_year < settings.min_year or analysis_year > settings.max_year:
         raise HTTPException(status_code=400, detail=f"analysis_year deve estar entre {settings.min_year} e {settings.max_year}")
 
-    _validate_extensions(base_file, report_file)
+    _validate_file_extension(base_file, (".xlsx",), "base_file")
+
+    if process_mode == ProcessMode.standard:
+        if report_file is None:
+            raise HTTPException(status_code=400, detail="report_file é obrigatório para o modo padrão")
+        _validate_file_extension(report_file, (".xls", ".xlsx"), "report_file")
+        if open_titles_file is not None:
+            raise HTTPException(status_code=400, detail="open_titles_file deve ser omitido no modo padrão")
+    else:
+        if open_titles_file is None:
+            raise HTTPException(status_code=400, detail="open_titles_file é obrigatório para o modo de títulos em aberto")
+        _validate_file_extension(open_titles_file, (".xls", ".xlsx"), "open_titles_file")
 
     job_manager: JobManager = request.app.state.job_manager
     runner: JobRunner = request.app.state.job_runner
@@ -88,17 +113,34 @@ async def start_process(
             user_id=user_id,
             analysis_year=analysis_year,
             base_filename=base_file.filename or "base.xlsx",
-            report_filename=report_file.filename or "report.xls",
+            report_filename=report_file.filename or "report.xls" if report_file else "report.xls",
+            process_mode=process_mode,
+            open_titles_filename=open_titles_file.filename if open_titles_file else None,
         )
     except ValueError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
 
-    paths = create_job_paths(job.job_id, job.base_filename, job.report_filename)
-    job_manager.set_paths(job.job_id, paths["job_dir"], paths["input_path"], paths["report_path"], paths["output_path"])
+    paths = create_job_paths(
+        job.job_id,
+        job.base_filename,
+        job.report_filename,
+        open_titles_filename=open_titles_file.filename if open_titles_file else None,
+    )
+    job_manager.set_paths(
+        job.job_id,
+        paths["job_dir"],
+        paths["input_path"],
+        paths["report_path"],
+        paths["output_path"],
+        open_titles_path=paths.get("open_titles_path"),
+    )
 
     try:
         await _save_upload(base_file, paths["input_path"], settings.max_upload_bytes)
-        await _save_upload(report_file, paths["report_path"], settings.max_upload_bytes)
+        if report_file is not None:
+            await _save_upload(report_file, paths["report_path"], settings.max_upload_bytes)
+        if open_titles_file is not None and paths.get("open_titles_path"):
+            await _save_upload(open_titles_file, paths["open_titles_path"], settings.max_upload_bytes)
     except Exception:
         from .storage import delete_job_dir
 
@@ -112,6 +154,8 @@ async def start_process(
         report_path=paths["report_path"],
         output_path=paths["output_path"],
         analysis_year=analysis_year,
+        process_mode=process_mode,
+        open_titles_path=paths.get("open_titles_path"),
     )
 
     return ProcessStartResponse(job_id=job.job_id, status=JobStatus.queued)
@@ -129,6 +173,7 @@ async def get_status(request: Request, job_id: str):
         started_at=job.started_at,
         finished_at=job.finished_at,
         error=job.error,
+        process_mode=job.process_mode,
     )
 
 
@@ -137,14 +182,15 @@ async def get_history(request: Request, limit: int = 20):
     job_manager: JobManager = request.app.state.job_manager
     user_id = _get_user_id(request)
     jobs = job_manager.list_jobs_for_user(user_id=user_id, limit=limit)
-    return [
-        JobHistoryItem(
-            job_id=job.job_id,
-            status=job.status,
-            analysis_year=job.analysis_year,
-            base_filename=job.base_filename,
-            report_filename=job.report_filename,
-            progress=job.progress,
+        return [
+            JobHistoryItem(
+                job_id=job.job_id,
+                status=job.status,
+                analysis_year=job.analysis_year,
+                base_filename=job.base_filename,
+                report_filename=job.report_filename,
+                process_mode=job.process_mode,
+                progress=job.progress,
             created_at=job.created_at,
             started_at=job.started_at,
             finished_at=job.finished_at,
@@ -178,6 +224,7 @@ async def get_results(request: Request, job_id: str):
             "job_id": job.job_id,
             "created_at": job.created_at.isoformat(),
             "finished_at": job.finished_at.isoformat() if job.finished_at else None,
+            "process_mode": job.process_mode.value,
         }
     )
     return ResultsResponse(**payload)

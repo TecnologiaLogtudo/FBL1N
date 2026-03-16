@@ -1,8 +1,20 @@
 import { useEffect, useState } from "react";
-import { Alert, Badge, Button, Card, FileInput, Group, NumberInput, Progress, Table, Text } from "@mantine/core";
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  FileInput,
+  Group,
+  NumberInput,
+  Progress,
+  SegmentedControl,
+  Table,
+  Text,
+} from "@mantine/core";
 import { fetchHistory, fetchMetrics, getApiErrorMessage, startProcess } from "../api/client";
 import { useAppStore } from "../store/useAppStore";
-import { JobHistoryItem, MetricsResponse } from "../types";
+import { JobHistoryItem, MetricsResponse, ProcessMode } from "../types";
 
 const MAX_BYTES = 25 * 1024 * 1024;
 
@@ -19,6 +31,7 @@ function validateFile(file: File | null, allowedExtensions: string[]): string | 
 export function HomePage() {
   const [baseFile, setBaseFile] = useState<File | null>(null);
   const [reportFile, setReportFile] = useState<File | null>(null);
+  const [openTitlesFile, setOpenTitlesFile] = useState<File | null>(null);
   const [analysisYear, setAnalysisYear] = useState<number>(new Date().getFullYear());
   const [localError, setLocalError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -26,6 +39,7 @@ export function HomePage() {
   const [history, setHistory] = useState<JobHistoryItem[]>([]);
   const [metrics, setMetrics] = useState<MetricsResponse | null>(null);
   const [isLoadingOps, setIsLoadingOps] = useState(false);
+  const [processMode, setProcessMode] = useState<ProcessMode>("standard");
 
   const setJob = useAppStore((s) => s.setJob);
   const setError = useAppStore((s) => s.setError);
@@ -64,6 +78,15 @@ export function HomePage() {
     return "gray";
   };
 
+  useEffect(() => {
+    setLocalError(null);
+    setReportFile(null);
+    setOpenTitlesFile(null);
+  }, [processMode]);
+
+  const modeLabel = (mode?: ProcessMode) =>
+    mode === "open_titles" ? "Títulos em aberto" : "Conciliação";
+
   const handleStart = async () => {
     if (isSubmitting) return;
     setLocalError(null);
@@ -76,15 +99,30 @@ export function HomePage() {
       return;
     }
 
-    const reportErr = validateFile(reportFile, [".xls", ".xlsx"]);
-    if (reportErr) {
-      setLocalError(`Relatório: ${reportErr}`);
-      return;
+    if (processMode === "standard") {
+      const reportErr = validateFile(reportFile, [".xls", ".xlsx"]);
+      if (reportErr) {
+        setLocalError(`Relatório: ${reportErr}`);
+        return;
+      }
+    } else {
+      const openErr = validateFile(openTitlesFile, [".xls", ".xlsx"]);
+      if (openErr) {
+        setLocalError(`Títulos em aberto: ${openErr}`);
+        return;
+      }
     }
 
     try {
       setIsSubmitting(true);
-      const { job_id } = await startProcess(baseFile!, reportFile!, analysisYear, setUploadProgress);
+      const { job_id } = await startProcess(
+        baseFile!,
+        processMode === "standard" ? reportFile : null,
+        analysisYear,
+        processMode,
+        processMode === "open_titles" ? openTitlesFile : null,
+        setUploadProgress
+      );
       setJob(job_id);
     } catch (error) {
       setLocalError(getApiErrorMessage(error));
@@ -96,9 +134,41 @@ export function HomePage() {
   return (
     <Card withBorder p="md">
       <Text fw={700} mb="md">Conciliação de Pagamentos de Frete</Text>
+      <SegmentedControl
+        value={processMode}
+        onChange={(value) => setProcessMode(value as ProcessMode)}
+        data={[
+          { label: "Conciliação", value: "standard" },
+          { label: "Títulos em aberto", value: "open_titles" },
+        ]}
+        fullWidth
+        mb="sm"
+      />
+      <Text size="sm" color="dimmed" mb="md">
+        {processMode === "standard"
+          ? "Envie a base FBL1 e o relatório BSoft para conciliar valores."
+          : "Envie a base FBL1 e a planilha filtrada com os títulos em aberto para verificar quais já foram pagos."}
+      </Text>
       {localError && <Alert color="red" mb="md">{localError}</Alert>}
       <FileInput label="Base de Dados FBL1N(.xlsx)" value={baseFile} onChange={setBaseFile} clearable mb="sm" />
-      <FileInput label="Relatório Externo BSOFT(.xls/.xlsx)" value={reportFile} onChange={setReportFile} clearable mb="sm" />
+      {processMode === "standard" && (
+        <FileInput
+          label="Relatório Externo BSOFT(.xls/.xlsx)"
+          value={reportFile}
+          onChange={setReportFile}
+          clearable
+          mb="sm"
+        />
+      )}
+      {processMode === "open_titles" && (
+        <FileInput
+          label="Planilha BSOFT - títulos em aberto (.xls/.xlsx)"
+          value={openTitlesFile}
+          onChange={setOpenTitlesFile}
+          clearable
+          mb="sm"
+        />
+      )}
       <NumberInput
         label="Ano de Análise"
         value={analysisYear}
@@ -140,7 +210,8 @@ export function HomePage() {
         <Table.Thead>
           <Table.Tr>
             <Table.Th>Job</Table.Th>
-            <Table.Th>Status</Table.Th>
+        <Table.Th>Processo</Table.Th>
+        <Table.Th>Status</Table.Th>
             <Table.Th>Ano</Table.Th>
             <Table.Th>Criado em</Table.Th>
           </Table.Tr>
@@ -148,12 +219,13 @@ export function HomePage() {
         <Table.Tbody>
           {history.length === 0 ? (
             <Table.Tr>
-              <Table.Td colSpan={4}>Sem histórico recente</Table.Td>
+              <Table.Td colSpan={5}>Sem histórico recente</Table.Td>
             </Table.Tr>
           ) : (
             history.map((item) => (
               <Table.Tr key={item.job_id}>
                 <Table.Td>{item.job_id.slice(0, 8)}</Table.Td>
+                <Table.Td>{modeLabel(item.process_mode)}</Table.Td>
                 <Table.Td>
                   <Badge color={statusColor(item.status)} variant="light">
                     {item.status}

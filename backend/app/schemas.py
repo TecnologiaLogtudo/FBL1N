@@ -7,6 +7,11 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 
+class ProcessMode(str, Enum):
+    standard = "standard"
+    open_titles = "open_titles"
+
+
 class JobStatus(str, Enum):
     queued = "queued"
     running = "running"
@@ -28,6 +33,7 @@ class JobStatusResponse(BaseModel):
     started_at: datetime | None = None
     finished_at: datetime | None = None
     error: str | None = None
+    process_mode: ProcessMode
 
 
 class ResultsResponse(BaseModel):
@@ -42,6 +48,7 @@ class JobHistoryItem(BaseModel):
     analysis_year: int
     base_filename: str
     report_filename: str
+    process_mode: ProcessMode
     progress: float
     created_at: datetime
     started_at: datetime | None = None

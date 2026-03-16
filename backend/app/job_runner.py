@@ -4,6 +4,7 @@ import traceback
 from concurrent.futures import ThreadPoolExecutor
 
 from .job_manager import JobManager
+from .schemas import ProcessMode
 from .realtime import RealtimeHub
 from .service.pipeline import run_legacy_pipeline
 
@@ -14,10 +15,37 @@ class JobRunner:
         self._realtime = realtime
         self._executor = ThreadPoolExecutor(max_workers=max_workers)
 
-    def submit(self, job_id: str, input_path: str, report_path: str, output_path: str, analysis_year: int) -> None:
-        self._executor.submit(self._run, job_id, input_path, report_path, output_path, analysis_year)
+    def submit(
+        self,
+        job_id: str,
+        input_path: str,
+        report_path: str,
+        output_path: str,
+        analysis_year: int,
+        process_mode: ProcessMode,
+        open_titles_path: str | None = None,
+    ) -> None:
+        self._executor.submit(
+            self._run,
+            job_id,
+            input_path,
+            report_path,
+            output_path,
+            analysis_year,
+            process_mode,
+            open_titles_path,
+        )
 
-    def _run(self, job_id: str, input_path: str, report_path: str, output_path: str, analysis_year: int) -> None:
+    def _run(
+        self,
+        job_id: str,
+        input_path: str,
+        report_path: str,
+        output_path: str,
+        analysis_year: int,
+        process_mode: ProcessMode,
+        open_titles_path: str | None,
+    ) -> None:
         self._job_manager.set_running(job_id)
         self._realtime.status(job_id, "running")
 
@@ -28,6 +56,8 @@ class JobRunner:
                 report_path=report_path,
                 output_path=output_path,
                 analysis_year=analysis_year,
+                process_mode=process_mode,
+                open_titles_path=open_titles_path,
                 job_manager=self._job_manager,
                 realtime=self._realtime,
             )
