@@ -5,6 +5,7 @@ import unicodedata
 from pathlib import Path
 
 import pandas as pd
+from ..config import settings
 
 
 def _normalize_text(value: str) -> str:
@@ -175,6 +176,15 @@ def generate_and_prepare_midas_file(
         starting_date=starting_date,
         ending_date=ending_date,
         headless=headless,
+        runtime_mode=settings.midas_playwright_runtime_mode,
+        timeout_ms=settings.midas_playwright_timeout_ms,
+        viewport_width=settings.midas_playwright_viewport_width,
+        viewport_height=settings.midas_playwright_viewport_height,
+        locale=settings.midas_playwright_locale,
+        user_agent=settings.midas_playwright_user_agent,
+        browser_args=settings.midas_playwright_browser_args,
+        download_dir=str(Path(prepared_output_path).parent / "midas_raw"),
+        target_url=settings.midas_target_url,
     )
     raw_path = workflow.run()
     return MidasSpreadsheetProcessor.process_to_excel(raw_path, prepared_output_path)

@@ -1,100 +1,116 @@
-import os
-from playwright.sync_api import sync_playwright
+from __future__ import annotations
+
+from pathlib import Path
+
+from .playwright_runtime import PlaywrightRuntimeClient, PlaywrightRuntimeConfig
 
 class MidasCarrierWorkflow:
-    def __init__(self, username: str = "SEU_USUARIO", password: str = "SUA_SENHA", starting_date: str = "05/03/2026", ending_date: str = "20/03/2026", headless: bool = True):
+    def __init__(
+        self,
+        username: str = "SEU_USUARIO",
+        password: str = "SUA_SENHA",
+        starting_date: str = "05/03/2026",
+        ending_date: str = "20/03/2026",
+        headless: bool = True,
+        *,
+        runtime_mode: str = "auto",
+        timeout_ms: int | None = None,
+        viewport_width: int | None = None,
+        viewport_height: int | None = None,
+        locale: str | None = None,
+        user_agent: str | None = None,
+        browser_args: str | None = None,
+        download_dir: str | None = None,
+        target_url: str | None = None,
+    ):
         self.username = username
         self.password = password
         self.starting_date = starting_date
         self.ending_date = ending_date
         self.headless = headless
+        self.runtime_config = PlaywrightRuntimeConfig.from_env(
+            headless=headless,
+            runtime_mode=runtime_mode,
+            timeout_ms=timeout_ms,
+            viewport_width=viewport_width,
+            viewport_height=viewport_height,
+            locale=locale,
+            user_agent=user_agent,
+            browser_args=browser_args,
+        )
+        self.download_dir = Path(download_dir) if download_dir else Path(__file__).resolve().parent / "temp"
         # URL base com os parâmetros solicitados
-        self.target_url = "https://nixweb.midassolutions.com.br/028/web/Account/Login?ReturnUrl=%2f028%2fweb%2fCarrierManagementPanel%2f%3fdateType%3dE%26startingDate%3d24%252F01%252F2023%26endingDate%3d08%252F02%252F2023%26status%3dF%252CA%252CR%26chk_status_1%3dF%26chk_status_2%3dA%26chk_status_3%3dR&dateType=E&startingDate=24%2F01%2F2023&endingDate=08%2F02%2F2023&status=F%2CA%2CR&chk_status_1=F&chk_status_2=A&chk_status_3=R"
+        self.target_url = target_url or (
+            "https://nixweb.midassolutions.com.br/028/web/Account/Login"
+            "?ReturnUrl=%2f028%2fweb%2fCarrierManagementPanel%2f%3fdateType%3dE%26startingDate%3d24%252F01%252F2023"
+            "%26endingDate%3d08%252F02%252F2023%26status%3dF%252CA%252CR%26chk_status_1%3dF%26chk_status_2%3dA%26chk_status_3%3dR"
+            "&dateType=E&startingDate=24%2F01%2F2023&endingDate=08%2F02%2F2023&status=F%2CA%2CR&chk_status_1=F&chk_status_2=A&chk_status_3=R"
+        )
 
     def run(self) -> str:
         """
         Inicia o fluxo acessando a URL via Playwright, realiza o preenchimento 
         do login e prepara a chamada para o mapeador.
         """
-        print(f"Iniciando navegador com Playwright e acessando a URL configurada...")
-        
-        with sync_playwright() as p:
-            # Controlado pelo parâmetro 'headless' no __init__
-            browser = p.chromium.launch(headless=self.headless)
-            page = browser.new_page()
-            
-            page.goto(self.target_url)
-            
-            print("Aguardando a página de login renderizar...")
-            page.wait_for_selector("input#UserName", state="visible")
-            
-            print("Página de login carregada. Preenchendo credenciais...")
-            
-            # Preenche os campos usando os seletores de ID fornecidos
-            page.fill("input#UserName", self.username)
-            page.fill("input#Password", self.password)
-            
-            # Pressiona "Enter" estando no campo de senha para fazer o login
-            page.press("input#Password", "Enter")
-            
-            print("Login submetido! Aguardando o redirecionamento...")
-            
+        print(
+            f"Iniciando Playwright (modo={self.runtime_config.resolved_mode()}, "
+            f"headless={self.runtime_config.headless})..."
+        )
+
+        with PlaywrightRuntimeClient(self.runtime_config) as client:
+            page = client.page
+            if page is None:
+                raise RuntimeError("Falha ao inicializar página do Playwright.")
+
             try:
-                print("Aguardando a tela do painel renderizar...")
-                # Tenta aguardar a tela do painel com um timeout menor (ex: 8000ms = 8 segundos)
-                page.wait_for_selector("select#dateType", state="visible", timeout=8000)
-            except Exception:
-                print("Fallback: O login via 'Enter' falhou. Tentando clicar no botão de Entrar...")
-                # Busca por seletores comuns para botões de submissão/login e clica no primeiro encontrado
-                page.locator("button[type='submit'], input[type='submit'], input[value='Entrar']").first.click()
-                # Aguarda novamente pelo elemento da próxima tela com o tempo padrão do Playwright (30s)
-                page.wait_for_selector("select#dateType", state="visible")
-                
-            # Garante que a rede esteja ociosa antes de prosseguir com os preenchimentos
-            page.wait_for_load_state("networkidle")
-            
-            print("Preenchendo os filtros de pesquisa...")
-            # Seleciona 'Envio' (valor 'C') no dropdown Período por
-            page.select_option("select#dateType", value="C")
-            
-            # Preenche a Data Inicial
-            page.fill("input#startingDate", self.starting_date)
-            
-            # Preenche a Data Final
-            page.fill("input#endingDate", self.ending_date)
+                page.goto(self.target_url, wait_until="domcontentloaded")
+                print("Aguardando a página de login renderizar...")
+                page.wait_for_selector("input#UserName", state="visible")
 
-            print("Aguardando 2 segundos antes de pesquisar...")
-            page.wait_for_timeout(2000)
+                print("Página de login carregada. Preenchendo credenciais...")
+                page.fill("input#UserName", self.username)
+                page.fill("input#Password", self.password)
+                page.press("input#Password", "Enter")
+                print("Login submetido! Aguardando o redirecionamento...")
 
-            print("Clicando no botão Pesquisar...")
-            # Clica no botão de pesquisar
-            page.click("input#searchForm_submit")
-            
-            # Aguarda a atualização da tabela/grid após a pesquisa
-            page.wait_for_load_state("networkidle")
+                try:
+                    page.wait_for_selector("select#dateType", state="visible", timeout=8000)
+                except Exception:
+                    print("Fallback: submit por Enter falhou. Tentando clique no botão Entrar...")
+                    page.locator("button[type='submit'], input[type='submit'], input[value='Entrar']").first.click()
+                    page.wait_for_selector("select#dateType", state="visible")
 
-            print("Iniciando a exportação do relatório...")
-            # Prepara o Playwright para interceptar o download disparado pelo clique
-            with page.expect_download() as download_info:
-                page.click("input[value='Exportar']")
-            
-            download = download_info.value
-            
-            # Prepara a pasta 'temp' dentro do diretório atual (app/Midas/temp)
-            temp_dir = os.path.join(os.path.dirname(__file__), "temp")
-            os.makedirs(temp_dir, exist_ok=True)
-            
-            # Salva o arquivo usando o nome sugerido pelo próprio navegador/servidor
-            file_path = os.path.join(temp_dir, download.suggested_filename)
-            download.save_as(file_path)
-            print(f"Relatório exportado e salvo com sucesso em: {file_path}")
+                page.wait_for_load_state("networkidle")
+                print("Preenchendo os filtros de pesquisa...")
+                page.select_option("select#dateType", value="C")
+                page.fill("input#startingDate", self.starting_date)
+                page.fill("input#endingDate", self.ending_date)
+                page.wait_for_timeout(2000)
+                page.click("input#searchForm_submit")
+                page.wait_for_load_state("networkidle")
 
-            browser.close()
-            return file_path
+                print("Iniciando a exportação do relatório...")
+                with page.expect_download() as download_info:
+                    page.click("input[value='Exportar']")
+                download = download_info.value
+
+                self.download_dir.mkdir(parents=True, exist_ok=True)
+                file_path = self.download_dir / download.suggested_filename
+                download.save_as(str(file_path))
+                print(f"Relatório exportado e salvo com sucesso em: {file_path}")
+                return str(file_path)
+            except Exception as exc:
+                raise RuntimeError(f"Falha no workflow Midas durante login/exportação: {exc}") from exc
 
 if __name__ == "__main__":
     # Aqui passamos headless=False para depuração visual.
-    workflow = MidasCarrierWorkflow(username="SEU_USUARIO", password="SUA_SENHA", starting_date="05/03/2026", ending_date="20/03/2026", headless=False)
+    workflow = MidasCarrierWorkflow(
+        username="SEU_USUARIO",
+        password="SUA_SENHA",
+        starting_date="05/03/2026",
+        ending_date="20/03/2026",
+        headless=False,
+    )
     arquivo = workflow.run()
     print("\nArquivo bruto gerado:")
     print(arquivo)

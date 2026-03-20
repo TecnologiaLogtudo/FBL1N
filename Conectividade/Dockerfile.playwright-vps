@@ -1,27 +1,24 @@
-# Base de build para projetos Python + Playwright em VPS
 FROM mcr.microsoft.com/playwright/python:v1.58.0-noble
 
 WORKDIR /app
 
-# Dependencias Python
-COPY requirements-playwright-vps.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt
+# Dependências da API + Playwright
+COPY backend/requirements.txt /tmp/backend-requirements.txt
+COPY Conectividade/requirements-playwright-vps.txt /tmp/vps-requirements.txt
+RUN pip install --no-cache-dir -r /tmp/backend-requirements.txt -r /tmp/vps-requirements.txt
 
-# Garante binarios do Chromium
 RUN playwright install chromium
 
-# Copie seu projeto (ajuste conforme sua estrutura)
 COPY . /app
 
-# Permissoes para usuario nao-root (pwuser ja existe na imagem base)
-RUN mkdir -p /app/data && chown -R pwuser:pwuser /app
+RUN mkdir -p /tmp/notas_compensadas && chown -R pwuser:pwuser /app /tmp/notas_compensadas
 USER pwuser
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PLAYWRIGHT_HEADLESS=true
+    JOBS_BASE_DIR=/tmp/notas_compensadas \
+    MIDAS_PLAYWRIGHT_RUNTIME_MODE=auto
 
 EXPOSE 8000
 
-# Ajuste este comando no projeto de destino
-CMD ["python", "-m", "http.server", "8000"]
+CMD ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
