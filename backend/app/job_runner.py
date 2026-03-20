@@ -6,7 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 from .job_manager import JobManager
 from .schemas import ProcessMode
 from .realtime import RealtimeHub
-from .service.pipeline import run_legacy_pipeline
+from .service.pipeline import run_legacy_pipeline, run_midas_pipeline
 
 
 class JobRunner:
@@ -24,6 +24,8 @@ class JobRunner:
         analysis_year: int,
         process_mode: ProcessMode,
         open_titles_path: str | None = None,
+        midas_path: str | None = None,
+        source_conciliation_output_path: str | None = None,
     ) -> None:
         self._executor.submit(
             self._run,
@@ -34,6 +36,8 @@ class JobRunner:
             analysis_year,
             process_mode,
             open_titles_path,
+            midas_path,
+            source_conciliation_output_path,
         )
 
     def _run(
@@ -45,22 +49,38 @@ class JobRunner:
         analysis_year: int,
         process_mode: ProcessMode,
         open_titles_path: str | None,
+        midas_path: str | None,
+        source_conciliation_output_path: str | None,
     ) -> None:
         self._job_manager.set_running(job_id)
         self._realtime.status(job_id, "running")
 
         try:
-            run_legacy_pipeline(
-                job_id=job_id,
-                input_path=input_path,
-                report_path=report_path,
-                output_path=output_path,
-                analysis_year=analysis_year,
-                process_mode=process_mode,
-                open_titles_path=open_titles_path,
-                job_manager=self._job_manager,
-                realtime=self._realtime,
-            )
+            if process_mode == ProcessMode.midas_correlation:
+                if not midas_path:
+                    raise ValueError("midas_path é obrigatório para o modo midas_correlation")
+                if not source_conciliation_output_path:
+                    raise ValueError("source_conciliation_output_path é obrigatório para o modo midas_correlation")
+                run_midas_pipeline(
+                    job_id=job_id,
+                    midas_path=midas_path,
+                    source_conciliation_output_path=source_conciliation_output_path,
+                    output_path=output_path,
+                    job_manager=self._job_manager,
+                    realtime=self._realtime,
+                )
+            else:
+                run_legacy_pipeline(
+                    job_id=job_id,
+                    input_path=input_path,
+                    report_path=report_path,
+                    output_path=output_path,
+                    analysis_year=analysis_year,
+                    process_mode=process_mode,
+                    open_titles_path=open_titles_path,
+                    job_manager=self._job_manager,
+                    realtime=self._realtime,
+                )
             self._job_manager.set_completed(job_id)
             self._realtime.status(job_id, "completed")
             self._realtime.done(job_id)

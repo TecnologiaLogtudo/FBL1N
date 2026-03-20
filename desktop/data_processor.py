@@ -3,8 +3,8 @@
 # Módulo para o processamento da planilha principal (FBL1.xlsx).
 
 import pandas as pd
-from utils import logger
-from config import (
+from desktop.utils import logger
+from desktop.config import (
     COLUNAS_ETAPA1_PARA_MANTER, COLUNAS_ETAPA4_FINAIS, COLUNA_DATA_DOCUMENTO,
     COLUNA_REFERENCIA, COLUNA_CONTA, COLUNA_MONTANTE,
     CONTAS_MAPEAMENTO_ETAPA2, CONTAS_MAPEAMENTO_ETAPA4
@@ -221,3 +221,4 @@ class DataProcessor:
         
         logger.success("--- Etapas 3 e 4 concluídas ---\n")
         return final_sheets
+

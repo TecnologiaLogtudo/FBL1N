@@ -3,7 +3,7 @@
 # Módulo responsável por cruzar e analisar dados de diferentes fontes já processadas.
 
 import pandas as pd
-from utils import logger
+from desktop.utils import logger
 
 class AnalysisProcessor:
     """
@@ -194,3 +194,4 @@ class AnalysisProcessor:
         final_analyzed_df = self._populate_payment_values(df_with_status, final_sheets_data)
         
         return final_analyzed_df
+

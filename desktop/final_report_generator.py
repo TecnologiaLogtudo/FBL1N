@@ -4,8 +4,8 @@
 
 import pandas as pd
 import numpy as np
-from utils import logger, format_currency
-from config import SERVICOS_ESPERADOS
+from desktop.utils import logger, format_currency
+from desktop.config import SERVICOS_ESPERADOS
 
 class FinalReportGenerator:
     """
@@ -414,3 +414,5 @@ class FinalReportGenerator:
         
         logger.success("--- GERAÇÃO DO RELATÓRIO FINAL CONCLUÍDA. ---\n")
         return final_report_sheets
+
+

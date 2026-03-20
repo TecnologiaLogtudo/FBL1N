@@ -8,14 +8,15 @@ import {
   Group,
   NumberInput,
   Progress,
+  Select,
   SegmentedControl,
   Table,
   Text,
   useMantineTheme,
 } from "@mantine/core";
-import { fetchHistory, fetchMetrics, getApiErrorMessage, startProcess } from "../api/client";
+import { fetchHistory, fetchMetrics, getApiErrorMessage, startMidasCorrelation, startProcess } from "../api/client";
 import { useAppStore } from "../store/useAppStore";
-import { JobHistoryItem, MetricsResponse, ProcessMode } from "../types";
+import { JobHistoryItem, MetricsResponse, ProcessMode, modeLabel } from "../types";
 
 const MAX_BYTES = 25 * 1024 * 1024;
 
@@ -33,6 +34,8 @@ export function HomePage() {
   const [baseFile, setBaseFile] = useState<File | null>(null);
   const [reportFile, setReportFile] = useState<File | null>(null);
   const [openTitlesFile, setOpenTitlesFile] = useState<File | null>(null);
+  const [midasFile, setMidasFile] = useState<File | null>(null);
+  const [conciliationJobId, setConciliationJobId] = useState<string | null>(null);
   const [analysisYear, setAnalysisYear] = useState<number>(new Date().getFullYear());
   const [localError, setLocalError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -82,12 +85,19 @@ export function HomePage() {
 
   useEffect(() => {
     setLocalError(null);
+    setBaseFile(null);
     setReportFile(null);
     setOpenTitlesFile(null);
+    setMidasFile(null);
+    setConciliationJobId(null);
   }, [processMode]);
 
-  const modeLabel = (mode?: ProcessMode) =>
-    mode === "open_titles" ? "Títulos em aberto" : "Conciliação";
+  const availableConciliationJobs = history
+    .filter((item) => item.process_mode === "standard" && item.status === "completed")
+    .map((item) => ({
+      value: item.job_id,
+      label: `${item.job_id.slice(0, 8)} • ${new Date(item.created_at).toLocaleString()}`,
+    }));
 
   const handleStart = async () => {
     if (isSubmitting) return;
@@ -95,36 +105,51 @@ export function HomePage() {
     setError(null);
     setUploadProgress(0);
 
-    const baseErr = validateFile(baseFile, [".xlsx"]);
-    if (baseErr) {
-      setLocalError(`Base: ${baseErr}`);
-      return;
-    }
-
-    if (processMode === "standard") {
-      const reportErr = validateFile(reportFile, [".xls", ".xlsx"]);
-      if (reportErr) {
-        setLocalError(`Relatório: ${reportErr}`);
-        return;
-      }
-    } else {
-      const openErr = validateFile(openTitlesFile, [".xls", ".xlsx"]);
-      if (openErr) {
-        setLocalError(`Títulos em aberto: ${openErr}`);
-        return;
-      }
-    }
-
     try {
       setIsSubmitting(true);
-      const { job_id } = await startProcess(
-        baseFile!,
-        processMode === "standard" ? reportFile : null,
-        analysisYear,
-        processMode,
-        processMode === "open_titles" ? openTitlesFile : null,
-        setUploadProgress
-      );
+
+      let job_id = "";
+      if (processMode === "midas_correlation") {
+        const midasErr = validateFile(midasFile, [".xlsx", ".xls", ".csv"]);
+        if (midasErr) {
+          setLocalError(`Planilha Midas: ${midasErr}`);
+          return;
+        }
+        if (!conciliationJobId) {
+          setLocalError("Selecione um job de Conciliação concluído para correlacionar.");
+          return;
+        }
+        ({ job_id } = await startMidasCorrelation(midasFile!, conciliationJobId, setUploadProgress));
+      } else {
+        const baseErr = validateFile(baseFile, [".xlsx"]);
+        if (baseErr) {
+          setLocalError(`Base: ${baseErr}`);
+          return;
+        }
+
+        if (processMode === "standard") {
+          const reportErr = validateFile(reportFile, [".xls", ".xlsx"]);
+          if (reportErr) {
+            setLocalError(`Relatório: ${reportErr}`);
+            return;
+          }
+        } else {
+          const openErr = validateFile(openTitlesFile, [".xls", ".xlsx"]);
+          if (openErr) {
+            setLocalError(`Títulos em aberto: ${openErr}`);
+            return;
+          }
+        }
+
+        ({ job_id } = await startProcess(
+          baseFile!,
+          processMode === "standard" ? reportFile : null,
+          analysisYear,
+          processMode,
+          processMode === "open_titles" ? openTitlesFile : null,
+          setUploadProgress
+        ));
+      }
       setJob(job_id);
     } catch (error) {
       setLocalError(getApiErrorMessage(error));
@@ -142,6 +167,7 @@ export function HomePage() {
         data={[
           { label: "Conciliação", value: "standard" },
           { label: "Títulos em aberto", value: "open_titles" },
+          { label: "Midas x Conciliação", value: "midas_correlation" },
         ]}
         fullWidth
         mb="sm"
@@ -155,11 +181,15 @@ export function HomePage() {
           background:
             processMode === "standard"
               ? "linear-gradient(145deg, rgba(15,61,117,0.08), rgba(15,61,117,0.18))"
-              : "linear-gradient(145deg, rgba(25,135,84,0.08), rgba(25,135,84,0.18))",
+              : processMode === "open_titles"
+              ? "linear-gradient(145deg, rgba(25,135,84,0.08), rgba(25,135,84,0.18))"
+              : "linear-gradient(145deg, rgba(218,119,6,0.08), rgba(218,119,6,0.18))",
           boxShadow:
             processMode === "standard"
               ? "0 4px 12px rgba(15,61,117,0.12)"
-              : "0 4px 12px rgba(25,135,84,0.12)",
+              : processMode === "open_titles"
+              ? "0 4px 12px rgba(25,135,84,0.12)"
+              : "0 4px 12px rgba(218,119,6,0.12)",
         }}
       >
         <Text mb="xs" fw={600}>
@@ -168,11 +198,15 @@ export function HomePage() {
         <Text size="sm" color="dimmed">
           {processMode === "standard"
             ? "Envie a base FBL1 e o relatório BSoft para conciliar valores."
-            : "Envie a base FBL1 e a planilha filtrada com os títulos em aberto para verificar quais já foram pagos."}
+            : processMode === "open_titles"
+            ? "Envie a base FBL1 e a planilha filtrada com os títulos em aberto para verificar quais já foram pagos."
+            : "Envie a planilha Midas e selecione um job concluído de Conciliação para preencher a condição automaticamente."}
         </Text>
       </div>
       {localError && <Alert color="red" mb="md">{localError}</Alert>}
-      <FileInput label="Base de Dados FBL1N(.xlsx)" value={baseFile} onChange={setBaseFile} clearable mb="sm" />
+      {processMode !== "midas_correlation" && (
+        <FileInput label="Base de Dados FBL1N(.xlsx)" value={baseFile} onChange={setBaseFile} clearable mb="sm" />
+      )}
       {processMode === "standard" && (
         <FileInput
           label="Relatório Externo BSOFT(.xls/.xlsx)"
@@ -191,14 +225,37 @@ export function HomePage() {
           mb="sm"
         />
       )}
-      <NumberInput
-        label="Ano de Análise"
-        value={analysisYear}
-        onChange={(value) => setAnalysisYear(Number(value))}
-        min={2020}
-        max={2100}
-        mb="md"
-      />
+      {processMode === "midas_correlation" && (
+        <>
+          <FileInput
+            label="Planilha Midas (.xlsx/.xls/.csv)"
+            value={midasFile}
+            onChange={setMidasFile}
+            clearable
+            mb="sm"
+          />
+          <Select
+            label="Job de Conciliação (concluído)"
+            placeholder={availableConciliationJobs.length > 0 ? "Selecione um job" : "Sem jobs elegíveis no histórico"}
+            data={availableConciliationJobs}
+            value={conciliationJobId}
+            onChange={setConciliationJobId}
+            searchable
+            nothingFoundMessage="Nenhum job encontrado"
+            mb="md"
+          />
+        </>
+      )}
+      {processMode !== "midas_correlation" && (
+        <NumberInput
+          label="Ano de Análise"
+          value={analysisYear}
+          onChange={(value) => setAnalysisYear(Number(value))}
+          min={2020}
+          max={2100}
+          mb="md"
+        />
+      )}
       {isSubmitting && (
         <>
           <Text size="sm" mb="xs">Enviando arquivos...</Text>

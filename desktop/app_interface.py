@@ -44,12 +44,12 @@ def resource_path(relative_path):
 # Seus imports existentes
 # Importamos aqui, após definir resource_path
 try:
-    from main import main as run_main_process
-    from utils import logger # Garanta que utils.py esteja na mesma pasta
-    from config import OUTPUT_FILE_PATH # Garanta que config.py esteja na mesma pasta
+    from desktop.main import main as run_main_process
+    from desktop.utils import logger
+    from desktop.config import OUTPUT_FILE_PATH
 except ImportError as e:
     print(f"Erro ao importar módulos: {e}")
-    print("Certifique-se de que main.py, utils.py e config.py estão no mesmo diretório.")
+    print("Certifique-se de que o pacote desktop está acessível no PYTHONPATH.")
     sys.exit()
 
 
@@ -730,3 +730,4 @@ class App(ctk.CTk):
 if __name__ == "__main__":
     app = App()
     app.mainloop()
+

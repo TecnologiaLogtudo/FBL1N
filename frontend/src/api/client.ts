@@ -1,5 +1,5 @@
 import axios from "axios";
-import { JobHistoryItem, MetricsResponse, ProcessMode, ResultsResponse, StatusResponse } from "../types";
+import { JobHistoryItem, LegacyProcessMode, MetricsResponse, ResultsResponse, StatusResponse } from "../types";
 
 const APP_BASE_PATH = import.meta.env.VITE_APP_BASE_PATH ?? "/";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? APP_BASE_PATH;
@@ -26,7 +26,7 @@ export async function startProcess(
   baseFile: File,
   reportFile: File | null,
   analysisYear: number,
-  processMode: ProcessMode,
+  processMode: LegacyProcessMode,
   openTitlesFile: File | null,
   onUploadProgress?: (progress: number) => void
 ): Promise<{ job_id: string }> {
@@ -42,6 +42,24 @@ export async function startProcess(
   }
 
   const { data } = await api.post("/api/process", formData, {
+    onUploadProgress: (event) => {
+      if (!onUploadProgress || !event.total) return;
+      onUploadProgress(Math.max(0, Math.min(1, event.loaded / event.total)));
+    },
+  });
+  return data;
+}
+
+export async function startMidasCorrelation(
+  midasFile: File,
+  conciliationJobId: string,
+  onUploadProgress?: (progress: number) => void
+): Promise<{ job_id: string }> {
+  const formData = new FormData();
+  formData.append("midas_file", midasFile);
+  formData.append("conciliation_job_id", conciliationJobId);
+
+  const { data } = await api.post("/api/midas/correlate", formData, {
     onUploadProgress: (event) => {
       if (!onUploadProgress || !event.total) return;
       onUploadProgress(Math.max(0, Math.min(1, event.loaded / event.total)));

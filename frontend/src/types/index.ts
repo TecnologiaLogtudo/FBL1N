@@ -1,5 +1,12 @@
 export type JobStatus = "queued" | "running" | "completed" | "failed" | "expired";
-export type ProcessMode = "standard" | "open_titles";
+export type ProcessMode = "standard" | "open_titles" | "midas_correlation";
+export type LegacyProcessMode = "standard" | "open_titles";
+
+export function modeLabel(mode?: ProcessMode): string {
+  if (mode === "open_titles") return "Títulos em aberto";
+  if (mode === "midas_correlation") return "Midas x Conciliação";
+  return "Conciliação";
+}
 
 export interface StatusResponse {
   job_id: string;

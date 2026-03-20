@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 class ProcessMode(str, Enum):
     standard = "standard"
     open_titles = "open_titles"
+    midas_correlation = "midas_correlation"
 
 
 class JobStatus(str, Enum):

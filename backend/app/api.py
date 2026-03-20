@@ -20,6 +20,7 @@ from .schemas import (
     ResultsResponse,
 )
 from .service.pdf_export import generate_pdf_from_output
+from .service.midas_correlation import validate_conciliation_output, validate_midas_file
 from .service.result_parser import parse_results
 from .storage import create_job_paths
 
@@ -39,6 +40,12 @@ def _ensure_job(job_manager: JobManager, job_id: str):
     if not job:
         raise HTTPException(status_code=404, detail="Job não encontrado")
     return job
+
+
+def _ensure_job_owner(job, user_id: str) -> None:
+    if job.user_id != user_id:
+        # Mantém resposta indistinguível de "não encontrado"
+        raise HTTPException(status_code=404, detail="Job não encontrado")
 
 
 async def _save_upload(upload: UploadFile, destination: str, max_bytes: int) -> None:
@@ -98,10 +105,12 @@ async def start_process(
         _validate_file_extension(report_file, (".xls", ".xlsx"), "report_file")
         if open_titles_file is not None:
             raise HTTPException(status_code=400, detail="open_titles_file deve ser omitido no modo padrão")
-    else:
+    elif process_mode == ProcessMode.open_titles:
         if open_titles_file is None:
             raise HTTPException(status_code=400, detail="open_titles_file é obrigatório para o modo de títulos em aberto")
         _validate_file_extension(open_titles_file, (".xls", ".xlsx"), "open_titles_file")
+    else:
+        raise HTTPException(status_code=400, detail="process_mode não suportado neste endpoint")
 
     job_manager: JobManager = request.app.state.job_manager
     runner: JobRunner = request.app.state.job_runner
@@ -156,6 +165,98 @@ async def start_process(
         analysis_year=analysis_year,
         process_mode=process_mode,
         open_titles_path=paths.get("open_titles_path"),
+        midas_path=paths.get("midas_path"),
+        source_conciliation_output_path=None,
+    )
+
+    return ProcessStartResponse(job_id=job.job_id, status=JobStatus.queued)
+
+
+@router.post("/api/midas/correlate", response_model=ProcessStartResponse, status_code=202)
+async def start_midas_correlation(
+    request: Request,
+    midas_file: UploadFile = File(...),
+    conciliation_job_id: str = Form(...),
+):
+    _validate_file_extension(midas_file, (".xlsx", ".xls", ".csv"), "midas_file")
+
+    job_manager: JobManager = request.app.state.job_manager
+    runner: JobRunner = request.app.state.job_runner
+    user_id = _get_user_id(request)
+
+    source_job = _ensure_job(job_manager, conciliation_job_id)
+    _ensure_job_owner(source_job, user_id)
+
+    if source_job.status != JobStatus.completed:
+        raise HTTPException(status_code=409, detail="O job de Conciliação precisa estar concluído")
+    if source_job.process_mode != ProcessMode.standard:
+        raise HTTPException(status_code=400, detail="O job informado deve ser do fluxo de Conciliação (standard)")
+    if not source_job.output_path or not Path(source_job.output_path).exists():
+        raise HTTPException(status_code=404, detail="Arquivo de saída da Conciliação não encontrado")
+
+    try:
+        validate_conciliation_output(source_job.output_path)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    try:
+        job = job_manager.create_job(
+            user_id=user_id,
+            analysis_year=source_job.analysis_year,
+            base_filename=midas_file.filename or "midas.xlsx",
+            report_filename=f"consolidado_{conciliation_job_id}.xlsx",
+            process_mode=ProcessMode.midas_correlation,
+            midas_filename=midas_file.filename or "midas.xlsx",
+            source_conciliation_job_id=source_job.job_id,
+            source_conciliation_output_path=source_job.output_path,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    paths = create_job_paths(
+        job_id=job.job_id,
+        base_filename=job.base_filename,
+        report_filename=job.report_filename,
+        midas_filename=job.midas_filename,
+    )
+    job_manager.set_paths(
+        job_id=job.job_id,
+        job_dir=paths["job_dir"],
+        input_path=paths["input_path"],
+        report_path=paths["report_path"],
+        output_path=paths["output_path"],
+        midas_path=paths.get("midas_path"),
+        source_conciliation_output_path=source_job.output_path,
+    )
+
+    try:
+        if not paths.get("midas_path"):
+            raise HTTPException(status_code=500, detail="Falha ao preparar caminho do arquivo Midas")
+        await _save_upload(midas_file, paths["midas_path"], settings.max_upload_bytes)
+        validate_midas_file(paths["midas_path"])
+    except ValueError as exc:
+        from .storage import delete_job_dir
+
+        delete_job_dir(paths["job_dir"])
+        job_manager.remove_job(job.job_id)
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception:
+        from .storage import delete_job_dir
+
+        delete_job_dir(paths["job_dir"])
+        job_manager.remove_job(job.job_id)
+        raise
+
+    runner.submit(
+        job_id=job.job_id,
+        input_path=paths["input_path"],
+        report_path=paths["report_path"],
+        output_path=paths["output_path"],
+        analysis_year=job.analysis_year,
+        process_mode=ProcessMode.midas_correlation,
+        open_titles_path=None,
+        midas_path=paths.get("midas_path"),
+        source_conciliation_output_path=source_job.output_path,
     )
 
     return ProcessStartResponse(job_id=job.job_id, status=JobStatus.queued)
@@ -218,7 +319,7 @@ async def get_results(request: Request, job_id: str):
     if not job.output_path or not Path(job.output_path).exists():
         raise HTTPException(status_code=404, detail="Arquivo de saída não encontrado")
 
-    payload = parse_results(job.output_path)
+    payload = parse_results(job.output_path, process_mode=job.process_mode)
     payload["meta"].update(
         {
             "job_id": job.job_id,
@@ -258,6 +359,8 @@ async def download_pdf(request: Request, job_id: str):
 
     if not job.output_path or not Path(job.output_path).exists():
         raise HTTPException(status_code=404, detail="Arquivo de saída não encontrado")
+    if job.process_mode == ProcessMode.midas_correlation:
+        raise HTTPException(status_code=409, detail="Download em PDF não suportado para o fluxo midas_correlation")
 
     pdf_path = str(Path(job.output_path).with_suffix(".pdf"))
     generate_pdf_from_output(job.output_path, pdf_path)

@@ -19,11 +19,11 @@ customtkinter_path = r"C:\Users\felip\OneDrive\Logtudo\Automações\Notas_Compen
 # ==============================================================================
 
 a = Analysis(
-    ['app_interface.py'],
+    ['desktop/app_interface.py'],
     pathex=[],
     # 3. Use a variável 'customtkinter_path' aqui.
     binaries=[(customtkinter_path, 'customtkinter')], # <--- LINHA ALTERADA
-    datas=[('config.py', '.'), ('utils.py', '.'), ('main.py', '.'), ('data_processor.py', '.'), ('report_processor.py', '.'), ('analysis_processor.py', '.'), ('final_report_generator.py', '.')],
+    datas=[('desktop/config.py', 'desktop'), ('desktop/utils.py', 'desktop')],
     hiddenimports=[
         'customtkinter', 
         'tkinter.font', 

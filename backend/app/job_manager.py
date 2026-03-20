@@ -27,8 +27,12 @@ class JobRecord:
     report_path: str | None = None
     output_path: str | None = None
     open_titles_path: str | None = None
+    midas_path: str | None = None
+    source_conciliation_job_id: str | None = None
+    source_conciliation_output_path: str | None = None
     process_mode: ProcessMode = ProcessMode.standard
     open_titles_filename: str | None = None
+    midas_filename: str | None = None
 
 
 class JobManager:
@@ -42,9 +46,28 @@ class JobManager:
         analysis_year: int,
         base_filename: str,
         report_filename: str,
-        process_mode: ProcessMode,
+        process_mode: ProcessMode = ProcessMode.standard,
         open_titles_filename: str | None = None,
+        midas_filename: str | None = None,
+        source_conciliation_job_id: str | None = None,
+        source_conciliation_output_path: str | None = None,
     ) -> JobRecord:
+        """_summary_
+
+        Args:
+            user_id (str): _description_
+            analysis_year (int): _description_
+            base_filename (str): _description_
+            report_filename (str): _description_
+            process_mode (ProcessMode, optional): _description_. Defaults to ProcessMode.standard.
+            open_titles_filename (str | None, optional): _description_. Defaults to None.
+
+        Raises:
+            ValueError: _description_
+
+        Returns:
+            JobRecord: _description_
+        """
         with self._lock:
             for record in self._jobs.values():
                 if record.user_id == user_id and record.status in {JobStatus.queued, JobStatus.running}:
@@ -58,6 +81,9 @@ class JobManager:
                 report_filename=report_filename,
                 process_mode=process_mode,
                 open_titles_filename=open_titles_filename,
+                midas_filename=midas_filename,
+                source_conciliation_job_id=source_conciliation_job_id,
+                source_conciliation_output_path=source_conciliation_output_path,
             )
             self._jobs[job.job_id] = job
             return job
@@ -74,6 +100,8 @@ class JobManager:
         report_path: str,
         output_path: str,
         open_titles_path: str | None = None,
+        midas_path: str | None = None,
+        source_conciliation_output_path: str | None = None,
     ) -> None:
         with self._lock:
             job = self._jobs[job_id]
@@ -82,6 +110,9 @@ class JobManager:
             job.report_path = report_path
             job.output_path = output_path
             job.open_titles_path = open_titles_path
+            job.midas_path = midas_path
+            if source_conciliation_output_path is not None:
+                job.source_conciliation_output_path = source_conciliation_output_path
 
     def set_running(self, job_id: str) -> None:
         with self._lock:

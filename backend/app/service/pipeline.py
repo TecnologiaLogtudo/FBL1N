@@ -6,6 +6,7 @@ from pathlib import Path
 from ..job_manager import JobManager
 from ..realtime import RealtimeHub
 from ..schemas import ProcessMode
+from .midas_correlation import run_midas_correlation
 
 
 class _JobLogHandler(logging.Handler):
@@ -30,8 +31,8 @@ def run_legacy_pipeline(
     job_manager: JobManager,
     realtime: RealtimeHub,
 ) -> None:
-    import main as legacy_main
-    from utils import logger as legacy_logger
+    from desktop import main as legacy_main
+    from desktop.utils import logger as legacy_logger
 
     handler = _JobLogHandler(job_id, realtime)
     handler.setLevel(logging.INFO)
@@ -56,3 +57,28 @@ def run_legacy_pipeline(
         )
     finally:
         legacy_logger.removeHandler(handler)
+
+
+def run_midas_pipeline(
+    job_id: str,
+    midas_path: str,
+    source_conciliation_output_path: str,
+    output_path: str,
+    job_manager: JobManager,
+    realtime: RealtimeHub,
+) -> None:
+    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+
+    job_manager.set_progress(job_id, 0.2)
+    realtime.progress(job_id, 0.2)
+
+    stats = run_midas_correlation(
+        midas_path=midas_path,
+        conciliation_output_path=source_conciliation_output_path,
+        output_path=output_path,
+    )
+
+    realtime.log(job_id, "INFO", f"Correlação Midas concluída: {stats}")
+    job_manager.set_progress(job_id, 0.95)
+    realtime.progress(job_id, 0.95)
+

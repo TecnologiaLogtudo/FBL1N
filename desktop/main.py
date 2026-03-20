@@ -6,14 +6,14 @@ from __future__ import annotations
 import pandas as pd
 from typing import Literal
 
-from utils import logger
+from desktop.utils import logger
 
 PROCESS_MODE_STANDARD: Literal["standard"] = "standard"
 PROCESS_MODE_OPEN_TITLES: Literal["open_titles"] = "open_titles"
 
 
 def _prepare_data_pipeline(input_file: str, analysis_year: int, progress_callback=None):
-    from data_processor import DataProcessor
+    from desktop.data_processor import DataProcessor
 
     logger.stage("===================================================")
     logger.stage("FASE 1: Processando arquivo base...")
@@ -53,9 +53,9 @@ def run_standard_process(
 
     data_proc, processed_df_step1, sheets_data_step2, final_sheets_step4 = data_pipeline
 
-    from analysis_processor import AnalysisProcessor
-    from final_report_generator import FinalReportGenerator
-    from report_processor import ReportProcessor
+    from desktop.analysis_processor import AnalysisProcessor
+    from desktop.final_report_generator import FinalReportGenerator
+    from desktop.report_processor import ReportProcessor
 
     logger.stage("FASE 2: Processando relatório externo...")
     report_proc = ReportProcessor(report_file, analysis_year)
@@ -125,7 +125,7 @@ def run_open_titles_process(
 
     data_proc, processed_df_step1, sheets_data_step2, final_sheets_step4 = data_pipeline
 
-    from inverse_processor import OpenTitlesProcessor
+    from desktop.inverse_processor import OpenTitlesProcessor
 
     logger.stage("FASE 2 (Inversa): Processando títulos em aberto...")
     inverse_processor = OpenTitlesProcessor(open_titles_file)
@@ -223,7 +223,7 @@ def main(
 
 
 if __name__ == "__main__":
-    from config import REPORT_FILE_PATH
+    from desktop.config import REPORT_FILE_PATH
 
     input_filepath = "base_de_dados.xlsx"
     report_filepath = REPORT_FILE_PATH
@@ -235,3 +235,4 @@ if __name__ == "__main__":
     print(f"   - Arquivo de saída: {output_filepath}")
 
     main(input_filepath, report_filepath, output_filepath, analysis_year=2025)
+

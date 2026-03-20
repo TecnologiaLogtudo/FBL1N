@@ -19,6 +19,7 @@ def create_job_paths(
     base_filename: str,
     report_filename: str,
     open_titles_filename: str | None = None,
+    midas_filename: str | None = None,
 ) -> dict[str, str | None]:
     job_dir = BASE_DIR / job_id
     job_dir.mkdir(parents=True, exist_ok=True)
@@ -29,6 +30,7 @@ def create_job_paths(
     open_titles_path = (
         job_dir / _sanitize_filename(open_titles_filename) if open_titles_filename else None
     )
+    midas_path = job_dir / _sanitize_filename(midas_filename) if midas_filename else None
 
     return {
         "job_dir": str(job_dir),
@@ -36,6 +38,7 @@ def create_job_paths(
         "report_path": str(report_path),
         "output_path": str(output_path),
         "open_titles_path": str(open_titles_path) if open_titles_path else None,
+        "midas_path": str(midas_path) if midas_path else None,
     }
 
 

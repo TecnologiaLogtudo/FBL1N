@@ -5,8 +5,8 @@
 import pandas as pd
 import numpy as np
 import locale
-from utils import logger
-from config import REPORT_SKIP_ROWS, REPORT_COLUMN_INDICES, REPORT_FINAL_COLUMNS
+from desktop.utils import logger
+from desktop.config import REPORT_SKIP_ROWS, REPORT_COLUMN_INDICES, REPORT_FINAL_COLUMNS
 
 class ReportProcessor:
     """
@@ -242,3 +242,4 @@ class ReportProcessor:
             logger.error("Ocorreu um erro inesperado ao processar o relatório: %s", e, exc_info=True)
             return None
         
+
