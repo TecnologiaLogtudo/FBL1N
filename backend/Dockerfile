@@ -1,22 +1,27 @@
-FROM python:3.12-slim
-
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV LANG=pt_BR.UTF-8
-ENV LC_ALL=pt_BR.UTF-8
-
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends locales gcc \
-    && sed -i '/pt_BR.UTF-8/s/^# //g' /etc/locale.gen \
-    && locale-gen \
-    && rm -rf /var/lib/apt/lists/*
+FROM mcr.microsoft.com/playwright/python:v1.58.0-noble
 
 WORKDIR /app
 
-COPY backend/requirements.txt /app/backend/requirements.txt
-RUN pip install --no-cache-dir -r /app/backend/requirements.txt
+COPY backend/requirements.txt /tmp/backend-requirements.txt
+RUN pip install --no-cache-dir -r /tmp/backend-requirements.txt
+
+# Configura as permissões para o usuário pwuser baixar o Chromium
+ENV PLAYWRIGHT_BROWSERS_PATH=/home/pwuser/.cache/ms-playwright
+RUN mkdir -p /home/pwuser/.cache/ms-playwright && chown -R pwuser:pwuser /home/pwuser
+
+USER pwuser
+RUN playwright install chromium
+USER root
 
 COPY . /app
+RUN mkdir -p /tmp/notas_compensadas && chown -R pwuser:pwuser /app /tmp/notas_compensadas
+
+USER pwuser
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    JOBS_BASE_DIR=/tmp/notas_compensadas \
+    MIDAS_PLAYWRIGHT_RUNTIME_MODE=auto
 
 EXPOSE 8000
 

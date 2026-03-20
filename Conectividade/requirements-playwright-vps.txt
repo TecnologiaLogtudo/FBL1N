@@ -1,3 +1,0 @@
-# Dependências extras opcionais para o perfil VPS.
-# O backend principal já instala backend/requirements.txt.
-playwright==1.58.0

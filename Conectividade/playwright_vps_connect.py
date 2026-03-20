@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Dict, Optional
 
-from playwright.sync_api import Browser, BrowserContext, Page, Playwright, sync_playwright
+from playwright.async_api import Browser, BrowserContext, Page, Playwright, async_playwright
 
 
 @dataclass
@@ -35,7 +35,7 @@ class PlaywrightVPSConfig:
     record_video_dir: Optional[str] = None
 
 
-class PlaywrightVPSClient:
+class AsyncPlaywrightVPSClient:
     def __init__(self, config: Optional[PlaywrightVPSConfig] = None):
         self.config = config or PlaywrightVPSConfig()
         self.playwright: Optional[Playwright] = None
@@ -43,9 +43,9 @@ class PlaywrightVPSClient:
         self.context: Optional[BrowserContext] = None
         self.page: Optional[Page] = None
 
-    def start(self) -> Page:
-        self.playwright = sync_playwright().start()
-        self.browser = self.playwright.chromium.launch(
+    async def start(self) -> Page:
+        self.playwright = await async_playwright().start()
+        self.browser = await self.playwright.chromium.launch(
             headless=self.config.headless,
             args=self.config.browser_args,
         )
@@ -62,29 +62,29 @@ class PlaywrightVPSClient:
         if self.config.record_video_dir:
             context_args["record_video_dir"] = self.config.record_video_dir
 
-        self.context = self.browser.new_context(**context_args)
-        self.page = self.context.new_page()
+        self.context = await self.browser.new_context(**context_args)
+        self.page = await self.context.new_page()
         self.page.set_default_timeout(self.config.timeout_ms)
         self.page.set_default_navigation_timeout(self.config.timeout_ms)
-        self._apply_basic_stealth()
+        await self._apply_basic_stealth()
         return self.page
 
-    def stop(self) -> None:
+    async def stop(self) -> None:
         if self.context:
-            self.context.close()
+            await self.context.close()
             self.context = None
         if self.browser:
-            self.browser.close()
+            await self.browser.close()
             self.browser = None
         if self.playwright:
-            self.playwright.stop()
+            await self.playwright.stop()
             self.playwright = None
         self.page = None
 
-    def _apply_basic_stealth(self) -> None:
+    async def _apply_basic_stealth(self) -> None:
         if not self.page:
             return
-        self.page.add_init_script(
+        await self.page.add_init_script(
             """
             Object.defineProperty(navigator, 'webdriver', { get: () => false });
             Object.defineProperty(navigator, 'languages', { get: () => ['pt-BR', 'pt', 'en-US', 'en'] });
@@ -92,10 +92,10 @@ class PlaywrightVPSClient:
             """
         )
 
-    def __enter__(self) -> "PlaywrightVPSClient":
-        self.start()
+    async def __aenter__(self) -> "AsyncPlaywrightVPSClient":
+        await self.start()
         return self
 
-    def __exit__(self, exc_type, exc, tb) -> bool:
-        self.stop()
+    async def __aexit__(self, exc_type, exc, tb) -> bool:
+        await self.stop()
         return False
