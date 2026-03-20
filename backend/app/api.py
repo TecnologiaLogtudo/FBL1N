@@ -241,7 +241,7 @@ async def start_midas_correlation(
         if midas_file is not None:
             await _save_upload(midas_file, paths["midas_path"], settings.max_upload_bytes)
         else:
-            generate_and_prepare_midas_file(
+            await generate_and_prepare_midas_file(
                 prepared_output_path=paths["midas_path"],
                 username=settings.midas_username,
                 password=settings.midas_password,
