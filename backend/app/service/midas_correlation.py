@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import asyncio
 import unicodedata
 from pathlib import Path
 
@@ -150,7 +151,7 @@ def run_midas_correlation(
     }
 
 
-def generate_and_prepare_midas_file(
+async def generate_and_prepare_midas_file(
     *,
     prepared_output_path: str,
     username: str,
@@ -186,5 +187,17 @@ def generate_and_prepare_midas_file(
         download_dir=str(Path(prepared_output_path).parent / "midas_raw"),
         target_url=settings.midas_target_url,
     )
-    raw_path = workflow.run()
+    
+    raw_path = await workflow.run()
+    
+    # Garante de forma estrita que o processo espere a planilha vinda do Midas aparecer
+    # no sistema de arquivos antes de passar o resultado adiante
+    timeout = 15
+    while not Path(raw_path).exists() and timeout > 0:
+        await asyncio.sleep(1)
+        timeout -= 1
+        
+    if not Path(raw_path).exists():
+        raise FileNotFoundError(f"A planilha Midas não foi salva no disco a tempo: {raw_path}")
+
     return MidasSpreadsheetProcessor.process_to_excel(raw_path, prepared_output_path)
