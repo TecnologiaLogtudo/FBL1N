@@ -6,9 +6,6 @@ from pathlib import Path
 
 import pandas as pd
 
-from ..Midas.spreadsheet_processor import MidasSpreadsheetProcessor
-from ..Midas.workflow_carrier import MidasCarrierWorkflow
-
 
 def _normalize_text(value: str) -> str:
     normalized = unicodedata.normalize("NFKD", value)
@@ -131,6 +128,14 @@ def generate_and_prepare_midas_file(
 ) -> str:
     if not username or not password:
         raise ValueError("Credenciais do Midas não configuradas para geração automática.")
+
+    try:
+        from ..Midas.spreadsheet_processor import MidasSpreadsheetProcessor
+        from ..Midas.workflow_carrier import MidasCarrierWorkflow
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        raise ValueError(
+            "Dependências do fluxo Midas não disponíveis no ambiente (ex.: playwright)."
+        ) from exc
 
     workflow = MidasCarrierWorkflow(
         username=username,
