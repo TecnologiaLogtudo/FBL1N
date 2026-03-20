@@ -44,6 +44,44 @@ def _load_conciliation_sheet(conciliation_output_path: str) -> pd.DataFrame:
     raise ValueError("Não foi possível ler a aba 'Resumo Consolidado' da planilha de Conciliação.")
 
 
+def _load_conciliation_with_ctrc(conciliation_output_path: str) -> tuple[pd.DataFrame, str]:
+    attempts = (
+        {"sheet_name": "Resumo Consolidado"},
+        {"sheet_name": "Resumo Consolidado", "skiprows": 2},
+    )
+    for kwargs in attempts:
+        try:
+            df = pd.read_excel(conciliation_output_path, **kwargs).dropna(how="all")
+            if df.empty:
+                continue
+            ctrc_column = _find_column(df, ("CTRC",))
+            if ctrc_column:
+                return df, ctrc_column
+        except Exception:  # pylint: disable=broad-exception-caught
+            continue
+
+    # Fallback: detecta automaticamente a linha de cabeçalho (ex.: CTRC na linha 3)
+    try:
+        raw_df = pd.read_excel(conciliation_output_path, sheet_name="Resumo Consolidado", header=None)
+        max_scan_rows = min(15, len(raw_df))
+        for row_idx in range(max_scan_rows):
+            row_values = [str(v) for v in raw_df.iloc[row_idx].tolist()]
+            normalized = [_normalize_text(v) for v in row_values]
+            if _normalize_text("CTRC") in normalized:
+                df = pd.read_excel(
+                    conciliation_output_path,
+                    sheet_name="Resumo Consolidado",
+                    skiprows=row_idx,
+                ).dropna(how="all")
+                ctrc_column = _find_column(df, ("CTRC",))
+                if ctrc_column:
+                    return df, ctrc_column
+    except Exception:  # pylint: disable=broad-exception-caught
+        pass
+
+    raise ValueError("A planilha de Conciliação precisa conter a coluna 'CTRC' na aba 'Resumo Consolidado'.")
+
+
 def _load_midas_file(midas_path: str) -> pd.DataFrame:
     file_path = Path(midas_path)
     suffix = file_path.suffix.lower()
@@ -55,10 +93,7 @@ def _load_midas_file(midas_path: str) -> pd.DataFrame:
 
 
 def validate_conciliation_output(conciliation_output_path: str) -> None:
-    df = _load_conciliation_sheet(conciliation_output_path)
-    ctrc_column = _find_column(df, ("CTRC",))
-    if not ctrc_column:
-        raise ValueError("A planilha de Conciliação precisa conter a coluna 'CTRC' na aba 'Resumo Consolidado'.")
+    _load_conciliation_with_ctrc(conciliation_output_path)
 
 
 def validate_midas_file(midas_path: str) -> None:
@@ -73,10 +108,7 @@ def run_midas_correlation(
     conciliation_output_path: str,
     output_path: str,
 ) -> dict[str, int]:
-    conciliation_df = _load_conciliation_sheet(conciliation_output_path)
-    ctrc_column = _find_column(conciliation_df, ("CTRC",))
-    if not ctrc_column:
-        raise ValueError("A planilha de Conciliação precisa conter a coluna 'CTRC' na aba 'Resumo Consolidado'.")
+    conciliation_df, ctrc_column = _load_conciliation_with_ctrc(conciliation_output_path)
 
     midas_df = _load_midas_file(midas_path)
     number_column = _find_column(midas_df, ("Número", "Numero"))

@@ -111,6 +111,50 @@ def test_midas_correlation_happy_path() -> None:
         shutil.rmtree(test_dir, ignore_errors=True)
 
 
+def test_midas_correlation_accepts_ctrc_header_on_third_row() -> None:
+    test_dir = _make_test_dir()
+    try:
+        conciliation_output = test_dir / "conciliation_l3.xlsx"
+        with pd.ExcelWriter(conciliation_output, engine="openpyxl") as writer:
+            pd.DataFrame({"A": ["meta1"], "B": ["meta1"]}).to_excel(
+                writer, sheet_name="Resumo Consolidado", index=False, header=False
+            )
+            pd.DataFrame({"A": ["meta2"], "B": ["meta2"]}).to_excel(
+                writer, sheet_name="Resumo Consolidado", index=False, header=False, startrow=1
+            )
+            pd.DataFrame({"CTRC": ["00123", "456"]}).to_excel(
+                writer, sheet_name="Resumo Consolidado", index=False, startrow=2
+            )
+
+        app = create_app()
+        _run_jobs_inline(app)
+        source_job = _create_source_job(app, user_id="u1", output_path=str(conciliation_output))
+        client = TestClient(app)
+
+        midas_df = pd.DataFrame({"Número": ["123", "999"]})
+        response = client.post(
+            "/api/midas/correlate",
+            data={"conciliation_job_id": source_job.job_id},
+            files={
+                "midas_file": (
+                    "midas.xlsx",
+                    _xlsx_bytes(midas_df),
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                )
+            },
+            headers={"X-User-Id": "u1"},
+        )
+
+        assert response.status_code == 202
+        job = app.state.job_manager.get_job(response.json()["job_id"])
+        assert job is not None
+        assert job.output_path is not None
+        output_df = pd.read_excel(job.output_path)
+        assert output_df["Condição"].tolist() == ["Pendente Pagamento", "-"]
+    finally:
+        shutil.rmtree(test_dir, ignore_errors=True)
+
+
 def test_midas_correlation_requires_completed_source_job() -> None:
     test_dir = _make_test_dir()
     try:

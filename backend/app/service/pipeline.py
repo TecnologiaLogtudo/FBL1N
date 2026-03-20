@@ -69,9 +69,12 @@ def run_midas_pipeline(
 ) -> None:
     Path(output_path).parent.mkdir(parents=True, exist_ok=True)
 
+    realtime.log(job_id, "INFO", "Iniciando fluxo Midas x Conciliação...")
+    realtime.log(job_id, "INFO", "Validando dados e preparando correlação.")
     job_manager.set_progress(job_id, 0.2)
     realtime.progress(job_id, 0.2)
 
+    realtime.log(job_id, "INFO", "Executando correlação da coluna Número (Midas) com CTRC (Conciliação).")
     stats = run_midas_correlation(
         midas_path=midas_path,
         conciliation_output_path=source_conciliation_output_path,
@@ -79,6 +82,7 @@ def run_midas_pipeline(
     )
 
     realtime.log(job_id, "INFO", f"Correlação Midas concluída: {stats}")
+    realtime.log(job_id, "INFO", f"Arquivo de saída gerado em: {output_path}")
     job_manager.set_progress(job_id, 0.95)
     realtime.progress(job_id, 0.95)
 
