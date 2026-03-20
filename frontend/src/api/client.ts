@@ -51,12 +51,10 @@ export async function startProcess(
 }
 
 export async function startMidasCorrelation(
-  midasFile: File,
   conciliationJobId: string,
   onUploadProgress?: (progress: number) => void
 ): Promise<{ job_id: string }> {
   const formData = new FormData();
-  formData.append("midas_file", midasFile);
   formData.append("conciliation_job_id", conciliationJobId);
 
   const { data } = await api.post("/api/midas/correlate", formData, {

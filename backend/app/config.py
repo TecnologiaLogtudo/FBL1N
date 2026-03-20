@@ -16,6 +16,11 @@ class Settings:
     )
     min_year: int = int(os.getenv("MIN_ANALYSIS_YEAR", "2020"))
     max_year: int = int(os.getenv("MAX_ANALYSIS_YEAR", "2100"))
+    midas_username: str = os.getenv("MIDAS_USERNAME", "")
+    midas_password: str = os.getenv("MIDAS_PASSWORD", "")
+    midas_starting_date: str = os.getenv("MIDAS_STARTING_DATE", "01/01/2026")
+    midas_ending_date: str = os.getenv("MIDAS_ENDING_DATE", "31/12/2026")
+    midas_headless: bool = os.getenv("MIDAS_HEADLESS", "true").strip().lower() not in {"0", "false", "no"}
 
 
 settings = Settings()

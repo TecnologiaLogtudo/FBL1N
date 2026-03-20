@@ -20,7 +20,11 @@ from .schemas import (
     ResultsResponse,
 )
 from .service.pdf_export import generate_pdf_from_output
-from .service.midas_correlation import validate_conciliation_output, validate_midas_file
+from .service.midas_correlation import (
+    generate_and_prepare_midas_file,
+    validate_conciliation_output,
+    validate_midas_file,
+)
 from .service.result_parser import parse_results
 from .storage import create_job_paths
 
@@ -90,7 +94,7 @@ async def start_process(
     request: Request,
     base_file: UploadFile = File(...),
     report_file: UploadFile | None = File(None),
-    analysis_year: int = 2025,
+    analysis_year: int = Form(2025),
     process_mode: ProcessMode = Form(ProcessMode.standard),
     open_titles_file: UploadFile | None = File(None),
 ):
@@ -175,10 +179,11 @@ async def start_process(
 @router.post("/api/midas/correlate", response_model=ProcessStartResponse, status_code=202)
 async def start_midas_correlation(
     request: Request,
-    midas_file: UploadFile = File(...),
+    midas_file: UploadFile | None = File(None),
     conciliation_job_id: str = Form(...),
 ):
-    _validate_file_extension(midas_file, (".xlsx", ".xls", ".csv"), "midas_file")
+    if midas_file is not None:
+        _validate_file_extension(midas_file, (".xlsx", ".xls", ".csv"), "midas_file")
 
     job_manager: JobManager = request.app.state.job_manager
     runner: JobRunner = request.app.state.job_runner
@@ -203,10 +208,10 @@ async def start_midas_correlation(
         job = job_manager.create_job(
             user_id=user_id,
             analysis_year=source_job.analysis_year,
-            base_filename=midas_file.filename or "midas.xlsx",
+            base_filename=midas_file.filename if midas_file else "midas_gerado.xlsx",
             report_filename=f"consolidado_{conciliation_job_id}.xlsx",
             process_mode=ProcessMode.midas_correlation,
-            midas_filename=midas_file.filename or "midas.xlsx",
+            midas_filename=midas_file.filename if midas_file else "midas_gerado.xlsx",
             source_conciliation_job_id=source_job.job_id,
             source_conciliation_output_path=source_job.output_path,
         )
@@ -232,7 +237,19 @@ async def start_midas_correlation(
     try:
         if not paths.get("midas_path"):
             raise HTTPException(status_code=500, detail="Falha ao preparar caminho do arquivo Midas")
-        await _save_upload(midas_file, paths["midas_path"], settings.max_upload_bytes)
+
+        if midas_file is not None:
+            await _save_upload(midas_file, paths["midas_path"], settings.max_upload_bytes)
+        else:
+            generate_and_prepare_midas_file(
+                prepared_output_path=paths["midas_path"],
+                username=settings.midas_username,
+                password=settings.midas_password,
+                starting_date=settings.midas_starting_date,
+                ending_date=settings.midas_ending_date,
+                headless=settings.midas_headless,
+            )
+
         validate_midas_file(paths["midas_path"])
     except ValueError as exc:
         from .storage import delete_job_dir

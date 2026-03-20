@@ -34,7 +34,6 @@ export function HomePage() {
   const [baseFile, setBaseFile] = useState<File | null>(null);
   const [reportFile, setReportFile] = useState<File | null>(null);
   const [openTitlesFile, setOpenTitlesFile] = useState<File | null>(null);
-  const [midasFile, setMidasFile] = useState<File | null>(null);
   const [conciliationJobId, setConciliationJobId] = useState<string | null>(null);
   const [analysisYear, setAnalysisYear] = useState<number>(new Date().getFullYear());
   const [localError, setLocalError] = useState<string | null>(null);
@@ -49,6 +48,7 @@ export function HomePage() {
   const setJob = useAppStore((s) => s.setJob);
   const setError = useAppStore((s) => s.setError);
   const currentJobId = useAppStore((s) => s.jobId);
+  const currentStatus = useAppStore((s) => s.status);
 
   const loadOperationalData = async () => {
     try {
@@ -75,6 +75,20 @@ export function HomePage() {
     return () => window.clearTimeout(timer);
   }, [currentJobId]);
 
+  useEffect(() => {
+    if (!currentJobId) return;
+    if (!currentStatus || (currentStatus !== "completed" && currentStatus !== "failed" && currentStatus !== "expired")) {
+      return;
+    }
+    loadOperationalData();
+  }, [currentJobId, currentStatus]);
+
+  useEffect(() => {
+    if (processMode === "midas_correlation") {
+      loadOperationalData();
+    }
+  }, [processMode]);
+
   const statusColor = (status: string): string => {
     if (status === "completed") return "green";
     if (status === "failed") return "red";
@@ -88,7 +102,6 @@ export function HomePage() {
     setBaseFile(null);
     setReportFile(null);
     setOpenTitlesFile(null);
-    setMidasFile(null);
     setConciliationJobId(null);
   }, [processMode]);
 
@@ -110,16 +123,11 @@ export function HomePage() {
 
       let job_id = "";
       if (processMode === "midas_correlation") {
-        const midasErr = validateFile(midasFile, [".xlsx", ".xls", ".csv"]);
-        if (midasErr) {
-          setLocalError(`Planilha Midas: ${midasErr}`);
-          return;
-        }
         if (!conciliationJobId) {
           setLocalError("Selecione um job de Conciliação concluído para correlacionar.");
           return;
         }
-        ({ job_id } = await startMidasCorrelation(midasFile!, conciliationJobId, setUploadProgress));
+        ({ job_id } = await startMidasCorrelation(conciliationJobId, setUploadProgress));
       } else {
         const baseErr = validateFile(baseFile, [".xlsx"]);
         if (baseErr) {
@@ -200,7 +208,7 @@ export function HomePage() {
             ? "Envie a base FBL1 e o relatório BSoft para conciliar valores."
             : processMode === "open_titles"
             ? "Envie a base FBL1 e a planilha filtrada com os títulos em aberto para verificar quais já foram pagos."
-            : "Envie a planilha Midas e selecione um job concluído de Conciliação para preencher a condição automaticamente."}
+            : "Selecione um job concluído de Conciliação. A planilha Midas será gerada automaticamente e correlacionada."}
         </Text>
       </div>
       {localError && <Alert color="red" mb="md">{localError}</Alert>}
@@ -227,13 +235,6 @@ export function HomePage() {
       )}
       {processMode === "midas_correlation" && (
         <>
-          <FileInput
-            label="Planilha Midas (.xlsx/.xls/.csv)"
-            value={midasFile}
-            onChange={setMidasFile}
-            clearable
-            mb="sm"
-          />
           <Select
             label="Job de Conciliação (concluído)"
             placeholder={availableConciliationJobs.length > 0 ? "Selecione um job" : "Sem jobs elegíveis no histórico"}

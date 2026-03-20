@@ -1,6 +1,5 @@
 import os
 from playwright.sync_api import sync_playwright
-from .spreadsheet_processor import MidasSpreadsheetProcessor
 
 class MidasCarrierWorkflow:
     def __init__(self, username: str = "SEU_USUARIO", password: str = "SUA_SENHA", starting_date: str = "05/03/2026", ending_date: str = "20/03/2026", headless: bool = True):
@@ -90,19 +89,12 @@ class MidasCarrierWorkflow:
             download.save_as(file_path)
             print(f"Relatório exportado e salvo com sucesso em: {file_path}")
 
-            # Mantém o navegador aberto até que o usuário pressione ENTER no terminal
-            print("\nFluxo de automação concluído. O navegador permanecerá aberto.")
-            input("Pressione [ENTER] neste terminal para fechar o navegador e encerrar o script... ")
-        
-            # Delega o tratamento da planilha e mapeamento para a classe separada
-            canonical_json = MidasSpreadsheetProcessor.process_and_map(file_path)
-            
             browser.close()
-            return canonical_json
+            return file_path
 
 if __name__ == "__main__":
-    # Aqui passamos headless=False para que você consiga ver o navegador preenchendo os dados no teste!
-    workflow = MidasCarrierWorkflow(username="JOYCE.RAIANE", password="Joyce123@", starting_date="05/03/2026", ending_date="20/03/2026", headless=False)
-    resultado = workflow.run()
-    print("\nResultado do JSON Canônico gerado:")
-    print(resultado)
+    # Aqui passamos headless=False para depuração visual.
+    workflow = MidasCarrierWorkflow(username="SEU_USUARIO", password="SUA_SENHA", starting_date="05/03/2026", ending_date="20/03/2026", headless=False)
+    arquivo = workflow.run()
+    print("\nArquivo bruto gerado:")
+    print(arquivo)

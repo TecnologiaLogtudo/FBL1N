@@ -6,6 +6,9 @@ from pathlib import Path
 
 import pandas as pd
 
+from ..Midas.spreadsheet_processor import MidasSpreadsheetProcessor
+from ..Midas.workflow_carrier import MidasCarrierWorkflow
+
 
 def _normalize_text(value: str) -> str:
     normalized = unicodedata.normalize("NFKD", value)
@@ -116,3 +119,25 @@ def run_midas_correlation(
         "total_rows": len(statuses),
     }
 
+
+def generate_and_prepare_midas_file(
+    *,
+    prepared_output_path: str,
+    username: str,
+    password: str,
+    starting_date: str,
+    ending_date: str,
+    headless: bool = True,
+) -> str:
+    if not username or not password:
+        raise ValueError("Credenciais do Midas não configuradas para geração automática.")
+
+    workflow = MidasCarrierWorkflow(
+        username=username,
+        password=password,
+        starting_date=starting_date,
+        ending_date=ending_date,
+        headless=headless,
+    )
+    raw_path = workflow.run()
+    return MidasSpreadsheetProcessor.process_to_excel(raw_path, prepared_output_path)
