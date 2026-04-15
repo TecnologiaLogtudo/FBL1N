@@ -5,6 +5,7 @@
 import pandas as pd
 import numpy as np
 import locale
+from pathlib import Path
 from desktop.utils import logger
 from desktop.config import REPORT_SKIP_ROWS, REPORT_COLUMN_INDICES, REPORT_FINAL_COLUMNS
 
@@ -24,6 +25,11 @@ class ReportProcessor:
         self.filepath = filepath
         self.analysis_year = str(analysis_year)
         self.df = None
+
+    def _resolve_engine(self) -> str:
+        """Resolve o engine de leitura do pandas com base na extensão do arquivo."""
+        suffix = Path(self.filepath).suffix.lower()
+        return "xlrd" if suffix == ".xls" else "openpyxl"
 
     def _clean_client_column(self):
         """(Tratamento) Aplica a regra de padronização na coluna 'Cliente'."""
@@ -164,7 +170,10 @@ class ReportProcessor:
         logger.stair("--- INICIANDO PROCESSAMENTO DO RELATÓRIO EXTERNO ---")
         try:
             logger.info("Lendo o arquivo de relatório: %s", self.filepath)
-            df = pd.read_excel(self.filepath, header=None, skiprows=REPORT_SKIP_ROWS, engine='xlrd')
+            engine = self._resolve_engine()
+            suffix = Path(self.filepath).suffix.lower()
+            logger.info("Engine de leitura resolvido para extensão '%s': %s", suffix, engine)
+            df = pd.read_excel(self.filepath, header=None, skiprows=REPORT_SKIP_ROWS, engine=engine)
             logger.info("Arquivo lido, pulando as primeiras %d linhas.", REPORT_SKIP_ROWS)
 
             logger.info("Consolidando cabeçalho de múltiplas linhas.")

@@ -5,10 +5,10 @@ from dataclasses import dataclass, field
 from typing import Dict, Optional
 
 try:
-    from playwright.async_api import Browser, BrowserContext, Page, Playwright, async_playwright
+    from playwright.sync_api import Browser, BrowserContext, Page, Playwright, sync_playwright
 except Exception:  # pragma: no cover - exercised in environments without playwright
     Browser = BrowserContext = Page = Playwright = None  # type: ignore[assignment]
-    async_playwright = None  # type: ignore[assignment]
+    sync_playwright = None  # type: ignore[assignment]
 
 
 def _running_in_container() -> bool:
@@ -43,7 +43,6 @@ class PlaywrightRuntimeConfig:
         }
     )
     record_video_dir: Optional[str] = None
-    ws_endpoint: Optional[str] = None
 
     def resolved_mode(self) -> str:
         mode = self.runtime_mode.strip().lower()
@@ -64,7 +63,6 @@ class PlaywrightRuntimeConfig:
         user_agent: Optional[str] = None,
         browser_args: Optional[str] = None,
         record_video_dir: Optional[str] = None,
-        ws_endpoint: Optional[str] = None,
     ) -> "PlaywrightRuntimeConfig":
         parsed_args = tuple(
             item.strip()
@@ -90,11 +88,10 @@ class PlaywrightRuntimeConfig:
                 "--no-default-browser-check",
             ),
             record_video_dir=record_video_dir or os.getenv("MIDAS_PLAYWRIGHT_RECORD_VIDEO_DIR") or None,
-            ws_endpoint=ws_endpoint or os.getenv("MIDAS_PLAYWRIGHT_WS_ENDPOINT") or None,
         )
 
 
-class AsyncPlaywrightRuntimeClient:
+class PlaywrightRuntimeClient:
     def __init__(self, config: Optional[PlaywrightRuntimeConfig] = None):
         self.config = config or PlaywrightRuntimeConfig()
         self.playwright: Optional[Playwright] = None
@@ -102,19 +99,15 @@ class AsyncPlaywrightRuntimeClient:
         self.context: Optional[BrowserContext] = None
         self.page: Optional[Page] = None
 
-    async def start(self):
-        if async_playwright is None:
+    def start(self):
+        if sync_playwright is None:
             raise RuntimeError("Playwright não está instalado no ambiente atual.")
 
-        self.playwright = await async_playwright().start()
-        
-        if self.config.resolved_mode() == "vps" and self.config.ws_endpoint:
-            self.browser = await self.playwright.chromium.connect(self.config.ws_endpoint)
-        else:
-            self.browser = await self.playwright.chromium.launch(
-                headless=self.config.headless,
-                args=list(self.config.browser_args),
-            )
+        self.playwright = sync_playwright().start()
+        self.browser = self.playwright.chromium.launch(
+            headless=self.config.headless,
+            args=list(self.config.browser_args),
+        )
 
         context_args = {
             "viewport": {"width": self.config.viewport_width, "height": self.config.viewport_height},
@@ -125,29 +118,29 @@ class AsyncPlaywrightRuntimeClient:
         if self.config.record_video_dir:
             context_args["record_video_dir"] = self.config.record_video_dir
 
-        self.context = await self.browser.new_context(**context_args)
-        self.page = await self.context.new_page()
+        self.context = self.browser.new_context(**context_args)
+        self.page = self.context.new_page()
         self.page.set_default_timeout(self.config.timeout_ms)
         self.page.set_default_navigation_timeout(self.config.timeout_ms)
-        await self._apply_basic_stealth()
+        self._apply_basic_stealth()
         return self.page
 
-    async def stop(self) -> None:
+    def stop(self) -> None:
         if self.context:
-            await self.context.close()
+            self.context.close()
             self.context = None
         if self.browser:
-            await self.browser.close()
+            self.browser.close()
             self.browser = None
         if self.playwright:
-            await self.playwright.stop()
+            self.playwright.stop()
             self.playwright = None
         self.page = None
 
-    async def _apply_basic_stealth(self) -> None:
+    def _apply_basic_stealth(self) -> None:
         if not self.page:
             return
-        await self.page.add_init_script(
+        self.page.add_init_script(
             """
             Object.defineProperty(navigator, 'webdriver', { get: () => false });
             Object.defineProperty(navigator, 'languages', { get: () => ['pt-BR', 'pt', 'en-US', 'en'] });
@@ -155,10 +148,10 @@ class AsyncPlaywrightRuntimeClient:
             """
         )
 
-    async def __aenter__(self) -> "AsyncPlaywrightRuntimeClient":
-        await self.start()
+    def __enter__(self) -> "PlaywrightRuntimeClient":
+        self.start()
         return self
 
-    async def __aexit__(self, exc_type, exc, tb) -> bool:
-        await self.stop()
+    def __exit__(self, exc_type, exc, tb) -> bool:
+        self.stop()
         return False
